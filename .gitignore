@@ -6,6 +6,8 @@
 # Node artifact files
 node_modules/
 dist/
+.env
+yarn.lock
 
 # Compiled Java class files
 *.class
@@ -48,3 +50,8 @@ Thumbs.db
 *.mov
 *.wmv
 
+
+# Elastic Beanstalk Files
+# .elasticbeanstalk/*
+# !.elasticbeanstalk/*.cfg.yml
+# !.elasticbeanstalk/*.global.yml

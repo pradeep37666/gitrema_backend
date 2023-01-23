@@ -1,0 +1,155 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
+import * as paginate from 'mongoose-paginate-v2';
+import {
+  PaymentMethod,
+  PaymentStatus,
+  PaymentTarget,
+} from 'src/core/Constants/enum';
+import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+import { UserDocument } from 'src/users/schemas/users.schema';
+
+export type TransactionDocument = Transaction & Document;
+
+@Schema({ _id: false })
+class ExpectedFromPg {
+  @Prop({})
+  variableBankFee: number;
+
+  @Prop({})
+  fixedBankFee: number;
+
+  @Prop({})
+  totalBankFee: number;
+
+  @Prop({})
+  bankFeeTax: number;
+
+  @Prop({})
+  grossBankFee: number;
+
+  @Prop({})
+  totalBankSettlement: number;
+}
+
+@Schema({ _id: false })
+class RagSettlement {
+  @Prop({})
+  variableFee: number;
+
+  @Prop({})
+  fixedFee: number;
+
+  @Prop({})
+  totalFee: number;
+
+  @Prop({})
+  feeTax: number;
+
+  @Prop({})
+  grossFee: number;
+
+  @Prop({})
+  totalSettlement: number;
+
+  @Prop({})
+  ppfRevenue: number;
+
+  @Prop({})
+  paybleTax: number;
+
+  @Prop({})
+  netRevenue: number;
+}
+
+@Schema({ _id: false })
+class Item {
+  @Prop({})
+  number: string;
+
+  @Prop({})
+  description: string;
+
+  @Prop({})
+  amount: number;
+}
+const ItemSchema = SchemaFactory.createForClass(Item);
+
+@Schema({ timestamps: true })
+export class Transaction {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Supplier',
+    index: true,
+    required: true,
+  })
+  supplierId: SupplierDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    default: null,
+  })
+  dataId?: ObjectId;
+
+  @Prop({})
+  amount: number;
+
+  @Prop({ type: [ItemSchema], default: null })
+  items: Item[];
+
+  @Prop({
+    required: true,
+    index: true,
+    type: String,
+    enum: PaymentStatus,
+    default: PaymentStatus.Pending,
+  })
+  status: PaymentStatus;
+
+  @Prop({
+    index: true,
+    type: String,
+    enum: PaymentTarget,
+  })
+  type: PaymentTarget;
+
+  @Prop({
+    index: true,
+    type: String,
+    enum: PaymentMethod,
+  })
+  paymentMethod: PaymentMethod;
+
+  @Prop()
+  paymentGateway: string;
+
+  @Prop({})
+  externalTransactionId: string;
+
+  @Prop({ type: Object })
+  pgResponse: any;
+
+  @Prop({ type: Object })
+  expectedFromPg: ExpectedFromPg;
+
+  @Prop({ type: Object })
+  actualReceived: any;
+
+  @Prop({ type: Object })
+  ragSettlement: RagSettlement;
+
+  @Prop({ default: false })
+  isRemitted: boolean;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    index: true,
+    default: null,
+  })
+  addedBy: UserDocument;
+}
+
+export const TransactionSchema = SchemaFactory.createForClass(Transaction);
+TransactionSchema.plugin(paginate);
