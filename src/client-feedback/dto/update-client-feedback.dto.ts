@@ -1,9 +1,8 @@
-import { PartialType } from '@nestjs/mapped-types';
 import {
   CreateClientFeedbackDto,
   QuestionDto,
 } from './create-client-feedback.dto';
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 
 import { Type } from 'class-transformer';
 import {
