@@ -6,6 +6,10 @@ import { SALT_WORK_FACTOR } from 'src/core/Constants/auth.constants';
 import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { RoleDocument } from 'src/role/schemas/roles.schema';
+import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
+import { TableDocument } from 'src/table/schemas/table.schema';
+import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
+import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 
 export type UserDocument = User & Document;
 
@@ -17,6 +21,13 @@ export class User {
     default: null,
   })
   supplierId: SupplierDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Restaurant',
+    default: null,
+  })
+  restaurantId: RestaurantDocument;
 
   @Prop({})
   name: string;
@@ -35,9 +46,6 @@ export class User {
   })
   role: RoleDocument;
 
-  @Prop()
-  accessToken: string;
-
   @Prop({ default: null })
   phoneNumber: string;
 
@@ -45,32 +53,35 @@ export class User {
   whatsappNumber: string;
 
   @Prop({
-    type: Object,
-    default: {},
+    type: [MongooseSchema.Types.ObjectId],
+    ref: 'Table',
+    default: [],
   })
-  address: {
-    addressLine1: string;
-    addressLine2: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode: string;
-  };
+  tables: TableDocument[];
 
-  @Prop({ default: null })
-  profileImage: string;
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'KitchenQueue',
+    default: null,
+  })
+  kitchenQueue: KitchenQueueDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Cashier',
+    default: null,
+  })
+  cashier: CashierDocument;
 
   @Prop({ default: false })
   isBlocked: boolean;
 
-  @Prop({ default: false })
-  isVerified: boolean;
-
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
+    default: null,
   })
-  addedBy: User;
+  addedBy: UserDocument;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

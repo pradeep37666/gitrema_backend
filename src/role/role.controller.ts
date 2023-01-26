@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   Request,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -29,9 +30,9 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Post()
-  @PermissionGuard(PermissionSubject.Role, Permission.Common.CREATE)
+  //@PermissionGuard(PermissionSubject.Role, Permission.Common.CREATE)
   async create(
-    @Request() req,
+    @Req() req,
     @Body() roleDetails: RoleCreateDto,
   ): Promise<RoleDocument> {
     return await this.roleService.create(req, roleDetails);
@@ -49,7 +50,7 @@ export class RoleController {
   @Get()
   @PermissionGuard(PermissionSubject.Role, Permission.Common.LIST)
   async all(
-    @Request() req,
+    @Req() req,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<RoleDocument>> {
     return await this.roleService.all(req, paginateOptions);

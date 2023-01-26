@@ -16,10 +16,10 @@ import {
 import { Role } from 'src/role/schemas/roles.schema';
 
 export class UserCreateDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @IsEmail()
-  @ApiProperty()
+  @ApiProperty({ required: false })
   email: string;
 
   @IsNotEmpty()
@@ -27,8 +27,8 @@ export class UserCreateDto {
   @ApiProperty()
   name: string;
 
-  @ApiPropertyOptional({ type: String })
-  @IsOptional()
+  @ApiProperty({ type: String })
+  @IsNotEmpty()
   @IsMongoId()
   role?: Role;
 
@@ -37,7 +37,7 @@ export class UserCreateDto {
   @IsNotEmpty()
   phoneNumber: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   whatsappNumber: string;

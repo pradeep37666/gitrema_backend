@@ -14,6 +14,7 @@ import {
   Res,
   StreamableFile,
   Response,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { PaginateResult } from 'mongoose';
@@ -35,7 +36,7 @@ export class TransactionController {
   @Get()
   @PermissionGuard(PermissionSubject.Transaction, Permission.Common.LIST)
   async all(
-    @Request() req,
+    @Req() req,
     @Query() query: TransactionQueryDto,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<TransactionDocument>> {
@@ -48,7 +49,7 @@ export class TransactionController {
   // @SkipInterceptor()
   // @PermissionGuard(PermissionSubject.Transaction, Permission.Common.LIST)
   // async export(
-  //   @Request() req,
+  //   @Req() req,
   //   @Query() query: TransactionQueryDto,
   //   @Res({ passthrough: true }) res: Response,
   // ): Promise<any> {
@@ -63,7 +64,7 @@ export class TransactionController {
   // @SkipInterceptor()
   // @PermissionGuard(PermissionSubject.Transaction, Permission.Common.LIST)
   // async remittance(
-  //   @Request() req,
+  //   @Req() req,
   //   @Query() query: TransactionQueryDto,
   //   @Res({ passthrough: true }) res: Response,
   // ): Promise<any> {

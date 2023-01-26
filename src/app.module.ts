@@ -4,8 +4,6 @@ import { AppService } from './app.service';
 
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { PuppeteerModule } from 'nest-puppeteer';
-
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import appConfigurations from './config/app.configuration';
@@ -20,6 +18,24 @@ import { SupplierModule } from './supplier/Supplier.module';
 import { RoleModule } from './role/role.module';
 import { EnumModule } from './core/enum/enum.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { PermissionGuard } from './permission/permission.guard';
+import { EmailTemplateModule } from './notification/email-templates/email-template.module';
+import { AuthModule } from './auth/auth.module';
+import { RestaurantModule } from './restaurant/restaurant.module';
+import { TableModule } from './table/table.module';
+import { PermissionModule } from './permission/permission.module';
+import { MenuModule } from './menu/menu.module';
+import { QrCodeModule } from './qr-code/qr-code.module';
+import { KitchenQueueModule } from './kitchen-queue/kitchen-queue.module';
+import { CashierModule } from './cashier/cashier.module';
+import { ClientCommentModule } from './client-comment/client-comment.module';
+import { ClientFeedbackModule } from './client-feedback/client-feedback.module';
+
+import { SeedModule } from './seed/seed.module';
+import { PaymentSetupModule } from './payment-setup/payment-setup.module';
+import { FileUploaderModule } from './file-uploader/file-uploader.module';
 
 @Module({
   imports: [
@@ -41,24 +57,39 @@ import { TransactionModule } from './transaction/transaction.module';
         uri: config.get('mongo.dbUrl'), // Loaded from .ENV
       }),
     }),
-    PuppeteerModule.forRoot({
-      isGlobal: true,
-      executablePath: '/usr/bin/google-chrome',
-    }),
+    // PuppeteerModule.forRoot({
+    //   isGlobal: true,
+    //   executablePath: '/usr/bin/google-chrome',
+    // }),
+    AuthModule,
     UserModule,
     SupplierModule,
+    PermissionModule,
     RoleModule,
     EnumModule,
     TransactionModule,
+    EmailTemplateModule,
+    RestaurantModule,
+    TableModule,
+    MenuModule,
+    KitchenQueueModule,
+    QrCodeModule,
+    CashierModule,
+    ClientCommentModule,
+    ClientFeedbackModule,
+    PaymentSetupModule,
+
+    SeedModule,
+    FileUploaderModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: JwtAuthGuard,
-    // },
-    // { provide: APP_GUARD, useClass: PermissionGuard },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    { provide: APP_GUARD, useClass: PermissionGuard },
     Logger,
   ],
 })

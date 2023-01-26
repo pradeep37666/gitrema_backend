@@ -2,7 +2,11 @@ import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { AddSupplierDto, SupplierQueryDto } from './Supplier.dto';
+import {
+  AddSupplierDto,
+  SupplierQueryDto,
+  UpdateSupplierDto,
+} from './Supplier.dto';
 import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
 import {
   DefaultSort,
@@ -83,7 +87,7 @@ export class SupplierService {
 
   async update(
     supplierId: string,
-    supplierDetails: AddSupplierDto,
+    supplierDetails: UpdateSupplierDto,
   ): Promise<Supplier> {
     if (supplierDetails.domain) {
       const isExist = await this.supplierModel.findOne({
