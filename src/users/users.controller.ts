@@ -9,6 +9,7 @@ import {
   Delete,
   InternalServerErrorException,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -31,7 +32,7 @@ export class UserController {
   @Post('')
   @PermissionGuard(PermissionSubject.User, Permission.Common.CREATE)
   async create(
-    @Request() req,
+    @Req() req,
     @Body() userRequest: UserCreateDto,
   ): Promise<UserDocument> {
     return this.userService.create(req, userRequest);
@@ -40,7 +41,7 @@ export class UserController {
   @Get()
   @PermissionGuard(PermissionSubject.User, Permission.Common.LIST)
   async all(
-    @Request() req,
+    @Req() req,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<UserDocument>> {
     return await this.userService.all(req, paginateOptions);

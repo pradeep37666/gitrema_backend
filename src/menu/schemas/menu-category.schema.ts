@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type MenuCategoryDocument = MenuCategory & Document;
 
@@ -19,13 +20,23 @@ export class MenuCategory {
   name: string;
 
   @Prop({ required: true })
-  name_ar: string;
+  nameAr: string;
 
   @Prop({ default: null })
   image: string;
 
-  @Prop({})
+  @Prop({ default: true })
   active: boolean;
+
+  @Prop({ default: null })
+  deletedAt: Date;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'User',
+  })
+  addedBy: UserDocument;
 }
 
 export const MenuCategorySchema = SchemaFactory.createForClass(MenuCategory);

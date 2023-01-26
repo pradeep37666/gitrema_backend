@@ -25,9 +25,7 @@ export class FileUploaderService {
     if (req.user.supplierId) {
       directory += req.user.supplierId + '/';
     }
-    if (fileRequest.propertyId) {
-      directory += fileRequest.propertyId + '/';
-    }
+
     return directory + fileRequest.type + '/';
   }
 }

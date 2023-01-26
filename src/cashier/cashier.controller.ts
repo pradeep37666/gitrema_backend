@@ -1,34 +1,65 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  Query,
+  Req,
+} from '@nestjs/common';
+import { PermissionGuard } from 'src/core/decorators/permission.decorator';
+import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
+import { Permission } from 'src/core/Constants/permission.type';
+import { PaginationDto } from 'src/core/Constants/pagination';
+import { PaginateResult } from 'mongoose';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CashierService } from './cashier.service';
 import { CreateCashierDto } from './dto/create-cashier.dto';
 import { UpdateCashierDto } from './dto/update-cashier.dto';
+import { CashierDocument } from './schemas/cashier.schema';
 
 @Controller('cashier')
+@ApiTags('Cashiers')
+@ApiBearerAuth('access-token')
 export class CashierController {
   constructor(private readonly cashierService: CashierService) {}
 
   @Post()
-  create(@Body() createCashierDto: CreateCashierDto) {
-    return this.cashierService.create(createCashierDto);
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.CREATE)
+  async create(@Req() req, @Body() createCashierDto: CreateCashierDto) {
+    return await this.cashierService.create(req, createCashierDto);
   }
 
   @Get()
-  findAll() {
-    return this.cashierService.findAll();
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.LIST)
+  async findAll(
+    @Req() req,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<CashierDocument>> {
+    return await this.cashierService.findAll(req, paginateOptions);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cashierService.findOne(+id);
+  @Get(':cashierId')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async findOne(@Param('cashierId') cashierId: string) {
+    return await this.cashierService.findOne(cashierId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCashierDto: UpdateCashierDto) {
-    return this.cashierService.update(+id, updateCashierDto);
+  @Patch(':cashierId')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.UPDATE)
+  async update(
+    @Param('cashierId') cashierId: string,
+    @Body() updateCashierDto: UpdateCashierDto,
+  ) {
+    return await this.cashierService.update(cashierId, updateCashierDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cashierService.remove(+id);
+  @Delete(':cashierId')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.DELETE)
+  async remove(@Param('cashierId') cashierId: string) {
+    return await this.cashierService.remove(cashierId);
   }
 }

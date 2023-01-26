@@ -1,34 +1,67 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { PaymentSetupService } from './payment-setup.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  Query,
+  Req,
+} from '@nestjs/common';
+import { PermissionGuard } from 'src/core/decorators/permission.decorator';
+import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
+import { Permission } from 'src/core/Constants/permission.type';
+import { PaginationDto } from 'src/core/Constants/pagination';
+import { PaginateResult } from 'mongoose';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreatePaymentSetupDto } from './dto/create-payment-setup.dto';
 import { UpdatePaymentSetupDto } from './dto/update-payment-setup.dto';
+import { PaymentSetupService } from './payment-setup.service';
+import { PaymentSetupDocument } from './schemas/payment-setup.schema';
+import { QueryPaymentSetupDto } from './dto/query-payment-setup.dto';
 
 @Controller('payment-setup')
+@ApiTags('Payment Setup')
+@ApiBearerAuth('access-token')
 export class PaymentSetupController {
   constructor(private readonly paymentSetupService: PaymentSetupService) {}
 
   @Post()
-  create(@Body() createPaymentSetupDto: CreatePaymentSetupDto) {
-    return this.paymentSetupService.create(createPaymentSetupDto);
+  @PermissionGuard(PermissionSubject.PaymentSetup, Permission.Common.CREATE)
+  async create(@Req() req, @Body() dto: CreatePaymentSetupDto) {
+    return await this.paymentSetupService.create(req, dto);
   }
 
   @Get()
-  findAll() {
-    return this.paymentSetupService.findAll();
+  @PermissionGuard(PermissionSubject.PaymentSetup, Permission.Common.LIST)
+  async findAll(
+    @Req() req,
+    @Query() query: QueryPaymentSetupDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<PaymentSetupDocument>> {
+    return await this.paymentSetupService.findAll(req, query, paginateOptions);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentSetupService.findOne(+id);
+  @Get(':paymentSetupId')
+  @PermissionGuard(PermissionSubject.PaymentSetup, Permission.Common.FETCH)
+  async findOne(@Param('paymentSetupId') paymentSetupId: string) {
+    return await this.paymentSetupService.findOne(paymentSetupId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentSetupDto: UpdatePaymentSetupDto) {
-    return this.paymentSetupService.update(+id, updatePaymentSetupDto);
+  @Patch(':paymentSetupId')
+  @PermissionGuard(PermissionSubject.PaymentSetup, Permission.Common.UPDATE)
+  async update(
+    @Param('paymentSetupId') paymentSetupId: string,
+    @Body() dto: UpdatePaymentSetupDto,
+  ) {
+    return await this.paymentSetupService.update(paymentSetupId, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentSetupService.remove(+id);
+  @Delete(':paymentSetupId')
+  @PermissionGuard(PermissionSubject.PaymentSetup, Permission.Common.DELETE)
+  async remove(@Param('paymentSetupId') paymentSetupId: string) {
+    return await this.paymentSetupService.remove(paymentSetupId);
   }
 }

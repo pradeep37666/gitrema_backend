@@ -51,43 +51,43 @@ export class FileUploaderController {
     return fileUrls;
   }
 
-  @ApiConsumes('multipart/form-data')
-  @Post('videos')
-  @UseInterceptors(
-    FilesFastifyInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './upload/',
-        filename: editFileName,
-      }),
-      fileFilter: videoFileFilter,
-    }),
-  )
-  async videos(
-    @Req() req: any,
-    @UploadedFiles() files: Express.Multer.File[],
-    @Body() body: MultipleFileDto,
-  ) {
-    const fileRequest = { ...body, type: 'videos' };
-    const fileUrls = await this.fileUploaderService.upload(
-      req,
-      fileRequest,
-      files,
-    );
+  // @ApiConsumes('multipart/form-data')
+  // @Post('videos')
+  // @UseInterceptors(
+  //   FilesFastifyInterceptor('files', 10, {
+  //     storage: diskStorage({
+  //       destination: './upload/',
+  //       filename: editFileName,
+  //     }),
+  //     fileFilter: videoFileFilter,
+  //   }),
+  // )
+  // async videos(
+  //   @Req() req: any,
+  //   @UploadedFiles() files: Express.Multer.File[],
+  //   @Body() body: MultipleFileDto,
+  // ) {
+  //   const fileRequest = { ...body, type: 'videos' };
+  //   const fileUrls = await this.fileUploaderService.upload(
+  //     req,
+  //     fileRequest,
+  //     files,
+  //   );
 
-    return fileUrls;
-  }
+  //   return fileUrls;
+  // }
 
-  @ApiConsumes('multipart/form-data')
-  @Post('ids')
-  @UseInterceptors(
-    FilesFastifyInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './upload/',
-        filename: editFileName,
-      }),
-      fileFilter: idFileFilter,
-    }),
-  )
+  // @ApiConsumes('multipart/form-data')
+  // @Post('ids')
+  // @UseInterceptors(
+  //   FilesFastifyInterceptor('files', 10, {
+  //     storage: diskStorage({
+  //       destination: './upload/',
+  //       filename: editFileName,
+  //     }),
+  //     fileFilter: idFileFilter,
+  //   }),
+  // )
   async ids(
     @Req() req: any,
     @UploadedFiles() files: Express.Multer.File[],

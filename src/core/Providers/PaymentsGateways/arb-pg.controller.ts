@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Post,
   Redirect,
+  Req,
   Request,
 } from '@nestjs/common';
 import { ArbPgService } from './arb-pg.service';
@@ -25,7 +26,7 @@ export class ArbPgController {
 
   @Post('process-payment-response')
   @Redirect()
-  async create(@Request() req, @Body() paymentDetails: any) {
+  async create(@Req() req, @Body() paymentDetails: any) {
     console.log(paymentDetails.trandata);
     const transObj = this.arbPgService.parseTransResponse(
       this.arbPgService.aesDecryption(paymentDetails.trandata),

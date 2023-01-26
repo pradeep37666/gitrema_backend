@@ -1,26 +1,83 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+
+import { Model, PaginateModel, PaginateResult } from 'mongoose';
+
+import {
+  DefaultSort,
+  PaginationDto,
+  pagination,
+} from 'src/core/Constants/pagination';
+import { Cashier, CashierDocument } from './schemas/cashier.schema';
 import { CreateCashierDto } from './dto/create-cashier.dto';
 import { UpdateCashierDto } from './dto/update-cashier.dto';
 
 @Injectable()
 export class CashierService {
-  create(createCashierDto: CreateCashierDto) {
-    return 'This action adds a new cashier';
+  constructor(
+    @InjectModel(Cashier.name)
+    private readonly cashierModel: Model<CashierDocument>,
+    @InjectModel(Cashier.name)
+    private readonly cashierModelPag: PaginateModel<CashierDocument>,
+  ) {}
+
+  async create(req: any, dto: CreateCashierDto): Promise<CashierDocument> {
+    return await this.cashierModel.create({
+      ...dto,
+      supplierId: req.user.supplierId,
+      addedBy: req.user.userId,
+    });
   }
 
-  findAll() {
-    return `This action returns all cashier`;
+  async findAll(
+    req: any,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<CashierDocument>> {
+    const cashiers = await this.cashierModelPag.paginate(
+      {
+        supplierId: req.user.supplierId,
+      },
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+    return cashiers;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cashier`;
+  async findOne(cashierId: string): Promise<CashierDocument> {
+    const exists = await this.cashierModel.findById(cashierId);
+
+    if (!exists) {
+      throw new NotFoundException();
+    }
+
+    return exists;
   }
 
-  update(id: number, updateCashierDto: UpdateCashierDto) {
-    return `This action updates a #${id} cashier`;
+  async update(
+    cashierId: string,
+    dto: UpdateCashierDto,
+  ): Promise<CashierDocument> {
+    const cashier = await this.cashierModel.findByIdAndUpdate(cashierId, dto, {
+      new: true,
+    });
+
+    if (!cashier) {
+      throw new NotFoundException();
+    }
+
+    return cashier;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cashier`;
+  async remove(cashierId: string): Promise<boolean> {
+    const cashier = await this.cashierModel.findByIdAndRemove(cashierId);
+
+    if (!cashier) {
+      throw new NotFoundException();
+    }
+    return true;
   }
 }

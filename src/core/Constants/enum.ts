@@ -428,8 +428,7 @@ export enum DisplayFor {
 
 export enum RoleSlug {
   Visitor = 'Visitor',
-  Guest = 'Guest',
-  Admin = 'Admin',
+  Customer = 'Customer',
   SupplierAdmin = 'Supplier Admin',
   SuperAdmin = 'Super Admin',
 }

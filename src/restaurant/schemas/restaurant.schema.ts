@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Days, OrderTypes } from 'src/core/Constants/enum';
 import * as paginate from 'mongoose-paginate-v2';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+import { UserDocument } from 'src/users/schemas/users.schema';
+import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
 export type RestaurantDocument = Restaurant & Document;
 
@@ -34,11 +37,18 @@ const TermsAndConditionSchema = SchemaFactory.createForClass(TermsAndCondition);
 
 @Schema({ timestamps: true })
 export class Restaurant {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Supplier',
+    required: true,
+  })
+  supplierId: SupplierDocument;
+
   @Prop({ required: true })
   name: string;
 
   @Prop({ required: true })
-  name_ar: string;
+  nameAr: string;
 
   @Prop({ required: true })
   city: string;
@@ -79,11 +89,33 @@ export class Restaurant {
   @Prop({ default: true })
   isDeliveryToCarEnabled: boolean;
 
+  @Prop({ type: Object, required: true })
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode: number;
+    country: string;
+    latitude: number;
+    longitude: number;
+    district: string;
+  };
+
   @Prop({ default: true })
   isActive: boolean;
 
   @Prop({ default: [], type: [TermsAndConditionSchema] })
   terms: TermsAndCondition[];
+
+  @Prop({ default: null })
+  deletedAt: Date;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'User',
+  })
+  addedBy: UserDocument;
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
