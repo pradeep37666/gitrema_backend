@@ -7,4 +7,9 @@ export class UpdateCashierDto extends PartialType(CreateCashierDto) {
   @IsOptional()
   @IsBoolean()
   active: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  paused: boolean;
 }

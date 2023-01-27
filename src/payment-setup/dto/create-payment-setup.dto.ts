@@ -2,12 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { Bank } from '../enum/payment.enum';
 
 export class PaymentOptionDto {
   @ApiProperty()
@@ -59,10 +61,10 @@ export class CreatePaymentSetupDto {
   @IsOptional()
   bankAccountHolderEmail: string;
 
-  @ApiProperty({ required: false })
-  @IsString()
+  @ApiProperty({ required: false, type: String, enum: Bank })
+  @IsEnum(Bank)
   @IsOptional()
-  bankName: string;
+  bankName: Bank;
 
   @ApiProperty({ required: false })
   @IsString()

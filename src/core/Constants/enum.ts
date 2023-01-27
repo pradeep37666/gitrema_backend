@@ -358,11 +358,7 @@ export enum VehicleTypes {
   Boat = 'Boat',
 }
 export enum ListType {
-  Referral = 'Referral',
-  MarketSegment = 'Market Segment',
-  Maintenance = 'Maintenance',
-  NotesTypes = 'Notes Types',
-  HousekeepingZones = 'Housekeeping Zones',
+  TableRegion = 'Table Region',
 }
 export enum ListStatus {
   Active = 'Active',

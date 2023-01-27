@@ -50,11 +50,17 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<LeanDocument<User>> {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userModel.findOne({
+      email,
+    });
+    await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
       delete user.password;
-
-      return user;
+      await user.populate([
+        { path: 'role', select: { name: 1 } },
+        { path: 'supplierId', select: { active: 1 } },
+      ]);
+      return user.toObject();
     }
     return null;
   }
@@ -64,7 +70,7 @@ export class AuthService {
       email: user.email,
       userId: user._id,
       supplierId: user.supplierId,
-      roleId: user.role,
+      roleId: user.role._id,
     };
 
     return await this.generateAuthToken(payload);
@@ -76,11 +82,12 @@ export class AuthService {
     });
     if (user && (await bcrypt.compare(loginRequest.password, user.password))) {
       delete user.password;
+      await user.populate([{ path: 'role', select: { name: 1 } }]);
       const payload = {
         userId: user._id,
         supplierId: user.supplierId,
         restaurantId: user.restaurantId,
-        roleId: user.role,
+        roleId: user.role._id,
       };
 
       return { user, accessToken: await this.generateAuthToken(payload) };
@@ -111,7 +118,8 @@ export class AuthService {
     };
 
     const user = await this.userService.create(null, userCreateReq);
-    return user;
+    await user.populate([{ path: 'role', select: { name: 1 } }]);
+    return user.toObject();
   }
 
   async requestOtp(req, requestOtpDetails: RequestOtpDto): Promise<any> {

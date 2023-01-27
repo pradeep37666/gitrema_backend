@@ -89,6 +89,15 @@ export class Restaurant {
   @Prop({ default: true })
   isDeliveryToCarEnabled: boolean;
 
+  @Prop({ default: true })
+  isReservationEnabled: boolean;
+
+  @Prop({ default: true })
+  isWaitingEnabled: boolean;
+
+  @Prop({ default: null })
+  minimumDeliveryOrderValue: number;
+
   @Prop({ type: Object, required: true })
   location: {
     address: string;

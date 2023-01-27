@@ -50,6 +50,15 @@ export class MenuAddition {
   @Prop({ type: [AdditionOptionSchema] })
   options: AdditionOption[];
 
+  @Prop({ default: null })
+  maxOptions: number;
+
+  @Prop({ default: null })
+  minOptions: number;
+
+  @Prop({ default: null })
+  freeOptions: number;
+
   @Prop({ default: true })
   active: boolean;
 

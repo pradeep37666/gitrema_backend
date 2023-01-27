@@ -6,11 +6,13 @@ import {
   KitchenQueue,
   KitchenQueueSchema,
 } from './schemas/kitchen-queue.schema';
+import { User, UserSchema } from 'src/users/schemas/users.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: KitchenQueue.name, schema: KitchenQueueSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [KitchenQueueController],

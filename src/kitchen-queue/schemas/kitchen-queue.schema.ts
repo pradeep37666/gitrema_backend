@@ -23,6 +23,9 @@ export class KitchenQueue {
   @Prop({ required: true })
   nameAr: string;
 
+  @Prop({ default: false })
+  paused: boolean;
+
   @Prop({ default: true })
   active: boolean;
 

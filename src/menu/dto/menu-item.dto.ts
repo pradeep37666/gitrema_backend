@@ -63,9 +63,9 @@ export class CreateMenuItemDTO {
   @IsNotEmpty()
   calories: number;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   waiterCode: string;
 
   @ApiProperty({ type: [String], enum: Alergies, required: false })

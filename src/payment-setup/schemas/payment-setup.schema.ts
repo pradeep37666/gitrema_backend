@@ -6,6 +6,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 
 import { UserDocument } from 'src/users/schemas/users.schema';
+import { Bank } from '../enum/payment.enum';
 
 export type PaymentSetupDocument = PaymentSetup & Document;
 
@@ -63,8 +64,8 @@ export class PaymentSetup {
   @Prop({ default: null })
   bankAccountHolderEmail: string;
 
-  @Prop({ default: null })
-  bankName: string;
+  @Prop({ default: null, type: String, enum: Bank })
+  bankName: Bank;
 
   @Prop({ default: null })
   otherBank: string;

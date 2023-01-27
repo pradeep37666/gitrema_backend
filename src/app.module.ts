@@ -36,6 +36,8 @@ import { ClientFeedbackModule } from './client-feedback/client-feedback.module';
 import { SeedModule } from './seed/seed.module';
 import { PaymentSetupModule } from './payment-setup/payment-setup.module';
 import { FileUploaderModule } from './file-uploader/file-uploader.module';
+import { ListModule } from './list/list.module';
+import { ActivityModule } from './activity/activity.module';
 
 @Module({
   imports: [
@@ -81,6 +83,8 @@ import { FileUploaderModule } from './file-uploader/file-uploader.module';
 
     SeedModule,
     FileUploaderModule,
+    ListModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [

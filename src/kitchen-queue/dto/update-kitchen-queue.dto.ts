@@ -7,4 +7,9 @@ export class UpdateKitchenQueueDto extends PartialType(CreateKitchenQueueDto) {
   @IsOptional()
   @IsBoolean()
   active: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  paused: boolean;
 }

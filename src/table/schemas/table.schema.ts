@@ -4,6 +4,7 @@ import * as paginate from 'mongoose-paginate-v2';
 import { Shape } from '../enum/table.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
+import { ListDocument } from 'src/list/schemas/list.schema';
 
 export type TableDocument = Table & Document;
 
@@ -15,6 +16,13 @@ export class Table {
     required: true,
   })
   restaurantId: RestaurantDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'List',
+    required: true,
+  })
+  tableRegionId: ListDocument;
 
   @Prop({ required: true })
   name: string;
@@ -36,9 +44,6 @@ export class Table {
 
   @Prop({})
   minutesAllowed: number;
-
-  @Prop({})
-  initialMinutesAllowed: number;
 
   @Prop({ default: null })
   deletedAt: Date;

@@ -15,6 +15,7 @@ import {
   KitchenQueueDocument,
 } from './schemas/kitchen-queue.schema';
 import { QueryKitchenQueueDto } from './dto/query-kitchen-queue.dto';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class KitchenQueueService {
@@ -23,16 +24,25 @@ export class KitchenQueueService {
     private readonly kitchenQueueModel: Model<KitchenQueueDocument>,
     @InjectModel(KitchenQueue.name)
     private readonly kitchenQueueModelPag: PaginateModel<KitchenQueueDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   async create(
     req: any,
     dto: CreateKitchenQueueDto,
   ): Promise<KitchenQueueDocument> {
-    return await this.kitchenQueueModel.create({
+    const kitchenQueue = await this.kitchenQueueModel.create({
       ...dto,
       addedBy: req.user.userId,
     });
+    if (kitchenQueue) {
+      this.userModel.findByIdAndUpdate(
+        { _id: dto.userId },
+        { kitchenQueue: kitchenQueue._id },
+      );
+    }
+    return kitchenQueue;
   }
 
   async findAll(
@@ -79,6 +89,13 @@ export class KitchenQueueService {
 
     if (!kitchenQueue) {
       throw new NotFoundException();
+    }
+
+    if (dto.userId) {
+      this.userModel.findByIdAndUpdate(
+        { _id: dto.userId },
+        { kitchenQueue: kitchenQueue._id },
+      );
     }
 
     return kitchenQueue;

@@ -7,6 +7,7 @@ import {
   IsMobilePhone,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -150,11 +151,11 @@ export class CreateRestaurantDto {
   @IsNotEmpty()
   defaultWorkingHours: DefaultWorkingHoursDTO;
 
-  @ApiProperty({ type: [IndividualWorkHoursDTO] })
+  @ApiProperty({ type: [IndividualWorkHoursDTO], required: false })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => IndividualWorkHoursDTO)
-  @IsNotEmpty()
+  @IsOptional()
   overrideWorkingHours: IndividualWorkHoursDTO[];
 
   @ApiProperty()
@@ -180,6 +181,21 @@ export class CreateRestaurantDto {
   @ApiProperty()
   @IsBoolean()
   @IsNotEmpty()
+  isReservationEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isWaitingEnabled: boolean;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  minimumDeliveryOrderValue: number;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
   isDeliveryToCarEnabled: boolean;
 
   @ApiProperty()
@@ -187,15 +203,15 @@ export class CreateRestaurantDto {
   @IsNotEmpty()
   isActive: boolean;
 
-  @ApiProperty({ type: [TermsAndConditionDTO] })
+  @ApiProperty({ type: [TermsAndConditionDTO], required: false })
   @ValidateNested({ each: true })
   @Type(() => TermsAndConditionDTO)
-  @IsNotEmpty()
+  @IsOptional()
   terms: TermsAndConditionDTO[];
 
   @ValidateNested()
   @Type(() => LocationDto)
-  @ApiProperty({ type: LocationDto })
-  @ValidateNested()
+  @ApiProperty({ type: LocationDto, required: false })
+  @IsOptional()
   location: LocationDto;
 }

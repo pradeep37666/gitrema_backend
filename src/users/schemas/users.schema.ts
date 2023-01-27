@@ -10,6 +10,7 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
+import { ListDocument } from 'src/list/schemas/list.schema';
 
 export type UserDocument = User & Document;
 
@@ -53,11 +54,11 @@ export class User {
   whatsappNumber: string;
 
   @Prop({
-    type: [MongooseSchema.Types.ObjectId],
-    ref: 'Table',
-    default: [],
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'List',
+    default: null,
   })
-  tables: TableDocument[];
+  tableRegion: ListDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -72,6 +73,9 @@ export class User {
     default: null,
   })
   cashier: CashierDocument;
+
+  @Prop({ default: false })
+  paused: boolean;
 
   @Prop({ default: false })
   isBlocked: boolean;

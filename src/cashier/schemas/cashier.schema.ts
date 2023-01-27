@@ -25,6 +25,9 @@ export class Cashier {
   @Prop({ default: 0 })
   startingAmount: number;
 
+  @Prop({ default: false })
+  paused: boolean;
+
   @Prop({ default: true })
   active: boolean;
 

@@ -17,6 +17,8 @@ export enum PermissionSubject {
   ClientComment = 'Client Comment',
   ClientFeedback = 'Client Feedback',
   PaymentSetup = 'Payment Setup',
+  List = 'List',
+  Activity = 'Activity',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
