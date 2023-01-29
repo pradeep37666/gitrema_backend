@@ -19,6 +19,9 @@ export enum PermissionSubject {
   PaymentSetup = 'Payment Setup',
   List = 'List',
   Activity = 'Activity',
+  WaitingQueue = 'Waiting Queue',
+  Reservation = 'Reservation',
+  Order = 'Order',
 }
 export enum CommonPermissions {
   LIST = 'LIST',

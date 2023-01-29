@@ -1,19 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { ListDocument } from 'src/list/schemas/list.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
-
 import { UserDocument } from 'src/users/schemas/users.schema';
 
-export type ClientCommentDocument = ClientComment & Document;
+export type ReservationDocument = Reservation & Document;
 
 @Schema({ timestamps: true })
-export class ClientComment {
+export class Reservation {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Supplier',
-    index: true,
     required: true,
   })
   supplierId: SupplierDocument;
@@ -21,23 +20,47 @@ export class ClientComment {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Restaurant',
-    index: true,
     required: true,
   })
   restaurantId: RestaurantDocument;
 
-  @Prop({ required: true })
-  comment: string;
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  })
+  customerId: UserDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'List',
+    default: null,
+  })
+  tableRegion: ListDocument;
+
+  @Prop({ default: null })
+  name: string;
+
+  @Prop({ default: null })
+  contactNumber: string;
+
+  @Prop()
+  date: Date;
+
+  @Prop()
+  time: string;
+
+  @Prop({ default: 1 })
+  totalMembers: number;
 
   @Prop({ default: false })
-  showOnPortal: boolean;
+  isCancelled: boolean;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
-    ref: 'User',
   })
-  customerId: UserDocument;
+  addedBy: UserDocument;
 }
-export const ClientCommentSchema = SchemaFactory.createForClass(ClientComment);
-ClientCommentSchema.plugin(paginate);
+export const ReservationSchema = SchemaFactory.createForClass(Reservation);
+ReservationSchema.plugin(paginate);

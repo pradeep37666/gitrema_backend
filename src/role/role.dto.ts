@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -47,3 +47,5 @@ export class RoleCreateDto {
   @IsOptional()
   slug: RoleSlug;
 }
+
+export class RoleUpdateDto extends PartialType(RoleCreateDto) {}

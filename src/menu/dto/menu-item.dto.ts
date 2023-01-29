@@ -41,7 +41,7 @@ export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  description_ar: string;
+  descriptionAr: string;
 
   @ApiProperty()
   @IsNotEmpty()

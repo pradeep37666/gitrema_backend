@@ -38,6 +38,9 @@ import { PaymentSetupModule } from './payment-setup/payment-setup.module';
 import { FileUploaderModule } from './file-uploader/file-uploader.module';
 import { ListModule } from './list/list.module';
 import { ActivityModule } from './activity/activity.module';
+import { WaitingQueueModule } from './waiting-queue/waiting-queue.module';
+import { ReservationModule } from './reservation/reservation.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -85,6 +88,9 @@ import { ActivityModule } from './activity/activity.module';
     FileUploaderModule,
     ListModule,
     ActivityModule,
+    WaitingQueueModule,
+    ReservationModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [

@@ -31,7 +31,7 @@ export class ClientCommentService {
   ): Promise<ClientCommentDocument> {
     return await this.clientCommentModel.create({
       ...dto,
-      addedBy: req.user.userId,
+      customerId: req.user.userId,
     });
   }
 

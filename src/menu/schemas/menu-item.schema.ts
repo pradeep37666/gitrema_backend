@@ -46,10 +46,13 @@ export class MenuItem {
   description: string;
 
   @Prop({ default: null })
-  description_ar: string;
+  descriptionAr: string;
 
   @Prop({ required: true })
   price: number;
+
+  @Prop({ default: 0 })
+  tax: number;
 
   @Prop({ default: null })
   priceInStar: number;
@@ -63,7 +66,7 @@ export class MenuItem {
   @Prop({ default: null })
   image: string;
 
-  @Prop({ required: true })
+  @Prop({ default: null })
   waiterCode: string;
 
   @Prop({ type: [String], enum: Alergies })
@@ -105,6 +108,9 @@ export class MenuItem {
 
   @Prop({ default: true })
   active: boolean;
+
+  @Prop({ default: true })
+  isTaxable: boolean;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

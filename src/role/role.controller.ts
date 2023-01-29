@@ -14,7 +14,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { LeanDocument, PaginateResult } from 'mongoose';
 
-import { RoleCreateDto } from './role.dto';
+import { RoleCreateDto, RoleUpdateDto } from './role.dto';
 import { RoleService } from './role.service';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
@@ -42,7 +42,7 @@ export class RoleController {
   @PermissionGuard(PermissionSubject.Role, Permission.Common.UPDATE)
   async update(
     @Param('roleId') roleId: string,
-    @Body() roleDetails: RoleCreateDto,
+    @Body() roleDetails: RoleUpdateDto,
   ): Promise<LeanDocument<RoleDocument>> {
     return await this.roleService.update(roleId, roleDetails);
   }

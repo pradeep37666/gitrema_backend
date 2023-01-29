@@ -198,11 +198,6 @@ export class CreateRestaurantDto {
   @IsNotEmpty()
   isDeliveryToCarEnabled: boolean;
 
-  @ApiProperty()
-  @IsBoolean()
-  @IsNotEmpty()
-  isActive: boolean;
-
   @ApiProperty({ type: [TermsAndConditionDTO], required: false })
   @ValidateNested({ each: true })
   @Type(() => TermsAndConditionDTO)

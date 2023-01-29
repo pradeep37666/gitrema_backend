@@ -7,7 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { LeanDocument, Model, PaginateModel, PaginateResult } from 'mongoose';
 import { Role, RoleDocument } from './schemas/roles.schema';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
-import { RoleCreateDto } from './role.dto';
+import { RoleCreateDto, RoleUpdateDto } from './role.dto';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import {
   DefaultSort,
@@ -37,7 +37,7 @@ export class RoleService {
 
   async update(
     roleId: string,
-    roleDetails: RoleCreateDto,
+    roleDetails: RoleUpdateDto,
   ): Promise<LeanDocument<RoleDocument>> {
     const role = await this.roleModel
       .findByIdAndUpdate(roleId, roleDetails, {

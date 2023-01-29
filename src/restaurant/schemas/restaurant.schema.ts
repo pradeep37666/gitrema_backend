@@ -110,8 +110,8 @@ export class Restaurant {
     district: string;
   };
 
-  @Prop({ default: true })
-  isActive: boolean;
+  @Prop({ default: false })
+  active: boolean;
 
   @Prop({ default: [], type: [TermsAndConditionSchema] })
   terms: TermsAndCondition[];

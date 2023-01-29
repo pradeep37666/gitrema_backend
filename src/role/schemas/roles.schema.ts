@@ -35,8 +35,8 @@ export class Role {
   @Prop({ type: [PermissionSchemaSchema] })
   permissions: PermissionSchema[];
 
-  @Prop({ type: [String], enum: RoleSlug })
-  slug: RoleSlug[];
+  @Prop({ type: String, enum: RoleSlug })
+  slug: RoleSlug;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

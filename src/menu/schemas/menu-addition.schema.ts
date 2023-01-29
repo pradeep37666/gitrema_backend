@@ -6,7 +6,9 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type MenuAdditionDocument = MenuAddition & Document;
 
-@Schema({ _id: false })
+type AdditionOptionDocument = AdditionOption & Document;
+
+@Schema({})
 class AdditionOption {
   @Prop({ required: true })
   name: string;
@@ -14,8 +16,11 @@ class AdditionOption {
   @Prop({ required: true })
   nameAr: string;
 
-  @Prop({ required: true })
+  @Prop({ default: 0 })
   price: number;
+
+  @Prop({ default: 0 })
+  tax: number;
 
   @Prop({})
   order: number;
@@ -48,7 +53,7 @@ export class MenuAddition {
   isMultipleAllowed: boolean;
 
   @Prop({ type: [AdditionOptionSchema] })
-  options: AdditionOption[];
+  options: AdditionOptionDocument[];
 
   @Prop({ default: null })
   maxOptions: number;
