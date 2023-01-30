@@ -1,15 +1,9 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
 import {
   IsNumber,
   IsNotEmpty,
   IsString,
-  ValidateNested,
-  IsDate,
   IsOptional,
-  IsObject,
-  IsMongoId,
-  IsArray,
   IsBoolean,
   IsEmail,
 } from 'class-validator';
@@ -89,6 +83,56 @@ export class AddSupplierDto {
   @IsString()
   @IsOptional()
   domain: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  crDoc: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  mancucpilityCertDoc: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  incorporationContractDoc: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  ibanCertDoc: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  idDoc: string;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  taxEnabled: boolean;
+
+  @ApiProperty({ required: false, example: 15 })
+  @IsNumber()
+  @IsOptional()
+  taxRate: number;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  taxEnabledOnTableFee: boolean;
+
+  @ApiProperty({ required: false, example: 0 })
+  @IsNumber()
+  @IsOptional()
+  reservationFee: number;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  taxEnabledOnReservationFee: boolean;
 }
 
 export class UpdateSupplierDto extends PartialType(AddSupplierDto) {

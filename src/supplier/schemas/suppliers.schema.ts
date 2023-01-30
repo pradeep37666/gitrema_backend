@@ -65,10 +65,25 @@ export class Supplier {
   incorporationContractDoc: string;
 
   @Prop({ default: null })
-  IbanCertDoc: string;
+  ibanCertDoc: string;
 
   @Prop({ default: null })
-  IdDoc: string;
+  idDoc: string;
+
+  @Prop({ default: false })
+  taxEnabled: boolean;
+
+  @Prop({ default: 0 })
+  taxRate: number;
+
+  @Prop({ default: 0 })
+  reservationFee: number;
+
+  @Prop({ default: false })
+  taxEnabledOnReservationFee: boolean;
+
+  @Prop({ default: false })
+  taxEnabledOnTableFee: boolean;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
