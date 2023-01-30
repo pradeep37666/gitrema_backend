@@ -19,8 +19,8 @@ class AdditionOption {
   @Prop({ default: 0 })
   price: number;
 
-  @Prop({ default: 0 })
-  tax: number;
+  @Prop({ default: false })
+  taxEnabled: boolean;
 
   @Prop({})
   order: number;

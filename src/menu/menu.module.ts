@@ -15,6 +15,10 @@ import {
 import { MenuItemController } from './controller/menu-item.controller';
 import { MenuItemService } from './service/menu-item.service';
 import { MenuItem, MenuItemSchema } from './schemas/menu-item.schema';
+import {
+  Supplier,
+  SupplierSchema,
+} from 'src/supplier/schemas/suppliers.schema';
 
 @Module({
   imports: [
@@ -22,6 +26,7 @@ import { MenuItem, MenuItemSchema } from './schemas/menu-item.schema';
       { name: MenuItem.name, schema: MenuItemSchema },
       { name: MenuCategory.name, schema: MenuCategorySchema },
       { name: MenuAddition.name, schema: MenuAdditionSchema },
+      { name: Supplier.name, schema: SupplierSchema },
     ]),
   ],
   controllers: [

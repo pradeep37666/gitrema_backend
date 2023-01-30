@@ -28,6 +28,11 @@ class AdditionOptionDto {
   @IsNumber()
   price: number;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  taxEnabled: boolean;
+
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()

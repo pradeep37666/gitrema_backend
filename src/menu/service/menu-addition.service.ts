@@ -16,6 +16,10 @@ import {
   CreateMenuAdditionDTO,
   UpdateMenuAdditionDTO,
 } from '../dto/menu-addition.dto';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/schemas/suppliers.schema';
 
 @Injectable()
 export class MenuAdditionService {
@@ -24,12 +28,22 @@ export class MenuAdditionService {
     private readonly menuAdditionModel: Model<MenuAdditionDocument>,
     @InjectModel(MenuAddition.name)
     private readonly menuAdditionModelPag: PaginateModel<MenuAdditionDocument>,
+    @InjectModel(Supplier.name)
+    private readonly supplierModel: Model<SupplierDocument>,
   ) {}
 
   async create(
     req: any,
     dto: CreateMenuAdditionDTO,
   ): Promise<MenuAdditionDocument> {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+
+    dto.options.forEach((o) => {
+      if (o.taxEnabled !== true && o.taxEnabled !== false) {
+        o.taxEnabled = supplier.taxEnabled ?? false;
+      }
+    });
+
     return await this.menuAdditionModel.create({
       ...dto,
       supplierId: req.user.supplierId,

@@ -10,6 +10,21 @@ import { MenuAdditionDocument } from './menu-addition.schema';
 
 export type MenuItemDocument = MenuItem & Document;
 
+@Schema({ _id: false })
+export class Quantity {
+  @Prop({ required: true })
+  quantity: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Restaurant',
+    index: true,
+    required: true,
+  })
+  restaurantId: RestaurantDocument;
+}
+const QuantitySchema = SchemaFactory.createForClass(Quantity);
+
 @Schema({ timestamps: true })
 export class MenuItem {
   @Prop({
@@ -51,8 +66,8 @@ export class MenuItem {
   @Prop({ required: true })
   price: number;
 
-  @Prop({ default: 0 })
-  tax: number;
+  @Prop({ default: false })
+  taxEnabled: boolean;
 
   @Prop({ default: null })
   priceInStar: number;
@@ -72,8 +87,8 @@ export class MenuItem {
   @Prop({ type: [String], enum: Alergies })
   alergies: Alergies[];
 
-  @Prop({ default: 0 })
-  quantity: number;
+  @Prop({ default: [], type: [QuantitySchema] })
+  quantities: Quantity[];
 
   @Prop({
     type: [MongooseSchema.Types.ObjectId],
@@ -83,8 +98,13 @@ export class MenuItem {
   })
   suggestedItems: MenuItemDocument[];
 
-  @Prop({ default: false })
-  hideFromMenu: boolean;
+  @Prop({
+    type: [MongooseSchema.Types.ObjectId],
+    ref: 'Restaurant',
+    index: true,
+    default: [],
+  })
+  hideFromMenu: RestaurantDocument[];
 
   @Prop({ default: false })
   soldOut: boolean;
