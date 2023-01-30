@@ -13,6 +13,12 @@ import {
   pagination,
 } from 'src/core/Constants/pagination';
 import { QueryOrderDto } from './dto/query-order.dto';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/schemas/suppliers.schema';
+import { OrderType } from './enum/order.enum';
+import { Table, TableDocument } from 'src/table/schemas/table.schema';
 
 @Injectable()
 export class OrderService {
@@ -21,6 +27,10 @@ export class OrderService {
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(Order.name)
     private readonly orderModelPag: PaginateModel<OrderDocument>,
+    @InjectModel(Supplier.name)
+    private readonly supplierModel: Model<SupplierDocument>,
+    @InjectModel(Table.name)
+    private readonly tableModel: Model<TableDocument>,
     private readonly orderHelperService: OrderHelperService,
     private readonly calculationService: CalculationService,
   ) {}
@@ -28,14 +38,26 @@ export class OrderService {
   async create(req: any, dto: CreateOrderDto): Promise<OrderDocument> {
     const orderData: any = { ...dto };
 
+    const supplier = await this.supplierModel
+      .findById(req.user.supplierId)
+      .lean();
+
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
       dto.items,
+      supplier,
     );
+
+    if (orderData.orderType == OrderType.DineIn) {
+      const table = await this.tableModel.findById(orderData.tableId);
+
+      orderData.tableFee = table.fees ?? 0;
+    }
 
     // calculate summary
     orderData.summary = await this.calculationService.calculateSummery(
       orderData,
+      supplier,
     );
 
     // create order
@@ -118,19 +140,28 @@ export class OrderService {
     return exists;
   }
 
-  async update(orderId: string, dto: UpdateOrderDto): Promise<OrderDocument> {
+  async update(
+    req: any,
+    orderId: string,
+    dto: UpdateOrderDto,
+  ): Promise<OrderDocument> {
     const orderData: any = { ...dto };
     // prepare the order items
-    if (dto.items)
+    if (dto.items) {
+      const supplier = await this.supplierModel
+        .findById(req.user.supplierId)
+        .lean();
+
       orderData.items = await this.orderHelperService.prepareOrderItems(
         dto.items,
+        supplier,
       );
 
-    // calculate summary
-    if (dto.items)
       orderData.summary = await this.calculationService.calculateSummery(
         orderData,
+        supplier,
       );
+    }
 
     const order = await this.orderModel.findByIdAndUpdate(orderId, orderData, {
       new: true,

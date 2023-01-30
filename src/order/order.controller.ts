@@ -61,7 +61,11 @@ export class OrderController {
 
   @Patch(':orderId')
   @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
-  async update(@Param('orderId') orderId: string, @Body() dto: UpdateOrderDto) {
-    return await this.orderService.update(orderId, dto);
+  async update(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: UpdateOrderDto,
+  ) {
+    return await this.orderService.update(req, orderId, dto);
   }
 }

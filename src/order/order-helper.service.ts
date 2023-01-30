@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { UpdateOrderItemDto } from './dto/update-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { LeanDocument, Model } from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { OrderItemDto } from './dto/order-item.dto';
@@ -11,6 +11,7 @@ import {
   MenuAdditionDocument,
 } from 'src/menu/schemas/menu-addition.schema';
 import { OrderType } from './enum/order.enum';
+import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
 @Injectable()
 export class OrderHelperService {
@@ -23,8 +24,12 @@ export class OrderHelperService {
     private readonly menuAdditionModel: Model<MenuAdditionDocument>,
   ) {}
 
-  async prepareOrderItems(items: OrderItemDto[] | UpdateOrderItemDto[]) {
+  async prepareOrderItems(
+    items: OrderItemDto[] | UpdateOrderItemDto[],
+    supplier: LeanDocument<SupplierDocument>,
+  ) {
     const preparedItems = [];
+    const taxRate = supplier.taxRate ?? 15;
 
     //fetch all menu items
     const menuItemIds = items.map((oi) => oi.menuItem.menuItemId);
@@ -50,19 +55,27 @@ export class OrderHelperService {
     }
 
     for (const i in items) {
-      let tax = 0,
-        price = 0;
+      let price = 0,
+        netPrice = 0;
       preparedItems[i] = { ...items[i] };
       // copy menu item attributes needed in order schema
       const menuItem = menuItems.find((mi) => {
         return mi._id.toString() == items[i].menuItem.menuItemId;
       });
+
+      netPrice = menuItem.price;
+      price += menuItem.price;
+      if (menuItem.taxEnabled) {
+        netPrice = parseFloat(
+          (menuItem.price / (1 + taxRate / 100)).toFixed(2),
+        );
+      }
+
       preparedItems[i].menuItem = {
         ...items[i].menuItem,
         ...menuItem,
+        tax: price - netPrice,
       };
-      price += menuItem.price;
-      tax += menuItem.tax ?? 0;
 
       const preparedAdditions = [];
       const additions = items[i].additions ?? [];
@@ -84,26 +97,35 @@ export class OrderHelperService {
             return additionOptionIds.includes(mao._id.toString());
           });
 
-          preparedAdditions[j].options.forEach((o) => {
-            o.optionId = o._id;
-          });
-
           // sum the price of selected options
           price += preparedAdditions[j].options.reduce(
             (acc, ao) => acc + ao.price,
             0,
           );
+
+          // storing tax for each option and calculating net price
+          preparedAdditions[j].options.forEach((o) => {
+            o.optionId = o._id;
+            const optionNetPrice = o.taxEnabled
+              ? o.price / (1 + taxRate / 100)
+              : o.price;
+            o.tax = parseFloat((o.price - optionNetPrice).toFixed(2));
+            netPrice += optionNetPrice;
+          });
+
           //sum the tax of selected options
-          tax += preparedAdditions[j].options.reduce(
-            (acc, ao) => acc + (ao.tax ?? 0),
-            0,
-          );
+          // netPrice += preparedAdditions[j].options.reduce(
+          //   (acc, ao) =>
+          //     acc + ao.taxEnabled ? ao.price / (1 + taxRate / 100) : ao.price,
+          //   0,
+          // );
         }
       }
       preparedItems[i].additions = preparedAdditions;
       preparedItems[i].price = price;
+      preparedItems[i].netPrice = parseFloat(netPrice.toFixed(2));
       preparedItems[i].itemTotal = price * preparedItems[i].quantity;
-      preparedItems[i].tax = tax;
+      preparedItems[i].tax = price - preparedItems[i].netPrice;
     }
 
     return preparedItems;

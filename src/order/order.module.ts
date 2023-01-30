@@ -10,11 +10,18 @@ import {
 import { Order, OrderSchema } from './schemas/order.schema';
 import { OrderHelperService } from './order-helper.service';
 import { CalculationService } from './calculation.service';
+import {
+  Supplier,
+  SupplierSchema,
+} from 'src/supplier/schemas/suppliers.schema';
+import { Table, TableSchema } from 'src/table/schemas/table.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Order.name, schema: OrderSchema },
+      { name: Supplier.name, schema: SupplierSchema },
+      { name: Table.name, schema: TableSchema },
       { name: MenuItem.name, schema: MenuItemSchema },
       { name: MenuAddition.name, schema: MenuAdditionSchema },
     ]),

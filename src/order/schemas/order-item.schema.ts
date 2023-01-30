@@ -29,6 +29,9 @@ class AdditionOption {
   @Prop({ default: 0 })
   price: number;
 
+  @Prop({ default: false })
+  taxEnabled: boolean;
+
   @Prop({ default: 0 })
   tax: number;
 
@@ -81,6 +84,9 @@ class MenuItem {
   @Prop({ required: true })
   price: number;
 
+  @Prop({ default: false })
+  taxEnabled: boolean;
+
   @Prop({ default: 0 })
   tax: number;
 
@@ -108,6 +114,9 @@ export class OrderItem {
 
   @Prop({ type: [MenuAdditionSchema] })
   additions: MenuAddition[];
+
+  @Prop({ required: true })
+  netPrice: number;
 
   @Prop({ required: true })
   price: number;

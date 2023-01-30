@@ -84,6 +84,9 @@ export class Order {
   @Prop({ type: [OrderItemSchema], required: true })
   items: OrderItem[];
 
+  @Prop({ default: 0 })
+  tableFee: number;
+
   @Prop({
     type: Object,
     default: {
@@ -91,9 +94,13 @@ export class Order {
       tax: 0,
       total: 0,
       paid: 0,
+      tableFeeWithoutTax: 0,
+      tableFee: 0,
     },
   })
   summary: {
+    tableFeeWithoutTax: number;
+    tableFee: number;
     subTotal: number;
     tax: number;
     total: number;
