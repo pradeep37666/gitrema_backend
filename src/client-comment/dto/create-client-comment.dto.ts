@@ -13,6 +13,16 @@ export class CreateClientCommentDto {
   restaurantId: string;
 
   @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  orderId: string;
+
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  menuItemId: string;
+
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   comment: string;
