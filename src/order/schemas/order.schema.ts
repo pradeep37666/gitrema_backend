@@ -5,7 +5,7 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { OrderType, Source } from '../enum/order.enum';
+import { OrderStatus, OrderType, Source } from '../enum/order.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { OrderItem, OrderItemSchema } from './order-item.schema';
@@ -75,6 +75,9 @@ export class Order {
   @Prop({ type: String, enum: OrderType })
   orderType: OrderType;
 
+  @Prop({ type: String, enum: OrderStatus, default: OrderStatus.New })
+  status: OrderStatus;
+
   @Prop({ default: false })
   isScheduled: boolean;
 
@@ -90,22 +93,41 @@ export class Order {
   @Prop({
     type: Object,
     default: {
-      subTotal: 0,
+      net: 0,
       tax: 0,
+      gross: 0,
+      itemTotal: 0,
       total: 0,
-      paid: 0,
+      discount: 0,
       tableFeeWithoutTax: 0,
       tableFee: 0,
     },
   })
   summary: {
+    net: number;
+    tax: number;
+    gross: number;
+    itemTotal: number;
+    total: number;
+    discount: number;
     tableFeeWithoutTax: number;
     tableFee: number;
-    subTotal: number;
-    tax: number;
-    total: number;
-    paid: number;
   };
+
+  @Prop({ default: false })
+  isPaid: boolean;
+
+  @Prop({ default: null })
+  menuQrCodeScannedTime: Date;
+
+  @Prop({ default: null })
+  sentToKitchenTime: Date;
+
+  @Prop({ default: null })
+  orderReadyTime: Date;
+
+  @Prop({ default: null })
+  paymentTime: Date;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

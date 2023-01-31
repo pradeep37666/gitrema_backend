@@ -9,3 +9,10 @@ export enum OrderType {
   Delivery = 'Delivery',
   DineIn = 'Dine In',
 }
+
+export enum OrderStatus {
+  New = 'New',
+  Processing = 'Processing',
+  OnTable = 'On Table',
+  Paid = 'Paid',
+}

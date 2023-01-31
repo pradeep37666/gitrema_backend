@@ -1,14 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
-import * as paginate from 'mongoose-paginate-v2';
 
-import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
-import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
-
-import { OrderDocument } from './order.schema';
 import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { MenuAdditionDocument } from 'src/menu/schemas/menu-addition.schema';
 import { Alergies } from 'src/menu/enum/menu.enum';
+import { CalculationType } from 'src/core/Constants/enum';
 
 export type OrderItemDocument = OrderItem & Document;
 
@@ -104,6 +100,12 @@ class MenuItem {
 
   @Prop({ type: [String], enum: Alergies })
   alergies: Alergies[];
+
+  @Prop({ default: null, type: Object })
+  discount: {
+    type: CalculationType;
+    value: number;
+  };
 }
 const MenuItemSchema = SchemaFactory.createForClass(MenuItem);
 
@@ -118,8 +120,14 @@ export class OrderItem {
   @Prop({ required: true })
   netPrice: number;
 
+  @Prop({ required: false })
+  discount: number;
+
   @Prop({ required: true })
-  price: number;
+  priceAfterDiscount: number;
+
+  @Prop({ required: false })
+  gross: number;
 
   @Prop({ default: 1 })
   quantity: number;
