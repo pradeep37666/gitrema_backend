@@ -84,6 +84,11 @@ export class CreateOrderDto {
   scheduledDateTime: Date;
 
   @ApiProperty({ required: false })
+  @IsOptional()
+  @IsDate()
+  menuQrCodeScannedTime: Date;
+
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   notes: string;

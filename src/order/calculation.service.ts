@@ -6,9 +6,13 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 export class CalculationService {
   async calculateSummery(orderData, supplier: LeanDocument<SupplierDocument>) {
     const summary = {
-      subTotal: 0,
-      total: 0,
+      net: 0,
       tax: 0,
+      gross: 0,
+      itemTotal: 0,
+      total: 0,
+      discount: 0,
+
       tableFeeWithoutTax: 0,
       tableFee: 0,
     };
@@ -21,15 +25,27 @@ export class CalculationService {
         ? parseFloat((orderData.tableFee / (1 + taxRate / 100)).toFixed(2))
         : orderData.tableFee;
     }
-    summary.total += orderData.items.reduce((acc, oi) => acc + oi.itemTotal, 0);
+    summary.gross += orderData.items.reduce(
+      (acc, oi) => acc + oi.gross * oi.quantity,
+      0,
+    );
+    summary.itemTotal += orderData.items.reduce(
+      (acc, oi) => acc + oi.itemTotal,
+      0,
+    );
+
+    summary.discount += orderData.items.reduce(
+      (acc, oi) => acc + oi.discount,
+      0,
+    );
     summary.tax += orderData.items.reduce((acc, oi) => acc + oi.tax, 0);
 
-    // to show subTotal without tax in summary
-    summary.subTotal = summary.total - summary.tax;
+    // to show net without tax in summary
+    summary.net = summary.itemTotal - summary.tax;
 
     summary.tax += summary.tableFee - summary.tableFeeWithoutTax;
 
-    summary.total += summary.tableFee;
+    summary.total += summary.itemTotal + summary.tableFee;
 
     return summary;
   }

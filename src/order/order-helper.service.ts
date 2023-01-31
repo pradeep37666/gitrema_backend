@@ -12,6 +12,7 @@ import {
 } from 'src/menu/schemas/menu-addition.schema';
 import { OrderType } from './enum/order.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+import { CalculationType } from 'src/core/Constants/enum';
 
 @Injectable()
 export class OrderHelperService {
@@ -56,19 +57,26 @@ export class OrderHelperService {
 
     for (const i in items) {
       let price = 0,
-        netPrice = 0;
+        priceBeforeDiscount = 0,
+        netPrice = 0,
+        discount = 0;
       preparedItems[i] = { ...items[i] };
       // copy menu item attributes needed in order schema
       const menuItem = menuItems.find((mi) => {
         return mi._id.toString() == items[i].menuItem.menuItemId;
       });
 
-      netPrice = menuItem.price;
-      price += menuItem.price;
+      netPrice = price = priceBeforeDiscount = menuItem.price;
+
+      if (menuItem.discount) {
+        discount =
+          menuItem.discount.type == CalculationType.Fixed
+            ? menuItem.discount.value
+            : (menuItem.price * menuItem.discount.value) / 100;
+        price -= discount;
+      }
       if (menuItem.taxEnabled) {
-        netPrice = parseFloat(
-          (menuItem.price / (1 + taxRate / 100)).toFixed(2),
-        );
+        netPrice = parseFloat((price / (1 + taxRate / 100)).toFixed(2));
       }
 
       preparedItems[i].menuItem = {
@@ -98,10 +106,13 @@ export class OrderHelperService {
           });
 
           // sum the price of selected options
-          price += preparedAdditions[j].options.reduce(
+          const additionPrice = preparedAdditions[j].options.reduce(
             (acc, ao) => acc + ao.price,
             0,
           );
+
+          price += additionPrice;
+          priceBeforeDiscount += additionPrice;
 
           // storing tax for each option and calculating net price
           preparedAdditions[j].options.forEach((o) => {
@@ -122,10 +133,13 @@ export class OrderHelperService {
         }
       }
       preparedItems[i].additions = preparedAdditions;
-      preparedItems[i].price = price;
+      preparedItems[i].priceAfterDiscount = price;
+      preparedItems[i].gross = priceBeforeDiscount;
+      preparedItems[i].discount = discount;
       preparedItems[i].netPrice = parseFloat(netPrice.toFixed(2));
       preparedItems[i].itemTotal = price * preparedItems[i].quantity;
-      preparedItems[i].tax = price - preparedItems[i].netPrice;
+      preparedItems[i].tax =
+        (price - preparedItems[i].netPrice) * preparedItems[i].quantity;
     }
 
     return preparedItems;

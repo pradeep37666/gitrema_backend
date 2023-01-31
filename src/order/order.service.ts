@@ -17,7 +17,7 @@ import {
   Supplier,
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
-import { OrderType } from './enum/order.enum';
+import { OrderStatus, OrderType } from './enum/order.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
 
 @Injectable()
@@ -48,7 +48,7 @@ export class OrderService {
       supplier,
     );
 
-    if (orderData.orderType == OrderType.DineIn) {
+    if (orderData.orderType == OrderType.DineIn && orderData.tableId) {
       const table = await this.tableModel.findById(orderData.tableId);
 
       orderData.tableFee = table.fees ?? 0;
@@ -146,6 +146,12 @@ export class OrderService {
     dto: UpdateOrderDto,
   ): Promise<OrderDocument> {
     const orderData: any = { ...dto };
+
+    if (dto.status && dto.status == OrderStatus.Processing) {
+      orderData.sentToKitchenTime = new Date();
+    } else if (dto.status && dto.status == OrderStatus.OnTable) {
+      orderData.orderReadyTime = new Date();
+    }
     // prepare the order items
     if (dto.items) {
       const supplier = await this.supplierModel

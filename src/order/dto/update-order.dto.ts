@@ -3,11 +3,13 @@ import { CreateOrderDto } from './create-order.dto';
 import { OrderItemDto } from './order-item.dto';
 import {
   IsArray,
+  IsEnum,
   IsMongoId,
   IsOptional,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { OrderStatus } from '../enum/order.enum';
 
 export class UpdateOrderItemDto extends OrderItemDto {
   @ApiProperty({ required: false })
@@ -24,4 +26,9 @@ export class UpdateOrderDto extends PartialType(
   @Type(() => UpdateOrderItemDto)
   @IsOptional()
   items: UpdateOrderItemDto[];
+
+  @ApiProperty({ type: String, enum: OrderStatus, required: false })
+  @IsEnum(OrderStatus)
+  @IsOptional()
+  status: OrderStatus;
 }
