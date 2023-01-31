@@ -7,6 +7,7 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/menu.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuAdditionDocument } from './menu-addition.schema';
+import { CalculationType } from 'src/core/Constants/enum';
 
 export type MenuItemDocument = MenuItem & Document;
 
@@ -66,6 +67,9 @@ export class MenuItem {
   @Prop({ required: true })
   price: number;
 
+  @Prop({ required: false })
+  cost: number;
+
   @Prop({ default: false })
   taxEnabled: boolean;
 
@@ -74,6 +78,9 @@ export class MenuItem {
 
   @Prop({ default: null })
   starGain: number;
+
+  @Prop({ default: null })
+  order: number;
 
   @Prop({ default: null })
   calories: number;
@@ -131,6 +138,12 @@ export class MenuItem {
 
   @Prop({ default: true })
   isTaxable: boolean;
+
+  @Prop({ type: Object, default: null })
+  discount: {
+    type: CalculationType;
+    value: number;
+  };
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

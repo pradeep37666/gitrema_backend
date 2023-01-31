@@ -13,6 +13,7 @@ import {
 } from 'class-validator';
 import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/menu.enum';
 import { Type } from 'class-transformer';
+import { CalculationType } from 'src/core/Constants/enum';
 
 class QuantityDto {
   @ApiProperty()
@@ -24,6 +25,18 @@ class QuantityDto {
   @IsMongoId()
   @IsNotEmpty()
   restaurantId: string;
+}
+
+class DiscountDto {
+  @ApiProperty()
+  @IsEnum(CalculationType)
+  @IsNotEmpty()
+  type: CalculationType;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  value: number;
 }
 
 export class CreateMenuItemDTO {
@@ -143,6 +156,22 @@ export class CreateMenuItemDTO {
   @IsOptional()
   @IsBoolean()
   soldOut: boolean;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  cost: number;
+
+  @ApiProperty({ required: false, type: DiscountDto })
+  @ValidateNested()
+  @Type(() => DiscountDto)
+  @IsOptional()
+  discount: DiscountDto;
 }
 
 export class UpdateMenuItemDTO extends PartialType(CreateMenuItemDTO) {

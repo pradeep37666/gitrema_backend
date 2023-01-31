@@ -2,6 +2,7 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
@@ -17,6 +18,11 @@ export class CreateMenuCategoryDTO {
   @IsNotEmpty()
   @IsString()
   nameAr: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
 
   @ApiProperty({ required: false })
   @IsUrl()

@@ -29,6 +29,9 @@ export class MenuCategory {
   active: boolean;
 
   @Prop({ default: null })
+  order: number;
+
+  @Prop({ default: null })
   deletedAt: Date;
 
   @Prop({
