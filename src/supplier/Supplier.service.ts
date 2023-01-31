@@ -14,6 +14,8 @@ import {
   pagination,
 } from 'src/core/Constants/pagination';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
+import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
+import { MenuAddition } from 'src/menu/schemas/menu-addition.schema';
 
 @Injectable()
 export class SupplierService {
@@ -27,8 +29,10 @@ export class SupplierService {
   async createSupplier(
     supplierDetails: AddSupplierDto,
   ): Promise<SupplierDocument> {
-    console.log(supplierDetails);
     const supplier = new this.supplierModel(supplierDetails);
+    // if (supplier.taxEnabled) {
+    //   await this.menuItemModel.updateMany({ supplierId: supplier._id });
+    // }
     return await supplier.save();
   }
 
@@ -61,12 +65,7 @@ export class SupplierService {
   }
 
   async getOne(supplierId: string): Promise<Supplier> {
-    return await this.supplierModel.findOne({ _id: supplierId }).populate([
-      {
-        path: 'allowedServices',
-        match: { deleted: null },
-      },
-    ]);
+    return await this.supplierModel.findOne({ _id: supplierId });
   }
 
   async getByDomain(domain: string): Promise<SupplierDocument> {

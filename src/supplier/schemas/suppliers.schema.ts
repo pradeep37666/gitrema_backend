@@ -94,7 +94,7 @@ export class Supplier {
   @Prop({ default: null })
   deletedAt: Date;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   active: boolean;
 }
 

@@ -7,6 +7,7 @@ import {
   Put,
   Delete,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -53,6 +54,21 @@ export class SupplierController {
     @Param('supplierId') supplierId: string,
   ): Promise<Supplier> {
     return this.supplierService.getOne(supplierId);
+  }
+
+  @Get('self')
+  @PermissionGuard(PermissionSubject.Business, Permission.Common.FETCH)
+  fetchSelfSupplier(@Req() req): Promise<Supplier> {
+    return this.supplierService.getOne(req.user.supplierId);
+  }
+
+  @Put('self-update')
+  @PermissionGuard(PermissionSubject.Business, Permission.Common.UPDATE)
+  updateSelfSupplier(
+    @Req() req,
+    @Body() supplierDetails: UpdateSupplierDto,
+  ): Promise<Supplier> {
+    return this.supplierService.update(req.user.supplierId, supplierDetails);
   }
 
   @Put(':supplierId')

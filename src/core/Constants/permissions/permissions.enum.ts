@@ -22,6 +22,7 @@ export enum PermissionSubject {
   WaitingQueue = 'Waiting Queue',
   Reservation = 'Reservation',
   Order = 'Order',
+  Business = 'Business',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
