@@ -1,15 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import * as paginate from 'mongoose-paginate-v2';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import { Shape } from '../enum/table.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { ListDocument } from 'src/list/schemas/list.schema';
+import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
 export type TableDocument = Table & Document;
 
 @Schema({ timestamps: true })
 export class Table {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Supplier',
+    required: true,
+  })
+  supplierId: SupplierDocument;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Restaurant',
@@ -42,8 +50,14 @@ export class Table {
   @Prop({})
   fees: number;
 
-  @Prop({})
+  @Prop({ default: 60 })
   minutesAllowed: number;
+
+  @Prop({ default: null })
+  startingTime: Date;
+
+  @Prop({ default: false })
+  waiterNeeded: boolean;
 
   @Prop({ default: null })
   deletedAt: Date;
@@ -57,4 +71,4 @@ export class Table {
 }
 
 export const TableSchema = SchemaFactory.createForClass(Table);
-TableSchema.plugin(paginate);
+TableSchema.plugin(mongooseAggregatePaginate);
