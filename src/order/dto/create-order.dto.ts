@@ -85,6 +85,9 @@ export class CreateOrderDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @Transform(
+    ({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD HH:MM')),
+  )
   @IsDate()
   menuQrCodeScannedTime: Date;
 

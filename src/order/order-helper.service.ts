@@ -13,6 +13,7 @@ import {
 import { OrderType } from './enum/order.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { CalculationType } from 'src/core/Constants/enum';
+import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 
 @Injectable()
 export class OrderHelperService {
@@ -76,13 +77,13 @@ export class OrderHelperService {
         price -= discount;
       }
       if (menuItem.taxEnabled) {
-        netPrice = parseFloat((price / (1 + taxRate / 100)).toFixed(2));
+        netPrice = roundOffNumber(price / (1 + taxRate / 100));
       }
 
       preparedItems[i].menuItem = {
         ...items[i].menuItem,
         ...menuItem,
-        tax: price - netPrice,
+        tax: roundOffNumber(price - netPrice),
       };
 
       const preparedAdditions = [];
@@ -120,7 +121,7 @@ export class OrderHelperService {
             const optionNetPrice = o.taxEnabled
               ? o.price / (1 + taxRate / 100)
               : o.price;
-            o.tax = parseFloat((o.price - optionNetPrice).toFixed(2));
+            o.tax = roundOffNumber(o.price - optionNetPrice);
             netPrice += optionNetPrice;
           });
 
@@ -136,7 +137,7 @@ export class OrderHelperService {
       preparedItems[i].priceAfterDiscount = price;
       preparedItems[i].gross = priceBeforeDiscount;
       preparedItems[i].discount = discount;
-      preparedItems[i].netPrice = parseFloat(netPrice.toFixed(2));
+      preparedItems[i].netPrice = roundOffNumber(netPrice);
       preparedItems[i].itemTotal = price * preparedItems[i].quantity;
       preparedItems[i].tax =
         (price - preparedItems[i].netPrice) * preparedItems[i].quantity;

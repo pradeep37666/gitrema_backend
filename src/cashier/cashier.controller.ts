@@ -20,12 +20,23 @@ import { CashierService } from './cashier.service';
 import { CreateCashierDto } from './dto/create-cashier.dto';
 import { UpdateCashierDto } from './dto/update-cashier.dto';
 import { CashierDocument } from './schemas/cashier.schema';
+import {
+  CloseCashierDto,
+  OpenCashierDto,
+  OverrideCloseCashierDto,
+} from './dto/cashier-log.dto';
+import { CashierLogDocument } from './schemas/cashier-log.schema';
+import { CashierLogService } from './cashier-log.service';
+import { PauseDto } from './dto/pause.dto';
 
 @Controller('cashier')
 @ApiTags('Cashiers')
 @ApiBearerAuth('access-token')
 export class CashierController {
-  constructor(private readonly cashierService: CashierService) {}
+  constructor(
+    private readonly cashierService: CashierService,
+    private readonly cashierLogService: CashierLogService,
+  ) {}
 
   @Post()
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.CREATE)
@@ -55,6 +66,55 @@ export class CashierController {
     @Body() updateCashierDto: UpdateCashierDto,
   ) {
     return await this.cashierService.update(cashierId, updateCashierDto);
+  }
+
+  @Post('start')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.START)
+  async start(@Req() req, @Body() dto: OpenCashierDto) {
+    return await this.cashierLogService.start(req, dto);
+  }
+
+  @Post('close')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.CLOSE)
+  async close(@Req() req, @Body() dto: CloseCashierDto) {
+    return await this.cashierLogService.close(req, dto);
+  }
+
+  @Post('override-close')
+  @PermissionGuard(
+    PermissionSubject.Cashier,
+    Permission.Cashier.OverrideCashierClose,
+  )
+  async overrideClose(@Req() req, @Body() dto: OverrideCloseCashierDto) {
+    return await this.cashierLogService.close(req, dto);
+  }
+
+  @Post(':cashierId/pause')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.PAUSE)
+  async pause(@Param('cashierId') cashierId: string, @Body() dto: PauseDto) {
+    return await this.cashierLogService.pause(cashierId, dto);
+  }
+
+  @Post(':cashierId/resume')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.RESUME)
+  async resume(@Param('cashierId') cashierId: string) {
+    return await this.cashierLogService.pause(cashierId);
+  }
+
+  @Get(':cashierId/current-log')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async currentLog(@Param('cashierId') cashierId: string) {
+    return await this.cashierLogService.current(cashierId);
+  }
+
+  @Get(':cashierId/logs')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async logs(
+    @Req() req,
+    @Param('cashierId') cashierId: string,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<CashierLogDocument>> {
+    return await this.cashierLogService.logs(req, cashierId, paginateOptions);
   }
 
   @Delete(':cashierId')

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { LeanDocument } from 'mongoose';
+import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
 @Injectable()
@@ -22,7 +23,7 @@ export class CalculationService {
 
       const taxRate = supplier.taxRate ?? 15;
       summary.tableFeeWithoutTax = supplier.taxEnabledOnTableFee
-        ? parseFloat((orderData.tableFee / (1 + taxRate / 100)).toFixed(2))
+        ? roundOffNumber(orderData.tableFee / (1 + taxRate / 100))
         : orderData.tableFee;
     }
     summary.gross += orderData.items.reduce(

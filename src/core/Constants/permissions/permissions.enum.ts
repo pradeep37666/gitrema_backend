@@ -30,5 +30,13 @@ export enum CommonPermissions {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
+  START = 'START',
+  CLOSE = 'CLOSE',
+  PAUSE = 'PAUSE',
+  RESUME = 'RESUME',
   MANAGE = 'MANAGE',
+}
+
+export enum CashierPermission {
+  OverrideCashierClose = 'Override Cashier Close',
 }

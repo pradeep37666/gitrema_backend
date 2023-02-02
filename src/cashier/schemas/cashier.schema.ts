@@ -22,9 +22,6 @@ export class Cashier {
   @Prop({ required: true })
   nameAr: string;
 
-  @Prop({ default: 0 })
-  startingAmount: number;
-
   @Prop({ default: false })
   paused: boolean;
 

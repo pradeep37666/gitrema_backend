@@ -11,9 +11,4 @@ export class CreateCashierDto {
   @IsNotEmpty()
   @IsString()
   nameAr: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  startingAmount: number;
 }
