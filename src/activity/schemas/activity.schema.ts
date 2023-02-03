@@ -13,6 +13,7 @@ export class Activity {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Supplier',
+    required: true,
   })
   supplierId: SupplierDocument;
 

@@ -1,16 +1,21 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import {
+  Document,
+  Schema as MongooseSchema,
+  SchemaTimestampsConfig,
+} from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { OrderStatus, OrderType, Source } from '../enum/order.enum';
+import { OrderStatus, OrderType, Source } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { OrderItem, OrderItemSchema } from './order-item.schema';
+import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 
-export type OrderDocument = Order & Document;
+export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
 @Schema({ timestamps: true })
 export class Order {
@@ -63,6 +68,9 @@ export class Order {
   })
   cashierId: CashierDocument;
 
+  // @Prop({ required: true })
+  // orderNumber: string;
+
   @Prop({ default: null })
   name: string;
 
@@ -114,6 +122,14 @@ export class Order {
     tableFee: number;
   };
 
+  @Prop({
+    type: [MongooseSchema.Types.ObjectId],
+    ref: 'Transaction',
+    index: true,
+    default: [],
+  })
+  transactions: TransactionDocument[];
+
   @Prop({ default: false })
   isPaid: boolean;
 
@@ -129,11 +145,28 @@ export class Order {
   @Prop({ default: null })
   paymentTime: Date;
 
+  @Prop({ default: null })
+  sittingStartTime: Date;
+
+  @Prop({ default: null })
+  couponCode: string;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
   })
   addedBy: UserDocument;
+
+  @Prop({ type: Object, default: null })
+  deliveryAddress: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode: number;
+    latitude: number;
+    longitude: number;
+    district: string;
+  };
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.plugin(paginate);

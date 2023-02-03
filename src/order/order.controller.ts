@@ -33,6 +33,12 @@ export class OrderController {
     return await this.orderService.create(req, dto);
   }
 
+  @Post('preview')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.CREATE)
+  async preview(@Req() req, @Body() dto: CreateOrderDto) {
+    return await this.orderService.create(req, dto, true);
+  }
+
   @Get()
   @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
   async findAll(

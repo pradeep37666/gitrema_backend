@@ -15,6 +15,8 @@ import {
   SupplierSchema,
 } from 'src/supplier/schemas/suppliers.schema';
 import { Table, TableSchema } from 'src/table/schemas/table.schema';
+import { Offer, OfferSchema } from 'src/offer/schemas/offer.schema';
+import { Activity, ActivitySchema } from 'src/activity/schemas/activity.schema';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { Table, TableSchema } from 'src/table/schemas/table.schema';
       { name: Table.name, schema: TableSchema },
       { name: MenuItem.name, schema: MenuItemSchema },
       { name: MenuAddition.name, schema: MenuAdditionSchema },
+      { name: Offer.name, schema: OfferSchema },
+      { name: Activity.name, schema: ActivitySchema },
     ]),
   ],
   controllers: [OrderController],

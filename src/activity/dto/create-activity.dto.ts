@@ -12,30 +12,12 @@ import {
 import { ActivitySubject, ActivityType } from '../enum/activity.enum';
 import { Transform, Type } from 'class-transformer';
 import * as moment from 'moment';
+import { OrderActivityType } from 'src/order/enum/en.enum';
 
-class PauseActivityDto {
-  @IsString()
-  @ApiProperty({ required: false })
-  @IsOptional()
-  reason: string;
+class OrderActivityDto {
+  activityType: OrderActivityType;
 
-  @IsNotEmpty()
-  @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
-  @IsDate()
-  @MinDate(new Date(moment.utc().format('YYYY-MM-DD')), {
-    message: 'minimal allowed date for start is ' + new Date().toDateString(),
-  })
-  @ApiProperty({ type: String })
-  start: Date;
-
-  @IsOptional()
-  @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
-  @IsDate()
-  @MinDate(new Date(moment.utc().format('YYYY-MM-DD')), {
-    message: 'minimal allowed date for start is ' + new Date().toDateString(),
-  })
-  @ApiProperty({ type: String, required: false })
-  end: Date;
+  date: Date;
 }
 export class CreateActivityDto {
   @ApiProperty()
@@ -43,19 +25,23 @@ export class CreateActivityDto {
   @IsNotEmpty()
   dataId: string;
 
-  @ApiProperty({ type: String, enum: ActivitySubject })
+  @ApiProperty({
+    type: String,
+    enum: ActivitySubject,
+    enumName: 'ActivitySubject',
+  })
   @IsEnum(ActivitySubject)
   @IsNotEmpty()
   subject: ActivitySubject;
 
-  @ApiProperty({ type: String, enum: ActivityType })
+  @ApiProperty({ type: String, enum: ActivityType, enumName: 'ActivityType' })
   @IsEnum(ActivityType)
   @IsNotEmpty()
   type: ActivityType;
 
-  @ApiProperty({ type: PauseActivityDto })
+  @ApiProperty({ type: OrderActivityDto })
   @ValidateNested({ each: true })
-  @Type(() => PauseActivityDto)
+  @Type(() => OrderActivityDto)
   @IsNotEmpty()
-  data: PauseActivityDto;
+  data: OrderActivityDto;
 }

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -12,10 +12,13 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { OrderType, Source } from '../enum/order.enum';
+import { OrderType, Source } from '../enum/en.enum';
 import { Transform, Type } from 'class-transformer';
 import * as moment from 'moment';
 import { OrderItemDto } from './order-item.dto';
+import { LocationDto } from 'src/restaurant/dto/create-restaurant.dto';
+
+class DeliveryAddressDto extends OmitType(LocationDto, ['country'] as const) {}
 
 export class CreateOrderDto {
   @ApiProperty()
@@ -29,8 +32,9 @@ export class CreateOrderDto {
   customerId: string;
 
   @ApiProperty({ required: false })
+  @ValidateIf((o) => o.orderType == OrderType.DineIn)
   @IsMongoId()
-  @IsOptional()
+  @IsNotEmpty()
   tableId: string;
 
   @ApiProperty({ required: false })
@@ -48,12 +52,12 @@ export class CreateOrderDto {
   @IsOptional()
   contactNumber: string;
 
-  @ApiProperty({ type: String, enum: Source })
+  @ApiProperty({ type: String, enum: Source, enumName: 'Source' })
   @IsEnum(Source)
   @IsNotEmpty()
   source: Source;
 
-  @ApiProperty({ type: String, enum: OrderType })
+  @ApiProperty({ type: String, enum: OrderType, enumName: 'OrderType' })
   @IsEnum(OrderType)
   @IsNotEmpty()
   orderType: OrderType;
@@ -95,4 +99,16 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   notes: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  couponCode: string;
+
+  @ApiProperty({ required: false, type: DeliveryAddressDto })
+  @ValidateIf((o) => o.orderType == OrderType.Delivery)
+  @ValidateNested()
+  @Type(() => DeliveryAddressDto)
+  @IsNotEmpty()
+  deliveryAddress: DeliveryAddressDto;
 }

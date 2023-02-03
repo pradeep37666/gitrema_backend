@@ -1,11 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
+  IsDate,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Min,
 } from 'class-validator';
+import * as moment from 'moment';
 
 export class OpenCashierDto {
   @ApiProperty()
@@ -43,4 +46,12 @@ export class OverrideCloseCashierDto extends CloseCashierDto {
   @IsNotEmpty()
   @IsString()
   overrideReason: string;
+}
+
+export class QueryCashierLogDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
+  @IsDate()
+  createdAt: Date;
 }

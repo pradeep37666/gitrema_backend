@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -17,7 +21,7 @@ import {
   Supplier,
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
-import { OrderStatus, OrderType } from './enum/order.enum';
+import { OrderStatus, OrderType } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
 
 @Injectable()
@@ -35,7 +39,11 @@ export class OrderService {
     private readonly calculationService: CalculationService,
   ) {}
 
-  async create(req: any, dto: CreateOrderDto): Promise<OrderDocument> {
+  async create(
+    req: any,
+    dto: CreateOrderDto,
+    isDryRun = false,
+  ): Promise<OrderDocument> {
     const orderData: any = { ...dto };
 
     const supplier = await this.supplierModel
@@ -44,14 +52,18 @@ export class OrderService {
 
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
-      dto.items,
+      dto,
       supplier,
     );
 
-    if (orderData.orderType == OrderType.DineIn && orderData.tableId) {
+    if (orderData.orderType == OrderType.DineIn) {
       const table = await this.tableModel.findById(orderData.tableId);
 
+      if (!table) throw new NotFoundException(`No Table Found`);
+
       orderData.tableFee = table.fees ?? 0;
+      orderData.sittingStartTime =
+        table.startingTime ?? dto.menuQrCodeScannedTime ?? null;
     }
 
     // calculate summary
@@ -60,6 +72,10 @@ export class OrderService {
       supplier,
     );
 
+    if (isDryRun) {
+      return orderData;
+    }
+
     // create order
     const order = await this.orderModel.create({
       ...orderData,
@@ -67,6 +83,8 @@ export class OrderService {
       addedBy: req.user.userId,
     });
 
+    // post order create
+    this.orderHelperService.postOrderCreate(order);
     return order;
   }
 
@@ -147,19 +165,33 @@ export class OrderService {
   ): Promise<OrderDocument> {
     const orderData: any = { ...dto };
 
+    const order = await this.orderModel.findById(orderId);
+
+    if (!order) {
+      throw new NotFoundException();
+    }
+
+    if (order.status == OrderStatus.Paid) {
+      throw new BadRequestException(`No changes can be made after payment`);
+    }
+
     if (dto.status && dto.status == OrderStatus.Processing) {
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
     }
+
     // prepare the order items
     if (dto.items) {
+      orderData.couponCode = order.couponCode;
+      orderData._id = order._id;
+
       const supplier = await this.supplierModel
         .findById(req.user.supplierId)
         .lean();
 
       orderData.items = await this.orderHelperService.prepareOrderItems(
-        dto.items,
+        dto,
         supplier,
       );
 
@@ -169,14 +201,16 @@ export class OrderService {
       );
     }
 
-    const order = await this.orderModel.findByIdAndUpdate(orderId, orderData, {
-      new: true,
-    });
+    const modified = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      orderData,
+      {
+        new: true,
+      },
+    );
 
-    if (!order) {
-      throw new NotFoundException();
-    }
-
-    return order;
+    //post order update
+    this.orderHelperService.postOrderUpdate(order, dto);
+    return modified;
   }
 }

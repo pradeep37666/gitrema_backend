@@ -23,6 +23,7 @@ export enum PermissionSubject {
   Reservation = 'Reservation',
   Order = 'Order',
   Business = 'Business',
+  Offer = 'Offer',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
