@@ -7,7 +7,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { AnswerOption } from '../enum/client-feedback.enum';
+import { AnswerOption } from '../enum/en.enum';
 import { Type } from 'class-transformer';
 
 export class QuestionDto {
@@ -21,7 +21,7 @@ export class QuestionDto {
   @IsString()
   questionAr: string;
 
-  @ApiProperty({ type: String, enum: AnswerOption })
+  @ApiProperty({ type: String, enum: AnswerOption, enumName: 'AnswerOption' })
   @IsEnum(AnswerOption)
   @IsNotEmpty()
   answerOption: AnswerOption;

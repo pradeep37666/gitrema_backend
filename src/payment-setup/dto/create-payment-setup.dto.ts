@@ -9,7 +9,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Bank } from '../enum/payment.enum';
+import { Bank } from '../enum/en.enum';
 
 export class PaymentOptionDto {
   @ApiProperty()
@@ -61,7 +61,7 @@ export class CreatePaymentSetupDto {
   @IsOptional()
   bankAccountHolderEmail: string;
 
-  @ApiProperty({ required: false, type: String, enum: Bank })
+  @ApiProperty({ required: false, type: String, enum: Bank, enumName: 'Bank' })
   @IsEnum(Bank)
   @IsOptional()
   bankName: Bank;

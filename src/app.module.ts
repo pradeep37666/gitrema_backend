@@ -16,7 +16,7 @@ import asmscSmsConfiguration from './config/asmsc-sms.configuration';
 import { UserModule } from './users/users.module';
 import { SupplierModule } from './supplier/Supplier.module';
 import { RoleModule } from './role/role.module';
-import { EnumModule } from './core/enum/enum.module';
+import { EnumModule } from './enum/enum.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -41,6 +41,7 @@ import { ActivityModule } from './activity/activity.module';
 import { WaitingQueueModule } from './waiting-queue/waiting-queue.module';
 import { ReservationModule } from './reservation/reservation.module';
 import { OrderModule } from './order/order.module';
+import { OfferModule } from './offer/offer.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { OrderModule } from './order/order.module';
     WaitingQueueModule,
     ReservationModule,
     OrderModule,
+    OfferModule,
   ],
   controllers: [AppController],
   providers: [

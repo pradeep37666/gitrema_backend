@@ -6,6 +6,7 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 import { CashierDocument } from './cashier.schema';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { PausedLog, PausedLogSchema } from './paused-log.schema';
+import { OrderDocument } from 'src/order/schemas/order.schema';
 
 export type CashierLogDocument = CashierLog & Document;
 

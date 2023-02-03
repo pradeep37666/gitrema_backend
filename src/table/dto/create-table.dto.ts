@@ -8,7 +8,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { Shape } from '../enum/table.enum';
+import { Shape } from '../enum/en.enum';
 
 export class CreateTableDto {
   @ApiProperty()
@@ -36,7 +36,12 @@ export class CreateTableDto {
   @IsNumber()
   totalChairs: number;
 
-  @ApiProperty({ type: String, enum: Shape, required: false })
+  @ApiProperty({
+    type: String,
+    enum: Shape,
+    enumName: 'Shape',
+    required: false,
+  })
   @IsEnum(Shape)
   @IsOptional()
   shape: Shape;

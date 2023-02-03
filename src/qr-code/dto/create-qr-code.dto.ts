@@ -8,7 +8,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { PageType } from '../enum/qr-code.enum';
+import { PageType } from '../enum/en.enum';
 
 export class CreateQrCodeDto {
   @ApiProperty({ required: false, type: [String] })
@@ -78,7 +78,7 @@ export class CreateQrCodeDto {
   @IsBoolean()
   showLogo: boolean;
 
-  @ApiProperty({ type: String, enum: PageType })
+  @ApiProperty({ type: String, enum: PageType, enumName: 'PageType' })
   @IsEnum(PageType)
   @IsNotEmpty()
   pageType: PageType;

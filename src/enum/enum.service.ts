@@ -1,7 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import * as enEnums from '../Constants/enum';
-import * as arEnums from '../Constants/enum.ar';
-import { IEnum, IEnumValue } from '../Constants/interface';
+import * as CoreEngEnum from 'src/core/Constants/enum';
+import * as CoreArEnum from 'src/core/Constants/enum.ar';
+import * as ClientFeedbackEnEnum from 'src/client-feedback/enum/en.enum';
+import * as ClientFeedbackArEnum from 'src/client-feedback/enum/ar.enum';
+import * as MenuEnEnum from 'src/menu/enum/en.enum';
+import * as MenuArEnum from 'src/menu/enum/ar.enum';
+import * as OrderEnEnum from 'src/order/enum/en.enum';
+import * as OrderArEnum from 'src/order/enum/ar.enum';
+import * as PaymentEnEnum from 'src/payment-setup/enum/en.enum';
+import * as PaymentArEnum from 'src/payment-setup/enum/ar.enum';
+import * as QrCodeEnEnum from 'src/qr-code/enum/en.enum';
+import * as QrCodeArEnum from 'src/qr-code/enum/ar.enum';
+import * as TableEnEnum from 'src/table/enum/en.enum';
+import * as TableArEnum from 'src/table/enum/ar.enum';
+import { IEnum, IEnumValue } from 'src/core/Constants/interface';
 import { Logger } from '@nestjs/common';
 
 @Injectable()
@@ -12,7 +24,24 @@ export class EnumService {
     const enumDocuments: Array<IEnum> = [];
 
     // 1: loop over the all english enum
-
+    const enEnums = {
+      ...CoreEngEnum,
+      ...ClientFeedbackEnEnum,
+      ...MenuEnEnum,
+      ...OrderEnEnum,
+      ...PaymentEnEnum,
+      ...QrCodeEnEnum,
+      ...TableEnEnum,
+    };
+    const arEnums = {
+      ...CoreArEnum,
+      ...ClientFeedbackArEnum,
+      ...MenuArEnum,
+      ...OrderArEnum,
+      ...PaymentArEnum,
+      ...QrCodeArEnum,
+      ...TableArEnum,
+    };
     for (const item of items) {
       const doc: IEnum = { name: item };
       const values: Array<IEnumValue> = [];

@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Public } from '../decorators/public.decorator';
-import { IEnum } from '../Constants/interface';
+import { Public } from '../core/decorators/public.decorator';
+import { IEnum } from '../core/Constants/interface';
 import { EnumDto } from './enum.dto';
 import { EnumService } from './enum.service';
 

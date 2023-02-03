@@ -14,12 +14,20 @@ import { PermissionActions } from 'src/core/Constants/permission.type';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 
 class PermissionDto {
-  @ApiProperty({ type: String, enum: PermissionSubject })
+  @ApiProperty({
+    type: String,
+    enum: PermissionSubject,
+    enumName: 'PermissionSubject',
+  })
   @IsEnum(PermissionSubject)
   @IsNotEmpty()
   subject: PermissionSubject;
 
-  @ApiProperty({ type: [String], enum: PermissionActions })
+  @ApiProperty({
+    type: [String],
+    enum: PermissionActions,
+    enumName: 'PermissionActions',
+  })
   @IsEnum(PermissionActions, { each: true })
   @IsNotEmpty()
   permissions: PermissionActions[];
@@ -42,7 +50,7 @@ export class RoleCreateDto {
   @IsNotEmpty()
   permissions: PermissionDto[];
 
-  @ApiPropertyOptional({ type: String, enum: RoleSlug })
+  @ApiPropertyOptional({ type: String, enum: RoleSlug, enumName: 'RoleSlug' })
   @IsEnum(RoleSlug)
   @IsOptional()
   slug: RoleSlug;

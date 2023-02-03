@@ -14,7 +14,7 @@ import {
 import { Days, OrderTypes } from 'src/core/Constants/enum';
 
 class IndividualWorkHoursDTO {
-  @ApiProperty({ type: String, enum: Days })
+  @ApiProperty({ type: String, enum: Days, enumName: 'Days' })
   @IsNotEmpty()
   @IsEnum(Days)
   day: Days;
@@ -31,7 +31,7 @@ class IndividualWorkHoursDTO {
 }
 
 class TermsAndConditionDTO {
-  @ApiProperty({ type: String, enum: OrderTypes })
+  @ApiProperty({ type: String, enum: OrderTypes, enumName: 'OrderTypes' })
   @IsEnum(OrderTypes)
   @IsNotEmpty()
   type: OrderTypes;
@@ -71,7 +71,7 @@ class DefaultWorkingHoursDTO {
   end: string;
 }
 
-class LocationDto {
+export class LocationDto {
   @IsString()
   @ApiProperty()
   @IsNotEmpty()

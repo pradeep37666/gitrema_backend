@@ -6,7 +6,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { Bank } from '../enum/payment.enum';
+import { Bank } from '../enum/en.enum';
 
 export type PaymentSetupDocument = PaymentSetup & Document;
 

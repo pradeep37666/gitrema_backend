@@ -4,7 +4,7 @@ import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { MenuCategoryDocument } from './menu-category.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
-import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/menu.enum';
+import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuAdditionDocument } from './menu-addition.schema';
 import { CalculationType } from 'src/core/Constants/enum';
@@ -117,6 +117,9 @@ export class MenuItem {
   soldOut: boolean;
 
   @Prop({ default: false })
+  manageQuantity: boolean;
+
+  @Prop({ default: false })
   canBuyWithStars: boolean;
 
   @Prop({
@@ -136,14 +139,8 @@ export class MenuItem {
   @Prop({ default: true })
   active: boolean;
 
-  @Prop({ default: true })
-  isTaxable: boolean;
-
-  @Prop({ type: Object, default: null })
-  discount: {
-    type: CalculationType;
-    value: number;
-  };
+  @Prop({ default: null })
+  deletedAt: Date;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

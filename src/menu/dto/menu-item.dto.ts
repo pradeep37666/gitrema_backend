@@ -11,7 +11,7 @@ import {
   IsUrl,
   ValidateNested,
 } from 'class-validator';
-import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/menu.enum';
+import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
 import { Type } from 'class-transformer';
 import { CalculationType } from 'src/core/Constants/enum';
 
@@ -100,7 +100,12 @@ export class CreateMenuItemDTO {
   @IsOptional()
   waiterCode: string;
 
-  @ApiProperty({ type: [String], enum: Alergies, required: false })
+  @ApiProperty({
+    type: [String],
+    enum: Alergies,
+    enumName: 'Alergies',
+    required: false,
+  })
   @IsEnum(Alergies, { each: true })
   @IsOptional()
   @IsArray()
@@ -125,12 +130,22 @@ export class CreateMenuItemDTO {
   @IsOptional()
   additions: string[];
 
-  @ApiProperty({ type: String, enum: MenuSticker, required: false })
+  @ApiProperty({
+    type: String,
+    enum: MenuSticker,
+    enumName: 'MenuSticker',
+    required: false,
+  })
   @IsEnum(MenuSticker)
   @IsOptional()
   sticker: MenuSticker;
 
-  @ApiProperty({ type: [String], enum: MenuStickerStyle, required: false })
+  @ApiProperty({
+    type: [String],
+    enum: MenuStickerStyle,
+    enumName: 'MenuStickerStyle',
+    required: false,
+  })
   @IsArray()
   @IsEnum(MenuStickerStyle, { each: true })
   @IsOptional()
@@ -167,11 +182,10 @@ export class CreateMenuItemDTO {
   @IsNumber()
   cost: number;
 
-  @ApiProperty({ required: false, type: DiscountDto })
-  @ValidateNested()
-  @Type(() => DiscountDto)
+  @ApiProperty({ required: false })
   @IsOptional()
-  discount: DiscountDto;
+  @IsBoolean()
+  manageQuantity: boolean;
 }
 
 export class UpdateMenuItemDTO extends PartialType(CreateMenuItemDTO) {

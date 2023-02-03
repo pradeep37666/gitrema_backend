@@ -4,7 +4,7 @@ import { ListType } from 'src/core/Constants/enum';
 
 export class CreateListDto {
   @IsNotEmpty()
-  @ApiProperty({ type: String, enum: ListType })
+  @ApiProperty({ type: String, enum: ListType, enumName: 'ListType' })
   @IsEnum(ListType)
   type: ListType;
 

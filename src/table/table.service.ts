@@ -21,7 +21,7 @@ import {
 } from 'src/core/Constants/pagination';
 import { QueryTableDto } from './dto/query-table.dto';
 import { TableLog } from './schemas/table-log.schema';
-import { OrderStatus } from 'src/order/enum/order.enum';
+import { OrderStatus } from 'src/order/enum/en.enum';
 
 @Injectable()
 export class TableService {

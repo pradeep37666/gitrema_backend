@@ -45,12 +45,16 @@ export class AddEmailTemplateDto {
 
   @IsEnum(TriggerType)
   @IsNotEmpty()
-  @ApiProperty({ enum: TriggerType, type: String })
+  @ApiProperty({ enum: TriggerType, enumName: 'TriggerType', type: String })
   trigger: TriggerType;
 
   @IsEnum(EmailTemplateEvent)
   @IsOptional()
-  @ApiPropertyOptional({ enum: EmailTemplateEvent, type: String })
+  @ApiPropertyOptional({
+    enum: EmailTemplateEvent,
+    type: String,
+    enumName: 'EmailTemplateEvent',
+  })
   event: EmailTemplateEvent;
 
   @IsNumber()
@@ -58,20 +62,28 @@ export class AddEmailTemplateDto {
   @IsOptional()
   hours: number;
 
-  @ApiPropertyOptional({ type: [String], enum: EmailAttachments })
+  @ApiPropertyOptional({
+    type: [String],
+    enum: EmailAttachments,
+    enumName: 'EmailAttachments',
+  })
   @IsArray()
   @IsEnum(EmailAttachments, { each: true })
   @IsOptional()
   attachments: EmailAttachments;
 
-  @ApiPropertyOptional({ type: [String], enum: Channels })
+  @ApiPropertyOptional({ type: [String], enum: Channels, enumName: 'Channels' })
   @IsArray()
   @IsEnum(Channels, { each: true })
   @IsOptional()
   channels: Channels;
 
   @ValidateIf((o) => o.event)
-  @ApiProperty({ type: [String], enum: NotificationRecipients })
+  @ApiProperty({
+    type: [String],
+    enum: NotificationRecipients,
+    enumName: 'NotificationRecipients',
+  })
   @IsArray()
   @IsEnum(NotificationRecipients, { each: true })
   @IsNotEmpty()
@@ -93,7 +105,11 @@ export class AddEmailTemplateDto {
   @IsOptional()
   default: boolean;
 
-  @ApiPropertyOptional({ type: String, enum: CustomEvent })
+  @ApiPropertyOptional({
+    type: String,
+    enum: CustomEvent,
+    enumName: 'CustomEvent',
+  })
   @IsOptional()
   @IsEnum(CustomEvent)
   slug?: CustomEvent;
