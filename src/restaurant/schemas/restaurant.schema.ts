@@ -78,6 +78,9 @@ export class Restaurant {
   isMenuBrowsingEnabled: boolean;
 
   @Prop({ default: true })
+  isAppOrderEnabled: boolean;
+
+  @Prop({ default: true })
   isDeliveryEnabled: boolean;
 
   @Prop({ default: true })

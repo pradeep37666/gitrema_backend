@@ -98,13 +98,13 @@ export class LocationDto {
   country: string;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   latitude?: string;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   longitude?: string;
 
   @IsString()
@@ -162,6 +162,11 @@ export class CreateRestaurantDto {
   @IsBoolean()
   @IsNotEmpty()
   isMenuBrowsingEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isAppOrderEnabled: boolean;
 
   @ApiProperty()
   @IsBoolean()
