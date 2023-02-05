@@ -67,7 +67,7 @@ export class PaymentService {
       transaction = await this.transactionService.create(req, {
         supplierId: order.supplierId,
         orderId: order._id,
-        amount: order.summary.totalWithTax,
+        amount: amountToCollect,
         paymentGateway:
           paymentRequestDetails.paymentMethod == PaymentMethod.Online
             ? this.arbPgService.config.name
