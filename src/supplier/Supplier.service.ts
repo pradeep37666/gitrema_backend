@@ -15,7 +15,10 @@ import {
 } from 'src/core/Constants/pagination';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
-import { MenuAddition } from 'src/menu/schemas/menu-addition.schema';
+import {
+  MenuAddition,
+  MenuAdditionDocument,
+} from 'src/menu/schemas/menu-addition.schema';
 
 @Injectable()
 export class SupplierService {
@@ -24,15 +27,26 @@ export class SupplierService {
     private supplierModel: Model<SupplierDocument>,
     @InjectModel(Supplier.name)
     private supplierModelPag: PaginateModel<SupplierDocument>,
+    @InjectModel(MenuItem.name)
+    private menuItemModel: Model<MenuItemDocument>,
+    @InjectModel(MenuAddition.name)
+    private MenuAdditionModel: Model<MenuAdditionDocument>,
   ) {}
 
   async createSupplier(
     supplierDetails: AddSupplierDto,
   ): Promise<SupplierDocument> {
     const supplier = new this.supplierModel(supplierDetails);
-    // if (supplier.taxEnabled) {
-    //   await this.menuItemModel.updateMany({ supplierId: supplier._id });
-    // }
+    if (supplier.taxEnabled) {
+      await this.menuItemModel.updateMany(
+        { supplierId: supplier._id },
+        { taxEnabled: true },
+      );
+      await this.MenuAdditionModel.updateMany(
+        { supplierId: supplier._id },
+        { taxEnabled: true },
+      );
+    }
     return await supplier.save();
   }
 
@@ -96,12 +110,25 @@ export class SupplierService {
       if (isExist)
         throw new BadRequestException(STATUS_MSG.ERROR.DOMAIN_NOT_ALLOWED);
     }
-    const user = await this.supplierModel.findByIdAndUpdate(
+    const supplier = await this.supplierModel.findByIdAndUpdate(
       { _id: supplierId },
       { ...supplierDetails },
       { new: true },
     );
-    return user;
+    if (
+      supplierDetails.taxEnabled === true ||
+      supplierDetails.taxEnabled === false
+    ) {
+      await this.menuItemModel.updateMany(
+        { supplierId: supplier._id },
+        { taxEnabled: supplierDetails.taxEnabled },
+      );
+      await this.MenuAdditionModel.updateMany(
+        { supplierId: supplier._id },
+        { taxEnabled: supplierDetails.taxEnabled },
+      );
+    }
+    return supplier;
   }
 
   async delete(supplierId: string): Promise<Supplier> {
