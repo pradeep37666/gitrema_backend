@@ -14,13 +14,14 @@ export class CalculationService {
     private readonly offerModel: Model<OfferDocument>,
   ) {}
 
-  async calculateSummery(orderData, supplier: LeanDocument<SupplierDocument>) {
+  async calculateSummery(orderData) {
     const summary = {
       totalBeforeDiscount: 0,
       discount: 0,
       totalWithTax: 0,
       totalTaxableAmount: 0,
       totalTax: 0,
+      totalPaid: 0,
     };
 
     summary.totalBeforeDiscount += orderData.items.reduce(
@@ -50,6 +51,12 @@ export class CalculationService {
     summary.totalTax += orderData.tableFee.tax;
     summary.totalWithTax += orderData.tableFee.fee;
     summary.totalTaxableAmount += orderData.tableFee.netBeforeTax;
+
+    summary.totalBeforeDiscount = roundOffNumber(summary.totalBeforeDiscount);
+    summary.discount = roundOffNumber(summary.discount);
+    summary.totalWithTax = roundOffNumber(summary.totalWithTax);
+    summary.totalTaxableAmount = roundOffNumber(summary.totalTaxableAmount);
+    summary.totalTax = roundOffNumber(summary.totalTax);
 
     return summary;
   }

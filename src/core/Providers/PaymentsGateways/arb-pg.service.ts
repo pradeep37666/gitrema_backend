@@ -55,7 +55,7 @@ export class ArbPgService {
               ),
               currencyCode: this.config.currencyCode,
               trackId: options.transactionId,
-              udf1: options.reservationId,
+              udf1: options.orderId,
               udf2: options.metaId,
               udf3: options.redirectUrl
                 ? Buffer.from(options.redirectUrl).toString('base64')
@@ -142,7 +142,7 @@ export class ArbPgService {
   }
 }
 export class PaymentTokenDto {
-  reservationId?: string;
+  orderId?: string;
 
   amount: number;
 

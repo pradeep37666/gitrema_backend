@@ -24,6 +24,7 @@ import {
 import { OrderStatus, OrderType } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import { MoveOrderItemDto } from './dto/move-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -88,7 +89,6 @@ export class OrderService {
     // calculate summary
     orderData.summary = await this.calculationService.calculateSummery(
       orderData,
-      supplier,
     );
 
     if (isDryRun) {
@@ -216,7 +216,6 @@ export class OrderService {
 
       orderData.summary = await this.calculationService.calculateSummery(
         orderData,
-        supplier,
       );
     }
 
@@ -231,5 +230,61 @@ export class OrderService {
     //post order update
     this.orderHelperService.postOrderUpdate(order, dto);
     return modified;
+  }
+
+  async moveItems(req: any, dto: MoveOrderItemDto) {
+    const sourceOrder = await this.orderModel.findById(dto.sourceOrderId);
+    if (!sourceOrder) throw new NotFoundException(`Source order not found`);
+    if (sourceOrder.items.length <= 1)
+      throw new NotFoundException(`Not enough items to move`);
+    const items = sourceOrder.items.filter((i) => {
+      return dto.items.includes(i._id.toString());
+    });
+    let targetOrder = null;
+    if (!dto.targetOrderId) {
+      const targetOrderDto = { ...sourceOrder.toObject() };
+      targetOrderDto.items = items;
+      delete targetOrderDto._id;
+      delete targetOrderDto.createdAt;
+      delete targetOrderDto.updatedAt;
+      targetOrderDto.transactions = [];
+
+      targetOrderDto.tableFee = { fee: 0, tax: 0, netBeforeTax: 0 };
+      targetOrderDto.summary = await this.calculationService.calculateSummery(
+        targetOrderDto,
+      );
+      targetOrder = await this.orderModel.create(targetOrderDto);
+    } else {
+      targetOrder = await this.orderModel.findById(dto.targetOrderId);
+      targetOrder.items = targetOrder.items.concat(items);
+      targetOrder.summary = await this.calculationService.calculateSummery(
+        targetOrder,
+      );
+      await targetOrder.save();
+    }
+    if (targetOrder) {
+      const remainingItems = sourceOrder.items.filter((i) => {
+        return !dto.items.includes(i._id.toString());
+      });
+      sourceOrder.items = remainingItems;
+      sourceOrder.summary = await this.calculationService.calculateSummery(
+        sourceOrder,
+      );
+      await sourceOrder.save();
+    }
+    return targetOrder;
+  }
+
+  async generalUpdate(
+    req: any,
+    orderId: string,
+    dto: any,
+  ): Promise<OrderDocument> {
+    const order = await this.orderModel.findByIdAndUpdate(orderId, dto);
+
+    if (!order) {
+      throw new NotFoundException();
+    }
+    return order;
   }
 }

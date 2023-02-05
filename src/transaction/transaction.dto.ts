@@ -1,6 +1,7 @@
 import { IsOptional, IsEnum, IsMongoId } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentMethod, PaymentStatus } from 'src/core/Constants/enum';
+import { PaymentStatus } from 'src/core/Constants/enum';
+import { PaymentMethod } from 'src/payment/enum/en.enum';
 
 export class TransactionQueryDto {
   @IsEnum(PaymentMethod)

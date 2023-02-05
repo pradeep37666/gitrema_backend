@@ -328,7 +328,7 @@ export class OrderHelperService {
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       this.storeOrderStateActivity(
         order,
-        OrderActivityType.orderReady,
+        OrderActivityType.OrderReady,
         order.orderReadyTime,
       );
     }

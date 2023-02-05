@@ -32,5 +32,6 @@ import { Activity, ActivitySchema } from 'src/activity/schemas/activity.schema';
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderHelperService, CalculationService],
+  exports: [OrderService, OrderHelperService, CalculationService],
 })
 export class OrderModule {}

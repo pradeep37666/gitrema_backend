@@ -312,17 +312,7 @@ export enum ProfileStatus {
   Inactive = 'Inactive',
   Obsolete = 'Obsolete',
 }
-export enum PaymentMethod {
-  Amex = 'Amex',
-  Visa = 'Visa',
-  MC = 'Mastercard',
-  Mada = 'Mada',
-  Check = 'Check',
-  Cash = 'Cash',
-  Account = 'Account',
-  GiftCertificate = 'Gift Certificate',
-  Online = 'Online',
-}
+
 export enum FileDocumentType {
   Passport = 'Passport',
   DriverLicense = 'Driver License',

@@ -38,11 +38,9 @@ export class MenuAdditionService {
   ): Promise<MenuAdditionDocument> {
     const supplier = await this.supplierModel.findById(req.user.supplierId);
 
-    dto.options.forEach((o) => {
-      if (o.taxEnabled !== true && o.taxEnabled !== false) {
-        o.taxEnabled = supplier.taxEnabled ?? false;
-      }
-    });
+    if (supplier.taxEnabled) {
+      dto.taxEnabled = true;
+    }
 
     return await this.menuAdditionModel.create({
       ...dto,

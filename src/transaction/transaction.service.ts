@@ -9,13 +9,17 @@ import {
   Transaction,
   TransactionDocument,
 } from './schemas/transactions.schema';
-import { PaymentTarget } from 'src/core/Constants/enum';
+import { PaymentStatus, PaymentTarget } from 'src/core/Constants/enum';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import {
   DefaultSort,
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
+import { Order, OrderDocument } from 'src/order/schemas/order.schema';
+import { OrderHelperService } from 'src/order/order-helper.service';
+import { OrderActivityType, OrderStatus } from 'src/order/enum/en.enum';
+import { capitalize } from 'src/core/Helpers/universal.helper';
 
 @Injectable()
 export class TransactionService {
@@ -24,6 +28,9 @@ export class TransactionService {
     private transactionModel: Model<TransactionDocument>,
     @InjectModel(Transaction.name)
     private transactionModelPag: PaginateModel<TransactionDocument>,
+    @InjectModel(Order.name)
+    private orderModel: Model<OrderDocument>,
+    private orderHelperService: OrderHelperService,
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
@@ -71,15 +78,56 @@ export class TransactionService {
         populate: [
           {
             path: 'supplierId',
-            select: { name: 1, bankDetais: 1 },
+            select: { name: 1, nameAr: 1 },
             match: { deletedAt: null },
           },
           {
-            path: 'reservationId',
-            select: { reservationNumber: 1 },
+            path: 'orderId',
+            // select: { reservationNumber: 1 },
           },
         ],
       },
     );
+  }
+
+  async postTransactionProcess(
+    req: any,
+    transaction: LeanDocument<TransactionDocument>,
+  ): Promise<void> {
+    if (transaction.status == PaymentStatus.Success) {
+      const order = await this.orderModel.findById(transaction.orderId);
+      // save activity
+      this.orderHelperService.storeOrderStateActivity(
+        order,
+        OrderActivityType.PaymentReceived,
+        new Date(),
+      );
+      const result = await this.transactionModel.aggregate([
+        {
+          $match: {
+            orderId: transaction.orderId,
+            status: PaymentStatus.Success,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' },
+          },
+        },
+      ]);
+      if (result && result.length == 1) {
+        const total = result[0].total;
+        const dataToUpdate: any = {
+          'summary.totalPaid': total,
+        };
+        if (total >= order.summary.totalWithTax) {
+          dataToUpdate.paid = OrderStatus.Paid;
+          dataToUpdate.paymentTime = new Date();
+        }
+        order.set(dataToUpdate);
+        order.save();
+      }
+    }
   }
 }

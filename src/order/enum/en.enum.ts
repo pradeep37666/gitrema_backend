@@ -22,5 +22,6 @@ export enum OrderActivityType {
   SittingStart = 'SittingStart',
   MenuScanned = 'MenuScanned',
   SentToKitchen = 'SentToKitchen',
-  orderReady = 'OrderReady',
+  OrderReady = 'OrderReady',
+  PaymentReceived = 'PaymentReceived',
 }

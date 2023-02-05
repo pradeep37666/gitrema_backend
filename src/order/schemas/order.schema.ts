@@ -12,7 +12,11 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 import { OrderStatus, OrderType, Source } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
-import { OrderItem, OrderItemSchema } from './order-item.schema';
+import {
+  OrderItem,
+  OrderItemDocument,
+  OrderItemSchema,
+} from './order-item.schema';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
@@ -93,7 +97,7 @@ export class Order {
   scheduledDateTime: Date;
 
   @Prop({ type: [OrderItemSchema], required: true })
-  items: OrderItem[];
+  items: OrderItemDocument[];
 
   @Prop({
     default: {
@@ -117,6 +121,7 @@ export class Order {
       totalWithTax: 0,
       totalTaxableAmount: 0,
       totalTax: 0,
+      totalPaid: 0,
     },
   })
   summary: {
@@ -125,6 +130,7 @@ export class Order {
     totalWithTax: number;
     totalTaxableAmount: number;
     totalTax: number;
+    totalPaid: number;
   };
 
   @Prop({
@@ -134,9 +140,6 @@ export class Order {
     default: [],
   })
   transactions: TransactionDocument[];
-
-  @Prop({ default: false })
-  isPaid: boolean;
 
   @Prop({ default: null })
   menuQrCodeScannedTime: Date;

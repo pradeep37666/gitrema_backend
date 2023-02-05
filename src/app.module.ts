@@ -42,6 +42,7 @@ import { WaitingQueueModule } from './waiting-queue/waiting-queue.module';
 import { ReservationModule } from './reservation/reservation.module';
 import { OrderModule } from './order/order.module';
 import { OfferModule } from './offer/offer.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { OfferModule } from './offer/offer.module';
     ReservationModule,
     OrderModule,
     OfferModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [
