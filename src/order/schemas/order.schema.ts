@@ -95,31 +95,36 @@ export class Order {
   @Prop({ type: [OrderItemSchema], required: true })
   items: OrderItem[];
 
-  @Prop({ default: 0 })
-  tableFee: number;
+  @Prop({
+    default: {
+      fee: 0,
+      tax: 0,
+      netBeforeTax: 0,
+    },
+    type: Object,
+  })
+  tableFee: {
+    fee: number;
+    tax: number;
+    netBeforeTax: number;
+  };
 
   @Prop({
     type: Object,
     default: {
-      net: 0,
-      tax: 0,
-      gross: 0,
-      itemTotal: 0,
-      total: 0,
+      totalBeforeDiscount: 0,
       discount: 0,
-      tableFeeWithoutTax: 0,
-      tableFee: 0,
+      totalWithTax: 0,
+      totalTaxableAmount: 0,
+      totalTax: 0,
     },
   })
   summary: {
-    net: number;
-    tax: number;
-    gross: number;
-    itemTotal: number;
-    total: number;
+    totalBeforeDiscount: number;
     discount: number;
-    tableFeeWithoutTax: number;
-    tableFee: number;
+    totalWithTax: number;
+    totalTaxableAmount: number;
+    totalTax: number;
   };
 
   @Prop({

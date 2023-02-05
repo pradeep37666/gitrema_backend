@@ -16,31 +16,15 @@ export class CalculationService {
 
   async calculateSummery(orderData, supplier: LeanDocument<SupplierDocument>) {
     const summary = {
-      net: 0,
-      tax: 0,
-      gross: 0,
-      itemTotal: 0,
-      total: 0,
+      totalBeforeDiscount: 0,
       discount: 0,
-
-      tableFeeWithoutTax: 0,
-      tableFee: 0,
+      totalWithTax: 0,
+      totalTaxableAmount: 0,
+      totalTax: 0,
     };
 
-    if (orderData.tableFee) {
-      summary.tableFee = orderData.tableFee;
-
-      const taxRate = supplier.taxRate ?? 15;
-      summary.tableFeeWithoutTax = supplier.taxEnabledOnTableFee
-        ? roundOffNumber(orderData.tableFee / (1 + taxRate / 100))
-        : orderData.tableFee;
-    }
-    summary.gross += orderData.items.reduce(
-      (acc, oi) => acc + oi.gross * oi.quantity,
-      0,
-    );
-    summary.itemTotal += orderData.items.reduce(
-      (acc, oi) => acc + oi.itemTotal,
+    summary.totalBeforeDiscount += orderData.items.reduce(
+      (acc, oi) => acc + oi.amountBeforeDiscount,
       0,
     );
 
@@ -49,52 +33,23 @@ export class CalculationService {
       0,
     );
 
-    summary.tax += orderData.items.reduce((acc, oi) => acc + oi.tax, 0);
+    summary.totalWithTax += orderData.items.reduce(
+      (acc, oi) => acc + oi.amountAfterDiscount,
+      0,
+    );
 
-    // to show net without tax in summary
-    summary.net = summary.itemTotal - summary.tax;
+    summary.totalTaxableAmount += orderData.items.reduce(
+      (acc, oi) => acc + oi.itemTaxableAmount,
+      0,
+    );
 
-    summary.tax += summary.tableFee - summary.tableFeeWithoutTax;
+    summary.totalTax += orderData.items.reduce((acc, oi) => acc + oi.tax, 0);
 
-    summary.total += summary.itemTotal + summary.tableFee;
-
-    // apply coupon code
-    if (orderData.couponCode && summary.discount == 0) {
-      const offer = await this.offerModel.findOne({
-        active: true,
-        deletedAt: null,
-        start: {
-          $lte: new Date(moment.utc().format('YYYY-MM-DD')),
-        },
-        end: {
-          $gte: new Date(moment.utc().format('YYYY-MM-DD')),
-        },
-        code: orderData.couponCode,
-      });
-      if (offer) {
-        if (
-          offer.maxNumberAllowed > 0 &&
-          offer.maxNumberAllowed <= offer.totalUsed &&
-          !orderData._id
-        ) {
-          throw new BadRequestException(
-            `${orderData.couponCode} has been used for its quota`,
-          );
-        } else {
-          const discount =
-            offer.discountType == CalculationType.Fixed
-              ? offer.discount
-              : (summary.itemTotal * offer.discount) / 100;
-          summary.discount = offer.maxDiscount
-            ? discount > offer.maxDiscount
-              ? offer.maxDiscount
-              : discount
-            : discount;
-
-          summary.total -= summary.discount;
-        }
-      }
-    }
+    //apply table fee in tax
+    summary.totalBeforeDiscount += orderData.tableFee.fee;
+    summary.totalTax += orderData.tableFee.tax;
+    summary.totalWithTax += orderData.tableFee.fee;
+    summary.totalTaxableAmount += orderData.tableFee.netBeforeTax;
 
     return summary;
   }

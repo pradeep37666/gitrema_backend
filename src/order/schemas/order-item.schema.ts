@@ -22,17 +22,38 @@ class AdditionOption {
   @Prop({ required: true })
   nameAr: string;
 
-  @Prop({ default: 0 })
-  price: number;
-
   @Prop({ default: false })
   taxEnabled: boolean;
 
-  @Prop({ default: 0 })
-  tax: number;
-
   @Prop({})
   calory: number;
+
+  @Prop({ required: true })
+  unitPriceBeforeDiscount: number;
+
+  // @Prop({ default: 1 })
+  // quantity: number;
+
+  @Prop({ required: true })
+  amountBeforeDiscount: number;
+
+  @Prop({ required: true })
+  unitPriceDiscount: number;
+
+  @Prop({ required: true })
+  discount: number;
+
+  @Prop({ required: true })
+  unitPriceAfterDiscount: number;
+
+  @Prop({ required: true })
+  amountAfterDiscount: number;
+
+  @Prop({ required: true })
+  itemTaxableAmount: number;
+
+  @Prop({ required: true })
+  tax: number;
 }
 const AdditionOptionSchema = SchemaFactory.createForClass(AdditionOption);
 
@@ -78,13 +99,34 @@ class MenuItem {
   descriptionAr: string;
 
   @Prop({ required: true })
-  price: number;
+  unitPriceBeforeDiscount: number;
+
+  // @Prop({ default: 1 })
+  // quantity: number;
+
+  @Prop({ required: true })
+  amountBeforeDiscount: number;
+
+  @Prop({ required: true })
+  unitPriceDiscount: number;
+
+  @Prop({ required: true })
+  discount: number;
+
+  @Prop({ required: true })
+  unitPriceAfterDiscount: number;
+
+  @Prop({ required: true })
+  amountAfterDiscount: number;
+
+  @Prop({ required: true })
+  itemTaxableAmount: number;
+
+  @Prop({ required: true })
+  tax: number;
 
   @Prop({ default: false })
   taxEnabled: boolean;
-
-  @Prop({ default: 0 })
-  tax: number;
 
   @Prop({ default: null })
   priceInStar: number;
@@ -100,12 +142,6 @@ class MenuItem {
 
   @Prop({ type: [String], enum: Alergies })
   alergies: Alergies[];
-
-  @Prop({ default: null, type: Object })
-  discount: {
-    type: CalculationType;
-    value: number;
-  };
 }
 const MenuItemSchema = SchemaFactory.createForClass(MenuItem);
 
@@ -118,25 +154,31 @@ export class OrderItem {
   additions: MenuAddition[];
 
   @Prop({ required: true })
-  netPrice: number;
+  unitPriceBeforeDiscount: number;
 
-  @Prop({ required: false })
+  @Prop({ required: true })
+  amountBeforeDiscount: number;
+
+  @Prop({ required: true })
+  unitPriceDiscount: number;
+
+  @Prop({ required: true })
   discount: number;
 
   @Prop({ required: true })
-  priceAfterDiscount: number;
+  unitPriceAfterDiscount: number;
 
-  @Prop({ required: false })
-  gross: number;
+  @Prop({ required: true })
+  amountAfterDiscount: number;
+
+  @Prop({ required: true })
+  itemTaxableAmount: number;
+
+  @Prop({ required: true })
+  tax: number;
 
   @Prop({ default: 1 })
   quantity: number;
-
-  @Prop({ required: true })
-  itemTotal: number;
-
-  @Prop({ default: 0 })
-  tax: number;
 
   @Prop({ default: null })
   notes: string;

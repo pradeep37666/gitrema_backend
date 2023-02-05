@@ -75,10 +75,12 @@ export class OrderHelperService {
     }
 
     for (const i in items) {
-      let price = 0,
-        priceBeforeDiscount = 0,
-        netPrice = 0,
-        discount = 0;
+      let discount = 0,
+        unitPriceBeforeDiscount = 0,
+        unitPriceDiscount,
+        unitPriceAfterDiscount = 0,
+        itemTaxableAmount = 0,
+        tax = 0;
       preparedItems[i] = { ...items[i] };
 
       // copy menu item attributes needed in order schema
@@ -109,11 +111,11 @@ export class OrderHelperService {
       }
 
       // calculate price
-      netPrice = price = priceBeforeDiscount = menuItem.price;
+      unitPriceBeforeDiscount = menuItem.price;
 
-      // apply promotion
+      // apply promotion / couponcode
       discount = 0;
-      const offer = await this.offerModel.findOne(
+      let offer = await this.offerModel.findOne(
         {
           $or: [
             { menuCategoryIds: menuItem.categoryId },
@@ -131,6 +133,28 @@ export class OrderHelperService {
         {},
         { sort: { priority: 1 } },
       );
+      if (!offer && dto.couponCode) {
+        offer = await this.offerModel.findOne(
+          {
+            $or: [
+              { menuCategoryIds: menuItem.categoryId },
+              { menuItemIds: menuItem._id },
+            ],
+            active: true,
+            deletedAt: null,
+            start: {
+              $lte: new Date(moment.utc().format('YYYY-MM-DD')),
+            },
+            end: {
+              $gte: new Date(moment.utc().format('YYYY-MM-DD')),
+            },
+            code: dto.couponCode,
+          },
+          {},
+          { sort: { priority: 1 } },
+        );
+        if (offer.maxNumberAllowed > offer.totalUsed) offer = null;
+      }
       if (offer) {
         discount =
           offer.discountType == CalculationType.Fixed
@@ -141,18 +165,35 @@ export class OrderHelperService {
             ? offer.maxDiscount
             : discount
           : discount;
-        price -= discount;
-        netPrice = price;
+        unitPriceDiscount = discount;
       }
+      unitPriceAfterDiscount = unitPriceBeforeDiscount - unitPriceDiscount;
+
+      itemTaxableAmount = unitPriceAfterDiscount * items[i].quantity;
 
       // apply tax
       if (menuItem.taxEnabled) {
-        netPrice = roundOffNumber(price / (1 + taxRate / 100));
+        itemTaxableAmount = roundOffNumber(
+          itemTaxableAmount / (1 + taxRate / 100),
+        );
+        tax = (itemTaxableAmount * taxRate) / 100;
       }
       preparedItems[i].menuItem = {
         ...items[i].menuItem,
         ...menuItem,
-        tax: roundOffNumber(price - netPrice),
+        unitPriceBeforeDiscount: roundOffNumber(unitPriceBeforeDiscount),
+        //quantity: items[i].quantity,
+        amountBeforeDiscount: roundOffNumber(
+          unitPriceBeforeDiscount * items[i].quantity,
+        ),
+        unitPriceDiscount: roundOffNumber(unitPriceDiscount),
+        discount: roundOffNumber(unitPriceDiscount * items[i].quantity),
+        unitPriceAfterDiscount: roundOffNumber(unitPriceAfterDiscount),
+        amountAfterDiscount: roundOffNumber(
+          unitPriceAfterDiscount * items[i].quantity,
+        ),
+        itemTaxableAmount: roundOffNumber(itemTaxableAmount),
+        tax: roundOffNumber(tax),
       };
 
       //prepare additions
@@ -176,35 +217,71 @@ export class OrderHelperService {
             return additionOptionIds.includes(mao._id.toString());
           });
 
-          // sum the price of selected options
-          const additionPrice = preparedAdditions[j].options.reduce(
-            (acc, ao) => acc + ao.price,
-            0,
-          );
-
-          price += additionPrice;
-          priceBeforeDiscount += additionPrice;
-
-          // storing tax for each option and calculating net price
+          // storing tax,price details for each option and calculating net price
           preparedAdditions[j].options.forEach((o) => {
             o.optionId = o._id;
-            const optionNetPrice = o.taxEnabled
-              ? o.price / (1 + taxRate / 100)
-              : o.price;
-            o.tax = roundOffNumber(o.price - optionNetPrice);
-            netPrice += optionNetPrice;
+            const option = {
+              discount: 0,
+              unitPriceDiscount: 0,
+              unitPriceBeforeDiscount: 0,
+              itemTaxableAmount: 0,
+              tax: 0,
+            };
+
+            // calculate for each option
+            option.unitPriceBeforeDiscount = o.price;
+            option.itemTaxableAmount =
+              option.unitPriceBeforeDiscount * items[i].quantity;
+            if (menuAddition.taxEnabled) {
+              option.itemTaxableAmount =
+                option.itemTaxableAmount / (1 + taxRate / 100);
+              option.tax = (option.itemTaxableAmount * taxRate) / 100;
+            }
+
+            // set in option obj of DB
+            o.unitPriceBeforeDiscount = roundOffNumber(
+              option.unitPriceBeforeDiscount,
+            );
+            o.amountBeforeDiscount = roundOffNumber(
+              option.unitPriceBeforeDiscount * items[i].quantity,
+            );
+            o.unitPriceDiscount = 0;
+            o.discount = 0;
+            o.unitPriceAfterDiscount = o.unitPriceBeforeDiscount;
+            o.amountAfterDiscount = o.amountBeforeDiscount;
+            o.itemTaxableAmount = roundOffNumber(option.itemTaxableAmount);
+            o.tax = roundOffNumber(option.tax);
+
+            // add option price to item
+            unitPriceBeforeDiscount += option.unitPriceBeforeDiscount;
+            unitPriceAfterDiscount += option.unitPriceBeforeDiscount;
+            itemTaxableAmount += option.itemTaxableAmount;
+            tax += option.tax;
           });
         }
       }
+      // set for each order item in database
       preparedItems[i].additions = preparedAdditions;
-      preparedItems[i].priceAfterDiscount = price;
-      preparedItems[i].gross = priceBeforeDiscount;
-      preparedItems[i].discount = discount;
-      preparedItems[i].netPrice = roundOffNumber(netPrice);
-      preparedItems[i].itemTotal = price * preparedItems[i].quantity;
-      preparedItems[i].tax = roundOffNumber(
-        (price - preparedItems[i].netPrice) * preparedItems[i].quantity,
+      preparedItems[i].unitPriceBeforeDiscount = roundOffNumber(
+        unitPriceBeforeDiscount,
       );
+      preparedItems[i].amountBeforeDiscount = roundOffNumber(
+        unitPriceBeforeDiscount * preparedItems[i].quantity,
+      );
+      preparedItems[i].unitPriceDiscount = roundOffNumber(unitPriceDiscount);
+      preparedItems[i].discount = roundOffNumber(
+        unitPriceDiscount * preparedItems[i].quantity,
+      );
+      preparedItems[i].unitPriceAfterDiscount = roundOffNumber(
+        unitPriceAfterDiscount,
+      );
+
+      preparedItems[i].amountAfterDiscount = roundOffNumber(
+        unitPriceAfterDiscount * preparedItems[i].quantity,
+      );
+      preparedItems[i].itemTaxableAmount = roundOffNumber(itemTaxableAmount);
+
+      preparedItems[i].tax = roundOffNumber(tax);
     }
 
     return preparedItems;

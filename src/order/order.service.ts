@@ -23,6 +23,7 @@ import {
 } from 'src/supplier/schemas/suppliers.schema';
 import { OrderStatus, OrderType } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
+import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 
 @Injectable()
 export class OrderService {
@@ -50,18 +51,36 @@ export class OrderService {
       .findById(req.user.supplierId)
       .lean();
 
+    const taxRate = supplier.taxRate ?? 15;
+
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
       dto,
       supplier,
     );
 
+    orderData.tableFee = {
+      fee: 0,
+      netBeforeTax: 0,
+      tax: 0,
+    };
+
     if (orderData.orderType == OrderType.DineIn) {
       const table = await this.tableModel.findById(orderData.tableId);
 
       if (!table) throw new NotFoundException(`No Table Found`);
-
-      orderData.tableFee = table.fees ?? 0;
+      const tableFee = table.fees ?? 0;
+      const netBeforeTax = supplier.taxEnabledOnTableFee
+        ? tableFee / (1 + taxRate / 100)
+        : tableFee;
+      const tax = supplier.taxEnabledOnTableFee
+        ? (netBeforeTax * taxRate) / 100
+        : 0;
+      orderData.tableFee = {
+        fee: roundOffNumber(tableFee),
+        netBeforeTax: roundOffNumber(netBeforeTax),
+        tax: roundOffNumber(tax),
+      };
       orderData.sittingStartTime =
         table.startingTime ?? dto.menuQrCodeScannedTime ?? null;
     }
