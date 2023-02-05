@@ -28,11 +28,6 @@ export class PaymentOptionDto {
   rewardsClaim: boolean;
 }
 export class CreatePaymentSetupDto {
-  @ApiProperty()
-  @IsMongoId()
-  @IsNotEmpty()
-  restaurantId: string;
-
   @ApiProperty({ type: PaymentOptionDto })
   @Type(() => PaymentOptionDto)
   @ValidateNested()

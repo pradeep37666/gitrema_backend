@@ -21,14 +21,6 @@ export class PaymentSetup {
   supplierId: SupplierDocument;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Restaurant',
-    index: true,
-    required: true,
-  })
-  restaurantId: RestaurantDocument;
-
-  @Prop({
     type: Object,
     default: { ePayment: true, cashPayment: true, rewardsClaim: true },
   })
