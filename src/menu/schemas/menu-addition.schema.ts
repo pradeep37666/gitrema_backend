@@ -19,9 +19,6 @@ class AdditionOption {
   @Prop({ default: 0 })
   price: number;
 
-  @Prop({ default: false })
-  taxEnabled: boolean;
-
   @Prop({})
   order: number;
 
@@ -63,6 +60,12 @@ export class MenuAddition {
 
   @Prop({ default: null })
   freeOptions: number;
+
+  @Prop({})
+  order: number;
+
+  @Prop({ default: false })
+  taxEnabled: boolean;
 
   @Prop({ default: true })
   active: boolean;

@@ -33,11 +33,6 @@ class AdditionOptionDto {
   @IsNumber()
   order: number;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsBoolean()
-  taxEnabled: boolean;
-
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
@@ -81,6 +76,16 @@ export class CreateMenuAdditionDTO {
   @Type(() => AdditionOptionDto)
   @IsNotEmpty()
   options: AdditionOptionDto[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  taxEnabled: boolean;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
 }
 
 class UpdateAdditionOptionDto extends AdditionOptionDto {

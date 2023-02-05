@@ -19,11 +19,6 @@ export class CreateMenuCategoryDTO {
   @IsString()
   nameAr: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  order: number;
-
   @ApiProperty({ required: false })
   @IsUrl()
   @IsOptional()
