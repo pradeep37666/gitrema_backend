@@ -35,6 +35,7 @@ export class KitchenQueueService {
     const kitchenQueue = await this.kitchenQueueModel.create({
       ...dto,
       addedBy: req.user.userId,
+      supplierId: req.user.supplierId,
     });
     if (kitchenQueue) {
       this.userModel.findByIdAndUpdate(
