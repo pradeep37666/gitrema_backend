@@ -21,6 +21,7 @@ import { PaginateResult } from 'mongoose';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
+import { GroupOrderDto } from './dto/group-order.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -80,5 +81,11 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
   async moveItems(@Req() req, @Body() dto: MoveOrderItemDto) {
     return await this.orderService.moveItems(req, dto);
+  }
+
+  @Post('group')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  async group(@Req() req, @Body() dto: GroupOrderDto) {
+    return await this.orderService.groupOrders(req, dto);
   }
 }

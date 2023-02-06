@@ -6,7 +6,7 @@ import {
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import mongoose, { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { OrderHelperService } from './order-helper.service';
@@ -25,6 +25,7 @@ import { OrderStatus, OrderType } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { MoveOrderItemDto } from './dto/move-order.dto';
+import { GroupOrderDto } from './dto/group-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -190,11 +191,11 @@ export class OrderService {
       throw new NotFoundException();
     }
 
-    if (order.status == OrderStatus.Paid) {
-      throw new BadRequestException(`No changes can be made after payment`);
+    if (order.status == OrderStatus.Closed) {
+      throw new BadRequestException(`Order is closed. No changes can be made`);
     }
 
-    if (dto.status && dto.status == OrderStatus.Processing) {
+    if (dto.status && dto.status == OrderStatus.SentToKitchen) {
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
@@ -232,17 +233,56 @@ export class OrderService {
     return modified;
   }
 
-  async moveItems(req: any, dto: MoveOrderItemDto) {
+  async groupOrders(req: any, dto: GroupOrderDto): Promise<string> {
+    const groupId = new mongoose.Types.ObjectId();
+    await this.orderModel.updateMany(
+      {
+        _id: { $in: dto.orderIds },
+      },
+      { $set: { groupId } },
+    );
+    return groupId.toString();
+  }
+
+  async moveItems(req: any, dto: MoveOrderItemDto): Promise<OrderDocument> {
     const sourceOrder = await this.orderModel.findById(dto.sourceOrderId);
     if (!sourceOrder) throw new NotFoundException(`Source order not found`);
-    if (sourceOrder.items.length <= 1)
-      throw new NotFoundException(`Not enough items to move`);
-    const items = sourceOrder.items.filter((i) => {
-      return dto.items.includes(i._id.toString());
+
+    if (sourceOrder.status == OrderStatus.Closed)
+      throw new NotFoundException('Order is closed');
+
+    const items = [];
+    dto.items.forEach((i) => {
+      const itemIndex = sourceOrder.items.findIndex((itemObj) => {
+        return itemObj._id.toString() == i.itemId;
+      });
+      if (itemIndex > -1) {
+        const itemObj = sourceOrder.items[itemIndex];
+        let quantity = itemObj.quantity;
+        if (i.quantity) {
+          if (i.quantity > quantity)
+            throw new NotFoundException(
+              `Not enough quantity for ${itemObj.menuItem.name}`,
+            );
+          quantity = i.quantity;
+          sourceOrder.items[itemIndex].quantity -= quantity;
+        } else {
+          delete sourceOrder.items[itemIndex];
+        }
+        items.push({ ...itemObj.toObject(), quantity });
+      }
     });
+
+    if (sourceOrder.items.length == 0)
+      throw new NotFoundException(`Not enough items to move`);
+    if (items.length == 0) throw new NotFoundException(`No items found`);
+    const supplier = await this.supplierModel
+      .findById(sourceOrder.supplierId)
+      .lean();
+
     let targetOrder = null;
     if (!dto.targetOrderId) {
-      const targetOrderDto = { ...sourceOrder.toObject() };
+      const targetOrderDto = sourceOrder.toObject();
       targetOrderDto.items = items;
       delete targetOrderDto._id;
       delete targetOrderDto.createdAt;
@@ -250,6 +290,11 @@ export class OrderService {
       targetOrderDto.transactions = [];
 
       targetOrderDto.tableFee = { fee: 0, tax: 0, netBeforeTax: 0 };
+      targetOrderDto.items = await this.orderHelperService.prepareOrderItems(
+        targetOrderDto,
+        supplier,
+      );
+      console.log(targetOrderDto.items);
       targetOrderDto.summary = await this.calculationService.calculateSummery(
         targetOrderDto,
       );
@@ -263,10 +308,10 @@ export class OrderService {
       await targetOrder.save();
     }
     if (targetOrder) {
-      const remainingItems = sourceOrder.items.filter((i) => {
-        return !dto.items.includes(i._id.toString());
-      });
-      sourceOrder.items = remainingItems;
+      sourceOrder.items = await this.orderHelperService.prepareOrderItems(
+        sourceOrder.toObject(),
+        supplier,
+      );
       sourceOrder.summary = await this.calculationService.calculateSummery(
         sourceOrder,
       );

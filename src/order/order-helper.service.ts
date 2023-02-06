@@ -43,7 +43,7 @@ export class OrderHelperService {
   ) {}
 
   async prepareOrderItems(
-    dto: CreateOrderDto | UpdateOrderDto,
+    dto: CreateOrderDto | UpdateOrderDto | any,
     supplier: LeanDocument<SupplierDocument>,
     order: OrderDocument = null,
   ) {
@@ -319,7 +319,7 @@ export class OrderHelperService {
 
   async postOrderUpdate(order: OrderDocument, dto: UpdateOrderDto) {
     // store activity
-    if (dto.status && dto.status == OrderStatus.Processing) {
+    if (dto.status && dto.status == OrderStatus.SentToKitchen) {
       this.storeOrderStateActivity(
         order,
         OrderActivityType.SentToKitchen,
