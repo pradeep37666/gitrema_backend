@@ -9,7 +9,13 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { OrderStatus, OrderType, Source } from '../enum/en.enum';
+import {
+  InvoiceStatus,
+  OrderStatus,
+  OrderType,
+  PaymentStatus,
+  Source,
+} from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import {
@@ -72,6 +78,12 @@ export class Order {
   })
   cashierId: CashierDocument;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    default: null,
+  })
+  groupId: string;
+
   // @Prop({ required: true })
   // orderNumber: string;
 
@@ -99,6 +111,12 @@ export class Order {
   @Prop({ type: [OrderItemSchema], required: true })
   items: OrderItemDocument[];
 
+  @Prop({ type: String, enum: PaymentStatus, default: PaymentStatus.NotPaid })
+  paymentStatus: PaymentStatus;
+
+  @Prop({ type: String, enum: InvoiceStatus })
+  invoiceStatus: InvoiceStatus;
+
   @Prop({
     default: {
       fee: 0,
@@ -122,6 +140,7 @@ export class Order {
       totalTaxableAmount: 0,
       totalTax: 0,
       totalPaid: 0,
+      totalRefunded: 0,
     },
   })
   summary: {
@@ -131,6 +150,7 @@ export class Order {
     totalTaxableAmount: number;
     totalTax: number;
     totalPaid: number;
+    totalRefunded: number;
   };
 
   @Prop({

@@ -23,6 +23,11 @@ import {
 } from 'src/transaction/schemas/transactions.schema';
 import { PaymentStatus } from 'src/core/Constants/enum';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import { RefundDto } from './dto/refund.dto';
+import {
+  PaymentStatus as OrderPaymentStatus,
+  OrderStatus,
+} from 'src/order/enum/en.enum';
 
 @Injectable()
 export class PaymentService {
@@ -121,9 +126,39 @@ export class PaymentService {
     return true;
   }
 
+  async refund(req: any, dto: RefundDto): Promise<TransactionDocument> {
+    const order = await this.orderModel.findById(dto.orderId);
+    if (!order) throw new NotFoundException('Order not found');
+    if (dto.amount > order.summary.totalPaid - order.summary.totalRefunded) {
+      throw new BadRequestException(
+        `Max allowed refund for the given order is ${
+          order.summary.totalPaid - order.summary.totalRefunded
+        }`,
+      );
+    }
+    const transaction = await this.transactionModel.create({
+      supplierId: order.supplierId,
+      orderId: order._id,
+      amount: dto.amount,
+      paymentMethod: PaymentMethod.Cash,
+      status: PaymentStatus.Success,
+      isRefund: true,
+    });
+    this.orderService.generalUpdate(req, order._id, {
+      $inc: { 'summary.totalRefunded': dto.amount },
+      paymentStatus:
+        order.summary.totalRefunded + dto.amount == order.summary.totalPaid
+          ? OrderPaymentStatus.Refunded
+          : OrderPaymentStatus.PartiallyRefunded,
+      $push: { transactions: transaction._id },
+    });
+    return transaction;
+  }
+
   async split(req: any, dto: PaymentSplitDto): Promise<TransactionDocument[]> {
     const order = await this.orderModel.findById(dto.orderId);
     if (!order) throw new NotFoundException('Order not found');
+
     const splittedAmount: number =
       (order.summary.totalWithTax - order.summary.totalPaid) / dto.split;
 

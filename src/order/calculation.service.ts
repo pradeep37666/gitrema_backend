@@ -22,6 +22,7 @@ export class CalculationService {
       totalTaxableAmount: 0,
       totalTax: 0,
       totalPaid: 0,
+      totalRefunded: 0,
     };
 
     summary.totalBeforeDiscount += orderData.items.reduce(
