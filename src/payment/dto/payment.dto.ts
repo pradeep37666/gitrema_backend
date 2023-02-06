@@ -35,6 +35,11 @@ class ItemDto {
 }
 
 export class PaymentInitiateDto {
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsNotEmpty()
+  groupId: string;
+
   @ApiProperty()
   @IsMongoId()
   @IsNotEmpty()

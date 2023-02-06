@@ -1,6 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 
+class ItemDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  quantity: number;
+
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  itemId: string;
+}
 export class MoveOrderItemDto {
   @ApiProperty()
   @IsMongoId()
@@ -12,9 +31,10 @@ export class MoveOrderItemDto {
   @IsOptional()
   targetOrderId: string;
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [ItemDto] })
   @IsArray()
-  @IsMongoId({ each: true })
+  @Type(() => ItemDto)
+  @ValidateNested({ each: true })
   @IsNotEmpty()
-  items: string[];
+  items: ItemDto[];
 }

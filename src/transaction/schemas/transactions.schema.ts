@@ -119,6 +119,9 @@ export class Transaction {
   @Prop({ default: false })
   isRemitted: boolean;
 
+  @Prop({ default: false })
+  isRefund: boolean;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',

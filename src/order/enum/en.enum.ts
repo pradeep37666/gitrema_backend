@@ -5,6 +5,7 @@ export enum Source {
 }
 
 export enum OrderType {
+  ToGo = 'To Go',
   Pickup = 'Pickup',
   Delivery = 'Delivery',
   DineIn = 'Dine In',
@@ -12,9 +13,11 @@ export enum OrderType {
 
 export enum OrderStatus {
   New = 'New',
-  Processing = 'Processing',
+  SentToKitchen = 'Sent To Kitchen',
+  StartedPreparing = 'Started Preparing',
+  DonePreparing = 'Done Preparing',
   OnTable = 'On Table',
-  Paid = 'Paid',
+  Closed = 'Closed',
 }
 
 export enum OrderActivityType {
@@ -24,4 +27,17 @@ export enum OrderActivityType {
   SentToKitchen = 'SentToKitchen',
   OrderReady = 'OrderReady',
   PaymentReceived = 'PaymentReceived',
+}
+
+export enum PaymentStatus {
+  NotPaid = 'Not Paid',
+  Paid = 'Paid',
+  Refunded = 'Refunded',
+  PartiallyRefunded = 'Partially Refunded',
+}
+
+export enum InvoiceStatus {
+  Invoiced = 'Invoiced',
+  Reversed = 'Reversed',
+  CreditMemo = 'Credit Memo',
 }

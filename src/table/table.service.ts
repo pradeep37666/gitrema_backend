@@ -104,7 +104,7 @@ export class TableService {
                         },
                       },
                       {
-                        status: OrderStatus.Processing,
+                        status: OrderStatus.SentToKitchen,
                       },
                     ],
                   },

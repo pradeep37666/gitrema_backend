@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
-import { Shape } from '../enum/en.enum';
+import { Shape, TableStatus } from '../enum/en.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { ListDocument } from 'src/list/schemas/list.schema';
@@ -55,6 +55,9 @@ export class Table {
 
   @Prop({ default: null })
   startingTime: Date;
+
+  @Prop({ type: String, enum: TableStatus, default: TableStatus.Empty })
+  status: TableStatus;
 
   @Prop({ default: false })
   waiterNeeded: boolean;

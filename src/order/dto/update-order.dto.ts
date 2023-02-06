@@ -35,7 +35,7 @@ export class UpdateOrderDto extends PartialType(
     enumName: 'OrderStatus',
   })
   @IsEnum(OrderStatus)
-  @IsNotIn([OrderStatus.Paid])
+  @IsNotIn([OrderStatus.Closed])
   @IsOptional()
   status: OrderStatus;
 }
