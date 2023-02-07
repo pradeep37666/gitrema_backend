@@ -4,7 +4,6 @@ import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { MenuAdditionDocument } from 'src/menu/schemas/menu-addition.schema';
 import { Alergies } from 'src/menu/enum/en.enum';
-import { CalculationType } from 'src/core/Constants/enum';
 
 export type OrderItemDocument = OrderItem & Document;
 

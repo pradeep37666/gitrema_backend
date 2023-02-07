@@ -105,6 +105,9 @@ export class Order {
   @Prop({ default: false })
   isScheduled: boolean;
 
+  @Prop({ default: false })
+  isGrouped: boolean;
+
   @Prop({ default: null })
   scheduledDateTime: Date;
 
@@ -130,6 +133,9 @@ export class Order {
     tax: number;
     netBeforeTax: number;
   };
+
+  @Prop({ default: 0 })
+  headerDiscount: number;
 
   @Prop({
     type: Object,

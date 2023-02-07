@@ -92,6 +92,8 @@ export class OrderService {
       orderData,
     );
 
+    orderData.headerDiscount = orderData.summary.headerDiscount;
+
     if (isDryRun) {
       return orderData;
     }
@@ -116,6 +118,7 @@ export class OrderService {
     const orders = await this.orderModelPag.paginate(
       {
         supplierId: req.user.supplierId,
+        groupId: null,
         ...query,
       },
       {
@@ -218,6 +221,7 @@ export class OrderService {
       orderData.summary = await this.calculationService.calculateSummery(
         orderData,
       );
+      orderData.headerDiscount = orderData.summary.headerDiscount;
     }
 
     const modified = await this.orderModel.findByIdAndUpdate(
@@ -233,15 +237,51 @@ export class OrderService {
     return modified;
   }
 
-  async groupOrders(req: any, dto: GroupOrderDto): Promise<string> {
-    const groupId = new mongoose.Types.ObjectId();
+  async groupOrders(req: any, dto: GroupOrderDto): Promise<OrderDocument> {
+    const orders = await this.orderModel.find({
+      _id: { $in: dto.orderIds },
+      status: { $nin: [OrderStatus.Closed, OrderStatus.Cancelled] },
+    });
+    if (orders.length == 0)
+      throw new BadRequestException(
+        'All provided orders are either closed or cancelled',
+      );
+    let items = [];
+    orders.forEach((o) => {
+      items = items.concat(o.items);
+    });
+
+    const supplier = await this.supplierModel
+      .findById(orders[0].supplierId)
+      .lean();
+
+    const groupOrder = orders[0].toObject();
+    groupOrder.items = items;
+    delete groupOrder._id;
+    delete groupOrder.createdAt;
+    delete groupOrder.updatedAt;
+    groupOrder.isGrouped = true;
+    groupOrder.transactions = [];
+
+    groupOrder.items = await this.orderHelperService.prepareOrderItems(
+      groupOrder,
+      supplier,
+    );
+
+    console.log(groupOrder.items);
+    groupOrder.summary = await this.calculationService.calculateSummery(
+      groupOrder,
+    );
+
+    const groupOrderObj = await this.orderModel.create(groupOrder);
+
     await this.orderModel.updateMany(
       {
         _id: { $in: dto.orderIds },
       },
-      { $set: { groupId } },
+      { $set: { groupId: groupOrderObj._id } },
     );
-    return groupId.toString();
+    return groupOrderObj;
   }
 
   async moveItems(req: any, dto: MoveOrderItemDto): Promise<OrderDocument> {
@@ -269,7 +309,9 @@ export class OrderService {
         } else {
           delete sourceOrder.items[itemIndex];
         }
-        items.push({ ...itemObj.toObject(), quantity });
+        const item = { ...itemObj.toObject(), quantity };
+        delete item._id;
+        items.push(item);
       }
     });
 
