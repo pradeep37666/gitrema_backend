@@ -22,6 +22,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { QueryOrderDto } from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
+import { OrderStatus } from './enum/en.enum';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -75,6 +76,14 @@ export class OrderController {
     @Body() dto: UpdateOrderDto,
   ) {
     return await this.orderService.update(req, orderId, dto);
+  }
+
+  @Patch(':orderId/cancel')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.CANCEL)
+  async cancel(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.update(req, orderId, {
+      status: OrderStatus.Cancelled,
+    });
   }
 
   @Post('move-items')

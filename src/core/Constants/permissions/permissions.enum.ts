@@ -35,6 +35,7 @@ export enum CommonPermissions {
   CLOSE = 'CLOSE',
   PAUSE = 'PAUSE',
   RESUME = 'RESUME',
+  CANCEL = 'CANCEL',
   MANAGE = 'MANAGE',
 }
 
