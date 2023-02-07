@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import * as moment from 'moment';
 import { CalculationType } from 'src/core/Constants/enum';
-import { OfferType } from '../enum/en.enum';
+import { ApplicationType, OfferType } from '../enum/en.enum';
 
 export class CreateOfferDto {
   @ApiProperty()
@@ -47,6 +47,11 @@ export class CreateOfferDto {
   @IsNotEmpty()
   @IsEnum(OfferType)
   offerType: OfferType;
+
+  @ApiProperty({ type: String, enum: ApplicationType })
+  @IsNotEmpty()
+  @IsEnum(ApplicationType)
+  applicationType: ApplicationType;
 
   @ApiProperty({ type: String, enum: CalculationType })
   @IsNotEmpty()

@@ -3,7 +3,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 import { CalculationType } from 'src/core/Constants/enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
-import { OfferType } from '../enum/en.enum';
+import { ApplicationType, OfferType } from '../enum/en.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { MenuCategoryDocument } from 'src/menu/schemas/menu-category.schema';
@@ -36,6 +36,9 @@ export class Offer {
 
   @Prop({ required: true, type: String, enum: OfferType })
   offerType: OfferType;
+
+  @Prop({ required: true, type: String, enum: ApplicationType })
+  applicationType: ApplicationType;
 
   @Prop({ required: true, type: String, enum: CalculationType })
   discountType: CalculationType;
