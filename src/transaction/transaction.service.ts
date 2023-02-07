@@ -18,8 +18,13 @@ import {
 } from 'src/core/Constants/pagination';
 import { Order, OrderDocument } from 'src/order/schemas/order.schema';
 import { OrderHelperService } from 'src/order/order-helper.service';
-import { OrderActivityType, OrderStatus } from 'src/order/enum/en.enum';
+import {
+  OrderActivityType,
+  OrderStatus,
+  PaymentStatus as OrderPaymentStatus,
+} from 'src/order/enum/en.enum';
 import { capitalize } from 'src/core/Helpers/universal.helper';
+import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
 
 @Injectable()
 export class TransactionService {
@@ -30,6 +35,8 @@ export class TransactionService {
     private transactionModelPag: PaginateModel<TransactionDocument>,
     @InjectModel(Order.name)
     private orderModel: Model<OrderDocument>,
+    @InjectModel(TableLog.name)
+    private readonly tableLogModel: Model<TableLogDocument>,
     private orderHelperService: OrderHelperService,
   ) {}
 
@@ -123,10 +130,26 @@ export class TransactionService {
         };
         if (total >= order.summary.totalWithTax) {
           dataToUpdate.status = OrderStatus.Closed;
+          dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
           dataToUpdate.paymentTime = new Date();
         }
         order.set(dataToUpdate);
-        order.save();
+        await order.save();
+
+        // update table log
+        if (order.tableId) {
+          if (
+            (await this.orderModel.count({
+              status: OrderStatus.Closed,
+              tableId: order.tableId,
+            })) == 0
+          ) {
+            await this.tableLogModel.findOneAndUpdate(
+              { tableId: order.tableId },
+              { paymentNeeded: false },
+            );
+          }
+        }
       }
     }
   }

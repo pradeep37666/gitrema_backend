@@ -1,12 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { OrderDocument } from 'src/order/schemas/order.schema';
 
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+import { TableDocument } from './table.schema';
 
-export type TableDocument = TableLog & Document;
+export type TableLogDocument = TableLog & Document;
 
 @Schema({ timestamps: true })
 export class TableLog {
@@ -31,11 +33,27 @@ export class TableLog {
   })
   tableId: TableDocument;
 
+  @Prop({
+    type: [MongooseSchema.Types.ObjectId],
+    ref: 'Order',
+    default: [],
+  })
+  orders: OrderDocument[];
+
   @Prop({ default: null })
   startingTime: Date;
 
   @Prop({ default: null })
   closingTime: Date;
+
+  @Prop({ default: null })
+  menuScannedTime: Date;
+
+  @Prop({ default: false })
+  paymentNeeded: boolean;
+
+  @Prop({ default: false })
+  helpNeeded: boolean;
 }
 
 export const TableLogSchema = SchemaFactory.createForClass(TableLog);

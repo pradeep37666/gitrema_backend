@@ -21,6 +21,7 @@ import { AggregatePaginateResult, PaginateResult } from 'mongoose';
 import { TableDocument } from './schemas/table.schema';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { QueryTableDto } from './dto/query-table.dto';
+import { TableLogDto } from './dto/table-log.dto';
 
 @Controller('table')
 @ApiTags('Tables')
@@ -69,6 +70,12 @@ export class TableController {
   @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
   async closeTable(@Param('tableId') tableId: string) {
     return await this.tableService.logTable(tableId, false);
+  }
+
+  @Patch(':tableId/update-log')
+  @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
+  async updateLog(@Param('tableId') tableId: string, @Body() dto: TableLogDto) {
+    return await this.tableService.updateLog(tableId, dto);
   }
 
   @Delete(':tableId')

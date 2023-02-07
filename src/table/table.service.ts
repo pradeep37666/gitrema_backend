@@ -20,8 +20,9 @@ import {
   pagination,
 } from 'src/core/Constants/pagination';
 import { QueryTableDto } from './dto/query-table.dto';
-import { TableLog } from './schemas/table-log.schema';
+import { TableLog, TableLogDocument } from './schemas/table-log.schema';
 import { OrderStatus } from 'src/order/enum/en.enum';
+import { TableLogDto } from './dto/table-log.dto';
 
 @Injectable()
 export class TableService {
@@ -31,7 +32,7 @@ export class TableService {
     @InjectModel(Table.name)
     private readonly tableModelPag: AggregatePaginateModel<TableDocument>,
     @InjectModel(TableLog.name)
-    private readonly tableLogModel: Model<TableDocument>,
+    private readonly tableLogModel: Model<TableLogDocument>,
   ) {}
 
   async create(req: any, dto: CreateTableDto): Promise<TableDocument> {
@@ -139,6 +140,31 @@ export class TableService {
             },
           },
           {
+            $lookup: {
+              from: 'tablelogs',
+              let: {
+                id: '$_id',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      {
+                        $expr: {
+                          $eq: ['$tableId', '$$id'],
+                        },
+                      },
+                      {
+                        closingTime: null,
+                      },
+                    ],
+                  },
+                },
+              ],
+              as: 'tableLog',
+            },
+          },
+          {
             $addFields: {
               newOrders: { $size: '$newOrders' },
               processingOrders: { $size: '$processingOrders' },
@@ -181,30 +207,58 @@ export class TableService {
     return table;
   }
 
-  async logTable(tableId: string, start = true): Promise<boolean> {
+  async logTable(tableId: string, start = true): Promise<TableLogDocument> {
     const table = await this.tableModel.findById(tableId);
-
     if (!table) {
       throw new NotFoundException();
     }
 
+    let tableLog = await this.tableLogModel.findOne(
+      { tableId },
+      {},
+      { sort: { _id: -1 } },
+    );
+
     if (start) {
-      if (table.startingTime != null) {
+      if (tableLog && tableLog.closingTime == null) {
         throw new BadRequestException('Table is already started');
       }
-      table.startingTime = new Date();
+      tableLog = new this.tableLogModel({
+        supplierId: table.supplierId,
+        restaurantId: table.restaurantId,
+        tableId,
+        startingTime: new Date(),
+      });
     } else {
-      if (table.startingTime == null) {
+      if (!tableLog) {
         throw new BadRequestException('Table has not started yet');
       }
 
-      await this.tableLogModel.create({ ...table, closingTime: new Date() });
-      table.startingTime = null;
+      tableLog.closingTime = new Date();
     }
 
-    await table.save();
+    await tableLog.save();
 
-    return true;
+    return tableLog;
+  }
+
+  async updateLog(
+    tableId: string,
+    dto: TableLogDto,
+  ): Promise<TableLogDocument> {
+    const tableLog = await this.tableLogModel.findOneAndUpdate(
+      { tableId, closingTime: null },
+      dto,
+      {
+        new: true,
+      },
+    );
+
+    if (!tableLog) {
+      throw new NotFoundException(`Table has not started yet`);
+    }
+
+    return tableLog;
   }
 
   async remove(tableId: string): Promise<boolean> {
