@@ -18,6 +18,7 @@ export enum OrderStatus {
   DonePreparing = 'Done Preparing',
   OnTable = 'On Table',
   Closed = 'Closed',
+  Cancelled = 'Cancelled',
 }
 
 export enum OrderActivityType {
@@ -27,6 +28,7 @@ export enum OrderActivityType {
   SentToKitchen = 'SentToKitchen',
   OrderReady = 'OrderReady',
   PaymentReceived = 'PaymentReceived',
+  Refunded = 'Refunded',
 }
 
 export enum PaymentStatus {

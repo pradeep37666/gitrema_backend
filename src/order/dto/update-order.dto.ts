@@ -26,7 +26,7 @@ export class UpdateOrderDto extends PartialType(
   @ValidateNested({ each: true })
   @Type(() => UpdateOrderItemDto)
   @IsOptional()
-  items: UpdateOrderItemDto[];
+  items?: UpdateOrderItemDto[];
 
   @ApiProperty({
     type: String,
@@ -35,7 +35,7 @@ export class UpdateOrderDto extends PartialType(
     enumName: 'OrderStatus',
   })
   @IsEnum(OrderStatus)
-  @IsNotIn([OrderStatus.Closed])
+  @IsNotIn([OrderStatus.Closed, OrderStatus.Cancelled])
   @IsOptional()
-  status: OrderStatus;
+  status?: OrderStatus;
 }

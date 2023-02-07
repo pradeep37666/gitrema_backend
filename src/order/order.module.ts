@@ -17,6 +17,7 @@ import {
 import { Table, TableSchema } from 'src/table/schemas/table.schema';
 import { Offer, OfferSchema } from 'src/offer/schemas/offer.schema';
 import { Activity, ActivitySchema } from 'src/activity/schemas/activity.schema';
+import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { Activity, ActivitySchema } from 'src/activity/schemas/activity.schema';
       { name: MenuAddition.name, schema: MenuAdditionSchema },
       { name: Offer.name, schema: OfferSchema },
       { name: Activity.name, schema: ActivitySchema },
+      { name: TableLog.name, schema: TableLogSchema },
     ]),
   ],
   controllers: [OrderController],

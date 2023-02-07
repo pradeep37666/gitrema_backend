@@ -26,6 +26,8 @@ import * as moment from 'moment';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ActivitySubject, ActivityType } from 'src/activity/enum/activity.enum';
 import { CreateActivityDto } from 'src/activity/dto/create-activity.dto';
+import { ApplicationType } from 'src/offer/enum/en.enum';
+import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
 
 @Injectable()
 export class OrderHelperService {
@@ -38,6 +40,8 @@ export class OrderHelperService {
     private readonly menuAdditionModel: Model<MenuAdditionDocument>,
     @InjectModel(Offer.name)
     private readonly offerModel: Model<OfferDocument>,
+    @InjectModel(TableLog.name)
+    private readonly tableLogModel: Model<TableLogDocument>,
     @InjectModel(Activity.name)
     private readonly activityModel: Model<ActivityDocument>,
   ) {}
@@ -129,6 +133,7 @@ export class OrderHelperService {
           end: {
             $gte: new Date(moment.utc().format('YYYY-MM-DD')),
           },
+          applicationType: ApplicationType.LineItem,
         },
         {},
         { sort: { priority: 1 } },
@@ -149,6 +154,7 @@ export class OrderHelperService {
               $gte: new Date(moment.utc().format('YYYY-MM-DD')),
             },
             code: dto.couponCode,
+            applicationType: ApplicationType.LineItem,
           },
           {},
           { sort: { priority: 1 } },
@@ -315,6 +321,13 @@ export class OrderHelperService {
     //auto assign waiter and kitchen queue
     // if (order.orderType == OrderType.DineIn) {
     // }
+    // update the table log
+    if (order.tableId) {
+      await this.tableLogModel.findOneAndUpdate(
+        { tableId: order.tableId },
+        { $push: { orders: order._id }, paymentNeeded: true },
+      );
+    }
   }
 
   async postOrderUpdate(order: OrderDocument, dto: UpdateOrderDto) {
