@@ -55,7 +55,7 @@ export class CashierLog {
   overrideReason: string;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
+    type: [MongooseSchema.Types.ObjectId],
     ref: 'Transaction',
     index: true,
     default: [],
