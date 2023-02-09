@@ -6,6 +6,7 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { ListDocument } from 'src/list/schemas/list.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+import { TableLogDocument } from './table-log.schema';
 
 export type TableDocument = Table & Document;
 
@@ -53,14 +54,15 @@ export class Table {
   @Prop({ default: 60 })
   minutesAllowed: number;
 
-  @Prop({ default: null })
-  startingTime: Date;
-
   @Prop({ type: String, enum: TableStatus, default: TableStatus.Empty })
   status: TableStatus;
 
-  @Prop({ default: false })
-  waiterNeeded: boolean;
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'TableLog',
+    default: null,
+  })
+  currentTableLog: TableLogDocument;
 
   @Prop({ default: null })
   deletedAt: Date;

@@ -23,6 +23,7 @@ import { QueryTableDto } from './dto/query-table.dto';
 import { TableLog, TableLogDocument } from './schemas/table-log.schema';
 import { OrderStatus } from 'src/order/enum/en.enum';
 import { TableLogDto } from './dto/table-log.dto';
+import { TableStatus } from './enum/en.enum';
 
 @Injectable()
 export class TableService {
@@ -142,26 +143,9 @@ export class TableService {
           {
             $lookup: {
               from: 'tablelogs',
-              let: {
-                id: '$_id',
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      {
-                        $expr: {
-                          $eq: ['$tableId', '$$id'],
-                        },
-                      },
-                      {
-                        closingTime: null,
-                      },
-                    ],
-                  },
-                },
-              ],
-              as: 'tableLog',
+              localField: 'currentTableLog',
+              foreignField: '_id',
+              as: 'currentTableLog',
             },
           },
           {
@@ -169,6 +153,14 @@ export class TableService {
               newOrders: { $size: '$newOrders' },
               processingOrders: { $size: '$processingOrders' },
               onTableOrders: { $size: '$onTableOrders' },
+              currentTableLog: {
+                $cond: {
+                  if: { $eq: [{ $size: '$currentTableLog' }, 1] },
+                  then: { $arrayElemAt: ['$currentTableLog', 0] },
+                  else: null,
+                },
+                //$arrayElemAt: ['$currentTableLog', 0],
+              },
             },
           },
         ],
@@ -186,7 +178,10 @@ export class TableService {
   async findOne(tableId: string): Promise<TableDocument> {
     const exists = await this.tableModel
       .findById(tableId)
-      .populate([{ path: 'restaurantId', select: { name: 1, nameAr: 1 } }]);
+      .populate([
+        { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
+        { path: 'currentTableLog' },
+      ]);
 
     if (!exists) {
       throw new NotFoundException();
@@ -195,7 +190,10 @@ export class TableService {
     return exists;
   }
 
-  async update(tableId: string, dto: UpdateTableDto): Promise<TableDocument> {
+  async update(
+    tableId: string,
+    dto: UpdateTableDto | any,
+  ): Promise<TableDocument> {
     const table = await this.tableModel.findByIdAndUpdate(tableId, dto, {
       new: true,
     });
@@ -229,12 +227,20 @@ export class TableService {
         tableId,
         startingTime: new Date(),
       });
+      this.update(tableId, {
+        status: TableStatus.InUse,
+        currentTableLog: tableLog._id,
+      });
     } else {
       if (!tableLog) {
         throw new BadRequestException('Table has not started yet');
       }
 
       tableLog.closingTime = new Date();
+      this.update(tableId, {
+        status: TableStatus.Empty,
+        currentTableLog: null,
+      });
     }
 
     await tableLog.save();
