@@ -43,6 +43,8 @@ import { ReservationModule } from './reservation/reservation.module';
 import { OrderModule } from './order/order.module';
 import { OfferModule } from './offer/offer.module';
 import { PaymentModule } from './payment/payment.module';
+import { PuppeteerModule } from 'nest-puppeteer';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
   imports: [
@@ -64,10 +66,10 @@ import { PaymentModule } from './payment/payment.module';
         uri: config.get('mongo.dbUrl'), // Loaded from .ENV
       }),
     }),
-    // PuppeteerModule.forRoot({
-    //   isGlobal: true,
-    //   executablePath: '/usr/bin/google-chrome',
-    // }),
+    PuppeteerModule.forRoot({
+      isGlobal: true,
+      executablePath: '/usr/bin/google-chrome',
+    }),
     AuthModule,
     UserModule,
     SupplierModule,
@@ -95,6 +97,7 @@ import { PaymentModule } from './payment/payment.module';
     OrderModule,
     OfferModule,
     PaymentModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [

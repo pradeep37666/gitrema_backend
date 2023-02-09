@@ -24,6 +24,7 @@ export enum PermissionSubject {
   Order = 'Order',
   Business = 'Business',
   Offer = 'Offer',
+  Invoice = 'Invoice',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
