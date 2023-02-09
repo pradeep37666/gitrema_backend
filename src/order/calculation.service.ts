@@ -63,7 +63,7 @@ export class CalculationService {
         {},
         { sort: { priority: 1 } },
       );
-      if (offer.maxNumberAllowed > offer.totalUsed) offer = null;
+      if (offer && offer.maxNumberAllowed > offer.totalUsed) offer = null;
     }
 
     summary.totalBeforeDiscount += orderData.items.reduce(
@@ -81,12 +81,16 @@ export class CalculationService {
       0,
     );
 
-    summary.totalTaxableAmount += orderData.items.reduce(
-      (acc, oi) => acc + oi.itemTaxableAmount,
-      0,
-    );
+    // summary.totalTaxableAmount += orderData.items.reduce(
+    //   (acc, oi) => acc + oi.itemTaxableAmount,
+    //   0,
+    // );
 
-    summary.totalTax += orderData.items.reduce((acc, oi) => acc + oi.tax, 0);
+    // summary.totalTax += orderData.items.reduce((acc, oi) => acc + oi.tax, 0);
+
+    //apply table fee in tax
+    summary.totalBeforeDiscount += orderData.tableFee.fee;
+    summary.totalWithTax += orderData.tableFee.fee;
 
     // apply header discount
     if (offer) {
@@ -104,11 +108,11 @@ export class CalculationService {
 
       summary.totalWithTax -= summary.headerDiscount;
     }
-    //apply table fee in tax
-    summary.totalBeforeDiscount += orderData.tableFee.fee;
-    summary.totalTax += orderData.tableFee.tax;
-    summary.totalWithTax += orderData.tableFee.fee;
-    summary.totalTaxableAmount += orderData.tableFee.netBeforeTax;
+
+    summary.totalTaxableAmount =
+      summary.totalWithTax / (1 + orderData.taxRate / 100);
+
+    summary.totalTax = (summary.totalTaxableAmount * orderData.taxRate) / 100;
 
     summary.totalBeforeDiscount = roundOffNumber(summary.totalBeforeDiscount);
     summary.discount = roundOffNumber(summary.discount);
