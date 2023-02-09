@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -13,6 +14,7 @@ class ItemDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsNumber()
+  @Min(0)
   quantity: number;
 
   @ApiProperty()

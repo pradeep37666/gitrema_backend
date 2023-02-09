@@ -134,9 +134,6 @@ export class Order {
     netBeforeTax: number;
   };
 
-  @Prop({ default: 0 })
-  headerDiscount: number;
-
   @Prop({
     type: Object,
     default: {
@@ -147,6 +144,7 @@ export class Order {
       totalTax: 0,
       totalPaid: 0,
       totalRefunded: 0,
+      headerDiscount: 0,
     },
   })
   summary: {
@@ -157,7 +155,11 @@ export class Order {
     totalTax: number;
     totalPaid: number;
     totalRefunded: number;
+    headerDiscount: number;
   };
+
+  @Prop()
+  taxRate: number;
 
   @Prop({
     type: [MongooseSchema.Types.ObjectId],

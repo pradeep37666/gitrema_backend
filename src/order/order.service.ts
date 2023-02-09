@@ -53,12 +53,11 @@ export class OrderService {
       .findById(req.user.supplierId)
       .lean();
 
-    const taxRate = supplier.taxRate ?? 15;
+    orderData.taxRate = supplier.taxRate ?? 15;
 
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
-      dto,
-      supplier,
+      orderData,
     );
 
     orderData.tableFee = {
@@ -73,26 +72,23 @@ export class OrderService {
       if (!table) throw new NotFoundException(`No Table Found`);
       const tableFee = table.fees ?? 0;
       const netBeforeTax = supplier.taxEnabledOnTableFee
-        ? tableFee / (1 + taxRate / 100)
+        ? tableFee / (1 + orderData.taxRate / 100)
         : tableFee;
       const tax = supplier.taxEnabledOnTableFee
-        ? (netBeforeTax * taxRate) / 100
+        ? (netBeforeTax * orderData.taxRate) / 100
         : 0;
       orderData.tableFee = {
         fee: roundOffNumber(tableFee),
         netBeforeTax: roundOffNumber(netBeforeTax),
         tax: roundOffNumber(tax),
       };
-      orderData.sittingStartTime =
-        table.startingTime ?? dto.menuQrCodeScannedTime ?? null;
+      orderData.sittingStartTime = dto.menuQrCodeScannedTime ?? null;
     }
 
     // calculate summary
     orderData.summary = await this.calculationService.calculateSummery(
       orderData,
     );
-
-    orderData.headerDiscount = orderData.summary.headerDiscount;
 
     if (isDryRun) {
       return orderData;
@@ -186,13 +182,12 @@ export class OrderService {
     orderId: string,
     dto: UpdateOrderDto,
   ): Promise<OrderDocument> {
-    const orderData: any = { ...dto };
-
     const order = await this.orderModel.findById(orderId);
 
     if (!order) {
       throw new NotFoundException();
     }
+    const orderData: any = { ...order.toObject(), ...dto };
 
     if (order.status == OrderStatus.Closed) {
       throw new BadRequestException(`Order is closed. No changes can be made`);
@@ -209,19 +204,13 @@ export class OrderService {
       orderData.couponCode = order.couponCode;
       orderData._id = order._id;
 
-      const supplier = await this.supplierModel
-        .findById(req.user.supplierId)
-        .lean();
-
       orderData.items = await this.orderHelperService.prepareOrderItems(
-        dto,
-        supplier,
+        orderData,
       );
 
       orderData.summary = await this.calculationService.calculateSummery(
         orderData,
       );
-      orderData.headerDiscount = orderData.summary.headerDiscount;
     }
 
     const modified = await this.orderModel.findByIdAndUpdate(
@@ -238,10 +227,12 @@ export class OrderService {
   }
 
   async groupOrders(req: any, dto: GroupOrderDto): Promise<OrderDocument> {
-    const orders = await this.orderModel.find({
-      _id: { $in: dto.orderIds },
-      status: { $nin: [OrderStatus.Closed, OrderStatus.Cancelled] },
-    });
+    const orders = await this.orderModel
+      .find({
+        _id: { $in: dto.orderIds },
+        status: { $nin: [OrderStatus.Closed, OrderStatus.Cancelled] },
+      })
+      .lean();
     if (orders.length == 0)
       throw new BadRequestException(
         'All provided orders are either closed or cancelled',
@@ -255,20 +246,19 @@ export class OrderService {
       .findById(orders[0].supplierId)
       .lean();
 
-    const groupOrder = orders[0].toObject();
+    const groupOrder = orders[0];
     groupOrder.items = items;
     delete groupOrder._id;
     delete groupOrder.createdAt;
     delete groupOrder.updatedAt;
     groupOrder.isGrouped = true;
+    groupOrder.taxRate = orders[0].taxRate;
     groupOrder.transactions = [];
 
     groupOrder.items = await this.orderHelperService.prepareOrderItems(
       groupOrder,
-      supplier,
     );
 
-    console.log(groupOrder.items);
     groupOrder.summary = await this.calculationService.calculateSummery(
       groupOrder,
     );
@@ -279,7 +269,7 @@ export class OrderService {
       {
         _id: { $in: dto.orderIds },
       },
-      { $set: { groupId: groupOrderObj._id } },
+      { $set: { groupId: groupOrderObj._id, status: OrderStatus.Cancelled } },
     );
     return groupOrderObj;
   }
@@ -292,6 +282,7 @@ export class OrderService {
       throw new NotFoundException('Order is closed');
 
     const items = [];
+    // loop over the received items
     dto.items.forEach((i) => {
       const itemIndex = sourceOrder.items.findIndex((itemObj) => {
         return itemObj._id.toString() == i.itemId;
@@ -299,25 +290,29 @@ export class OrderService {
       if (itemIndex > -1) {
         const itemObj = sourceOrder.items[itemIndex];
         let quantity = itemObj.quantity;
-        if (i.quantity) {
+        if (i.quantity > 0) {
           if (i.quantity > quantity)
             throw new NotFoundException(
               `Not enough quantity for ${itemObj.menuItem.name}`,
             );
           quantity = i.quantity;
           sourceOrder.items[itemIndex].quantity -= quantity;
+          if (sourceOrder.items[itemIndex].quantity == 0)
+            sourceOrder.items.splice(itemIndex, 1);
         } else {
-          delete sourceOrder.items[itemIndex];
+          sourceOrder.items.splice(itemIndex, 1);
         }
         const item = { ...itemObj.toObject(), quantity };
         delete item._id;
         items.push(item);
+      } else {
+        throw new NotFoundException(`${i.itemId} Not found in source order`);
       }
     });
 
     if (sourceOrder.items.length == 0)
       throw new NotFoundException(`Not enough items to move`);
-    if (items.length == 0) throw new NotFoundException(`No items found`);
+
     const supplier = await this.supplierModel
       .findById(sourceOrder.supplierId)
       .lean();
@@ -332,11 +327,11 @@ export class OrderService {
       targetOrderDto.transactions = [];
 
       targetOrderDto.tableFee = { fee: 0, tax: 0, netBeforeTax: 0 };
+      console.log(targetOrderDto.items);
       targetOrderDto.items = await this.orderHelperService.prepareOrderItems(
         targetOrderDto,
-        supplier,
       );
-      console.log(targetOrderDto.items);
+
       targetOrderDto.summary = await this.calculationService.calculateSummery(
         targetOrderDto,
       );
@@ -344,6 +339,11 @@ export class OrderService {
     } else {
       targetOrder = await this.orderModel.findById(dto.targetOrderId);
       targetOrder.items = targetOrder.items.concat(items);
+      // prepare order items
+      targetOrder.items = await this.orderHelperService.prepareOrderItems(
+        targetOrder.toObject(),
+      );
+      // prepare summary
       targetOrder.summary = await this.calculationService.calculateSummery(
         targetOrder,
       );
@@ -352,7 +352,6 @@ export class OrderService {
     if (targetOrder) {
       sourceOrder.items = await this.orderHelperService.prepareOrderItems(
         sourceOrder.toObject(),
-        supplier,
       );
       sourceOrder.summary = await this.calculationService.calculateSummery(
         sourceOrder,

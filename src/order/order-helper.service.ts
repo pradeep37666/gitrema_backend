@@ -46,14 +46,12 @@ export class OrderHelperService {
     private readonly activityModel: Model<ActivityDocument>,
   ) {}
 
-  async prepareOrderItems(
-    dto: CreateOrderDto | UpdateOrderDto | any,
-    supplier: LeanDocument<SupplierDocument>,
-    order: OrderDocument = null,
-  ) {
+  async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
     const preparedItems = [];
-    const taxRate = supplier.taxRate ?? 15;
+    const taxRate = dto.taxRate;
     const items = dto.items;
+
+    console.log(items);
 
     //fetch all menu items
     const menuItemIds = items.map((oi) => oi.menuItem.menuItemId);
@@ -81,7 +79,7 @@ export class OrderHelperService {
     for (const i in items) {
       let discount = 0,
         unitPriceBeforeDiscount = 0,
-        unitPriceDiscount,
+        unitPriceDiscount = 0,
         unitPriceAfterDiscount = 0,
         itemTaxableAmount = 0,
         tax = 0;
@@ -159,7 +157,8 @@ export class OrderHelperService {
           {},
           { sort: { priority: 1 } },
         );
-        if (offer.maxNumberAllowed > offer.totalUsed) offer = null;
+
+        if (offer && offer.maxNumberAllowed > offer.totalUsed) offer = null;
       }
       if (offer) {
         discount =
