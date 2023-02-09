@@ -70,6 +70,9 @@ export class MenuAddition {
   @Prop({ default: true })
   active: boolean;
 
+  @Prop({ default: null })
+  deletedAt: Date;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
