@@ -25,6 +25,7 @@ export enum PermissionSubject {
   Business = 'Business',
   Offer = 'Offer',
   Invoice = 'Invoice',
+  Customer = 'Customer',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
@@ -42,4 +43,9 @@ export enum CommonPermissions {
 
 export enum CashierPermission {
   OverrideCashierClose = 'Override Cashier Close',
+}
+
+export enum CustomerPermission {
+  CustomerProfileFetch = 'Customer Profile Fetch',
+  CustomerProfileUpdate = 'Customer Profile Update',
 }

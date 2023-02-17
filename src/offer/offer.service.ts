@@ -12,6 +12,7 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 import { Offer, OfferDocument } from './schemas/offer.schema';
 import { QueryOfferDto } from './dto/query-offer.dto';
+import * as moment from 'moment';
 
 @Injectable()
 export class OfferService {
@@ -58,6 +59,27 @@ export class OfferService {
       throw new NotFoundException();
     }
 
+    return exists;
+  }
+
+  async findByCode(code: string): Promise<OfferDocument> {
+    const exists = await this.offerModel.findOne({
+      code,
+      active: true,
+      deletedAt: null,
+      start: {
+        $lte: new Date(moment.utc().format('YYYY-MM-DD')),
+      },
+      end: {
+        $gte: new Date(moment.utc().format('YYYY-MM-DD')),
+      },
+    });
+
+    if (!exists) {
+      throw new NotFoundException();
+    }
+    if (exists.maxNumberAllowed >= exists.totalUsed)
+      throw new NotFoundException(`Coupon is used to its max capacity`);
     return exists;
   }
 

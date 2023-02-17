@@ -50,6 +50,12 @@ export class OfferController {
     return await this.offerService.findOne(offerId);
   }
 
+  @Get('search-by-code/:code')
+  @PermissionGuard(PermissionSubject.Offer, Permission.Common.FETCH)
+  async checkCode(@Param('code') code: string) {
+    return await this.offerService.findByCode(code);
+  }
+
   @Patch(':offerId')
   @PermissionGuard(PermissionSubject.Offer, Permission.Common.UPDATE)
   async update(@Param('offerId') offerId: string, @Body() dto: UpdateOfferDto) {

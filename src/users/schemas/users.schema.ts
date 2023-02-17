@@ -30,7 +30,7 @@ export class User {
   })
   restaurantId: RestaurantDocument;
 
-  @Prop({})
+  @Prop({ default: null })
   name: string;
 
   @Prop({ unique: true, index: true, sparse: true })

@@ -124,6 +124,14 @@ export class UserService {
     return user;
   }
 
+  async findByPhoneNumber(
+    phoneNumber: string,
+  ): Promise<LeanDocument<UserDocument>> {
+    const user = await this.userModel.findOne({ phoneNumber }).lean();
+
+    return user;
+  }
+
   async findAdmin(): Promise<LeanDocument<User[]>> {
     return this.userModel.aggregate([
       {

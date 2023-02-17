@@ -63,12 +63,15 @@ export class AuthController {
     return await this.authService.requestOtp(req, requestOtpDetails);
   }
 
-  @Post('verify-otp')
+  @Post('verify-customer-otp')
   async verifyOtp(
     @Req() req,
     @Body() verificationOtpDetails: VerificationOtpDto,
   ): Promise<any> {
-    return await this.authService.verifyOtp(req, verificationOtpDetails);
+    return await this.authService.verifyCustomerOtp(
+      req,
+      verificationOtpDetails,
+    );
   }
 
   @Get('public-token')

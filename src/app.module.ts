@@ -45,6 +45,7 @@ import { OfferModule } from './offer/offer.module';
 import { PaymentModule } from './payment/payment.module';
 import { PuppeteerModule } from 'nest-puppeteer';
 import { InvoiceModule } from './invoice/invoice.module';
+import { CustomerModule } from './customer/customer.module';
 
 @Module({
   imports: [
@@ -98,6 +99,7 @@ import { InvoiceModule } from './invoice/invoice.module';
     OfferModule,
     PaymentModule,
     InvoiceModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [

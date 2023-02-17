@@ -85,12 +85,7 @@ export class SupplierService {
   async getByDomain(domain: string): Promise<SupplierDocument> {
     return await this.supplierModel
       .findOne({ domain }, { bankDetais: 0, subscriptionDetails: 0 })
-      .populate([
-        {
-          path: 'allowedServices',
-          match: { deleted: null },
-        },
-      ]);
+      .lean();
   }
 
   async isDomainAvailableToUse(domain: string): Promise<boolean> {

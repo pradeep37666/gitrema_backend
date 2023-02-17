@@ -45,9 +45,16 @@ export class MenuItemService {
     query: QueryMenuItemDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<MenuItemDocument>> {
+    const queryObj: any = { ...query };
+    if (query.search) {
+      queryObj.$or = [
+        { name: { $regex: query.search, $options: 'i' } },
+        { nameAr: { $regex: query.search, $options: 'i' } },
+      ];
+    }
     const menuItems = await this.menuItemModelPag.paginate(
       {
-        ...query,
+        ...queryObj,
         supplierId: req.user.supplierId,
         deletedAt: null,
       },

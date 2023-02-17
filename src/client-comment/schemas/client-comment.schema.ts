@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { CustomerDocument } from 'src/customer/schemas/customer.schema';
 import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { OrderDocument } from 'src/order/schemas/order.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
@@ -55,7 +56,7 @@ export class ClientComment {
     index: true,
     ref: 'User',
   })
-  customerId: UserDocument;
+  customerId: CustomerDocument;
 }
 export const ClientCommentSchema = SchemaFactory.createForClass(ClientComment);
 ClientCommentSchema.plugin(paginate);

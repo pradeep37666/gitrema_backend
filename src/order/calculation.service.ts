@@ -75,7 +75,7 @@ export class CalculationService {
         {},
         { sort: { priority: 1 } },
       );
-      if (offer && offer.maxNumberAllowed > offer.totalUsed) offer = null;
+      if (offer && offer.maxNumberAllowed >= offer.totalUsed) offer = null;
     }
 
     summary.totalBeforeDiscount += orderData.items.reduce(
