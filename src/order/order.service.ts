@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -21,11 +23,12 @@ import {
   Supplier,
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
-import { OrderStatus, OrderType } from './enum/en.enum';
+import { OrderStatus, OrderType, PreparationStatus } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
+import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
 
 @Injectable()
 export class OrderService {
@@ -38,7 +41,9 @@ export class OrderService {
     private readonly supplierModel: Model<SupplierDocument>,
     @InjectModel(Table.name)
     private readonly tableModel: Model<TableDocument>,
+    @Inject(forwardRef(() => OrderHelperService))
     private readonly orderHelperService: OrderHelperService,
+    @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
   ) {}
 
@@ -47,7 +52,7 @@ export class OrderService {
     dto: CreateOrderDto,
     isDryRun = false,
   ): Promise<OrderDocument> {
-    const orderData: any = { ...dto };
+    const orderData: any = { ...dto, isDryRun };
 
     const supplier = await this.supplierModel
       .findById(req.user.supplierId)
@@ -90,9 +95,21 @@ export class OrderService {
       orderData,
     );
 
+    if (orderData.scheduledDateTime == null) {
+      delete orderData.scheduledDateTime;
+    }
+
+    orderData.preparationDetails =
+      await this.calculationService.calculateOrderPreparationTiming(orderData);
+
     if (isDryRun) {
+      this.orderHelperService.storeCart(orderData);
       return orderData;
     }
+
+    orderData.orderNumber = await this.orderHelperService.generateOrderNumber(
+      supplier._id,
+    );
 
     // create order
     const order = await this.orderModel.create({
@@ -118,7 +135,13 @@ export class OrderService {
         ...query,
       },
       {
-        sort: DefaultSort,
+        sort: paginateOptions.sortBy
+          ? {
+              [paginateOptions.sortBy]: paginateOptions.sortDirection
+                ? paginateOptions.sortDirection
+                : -1,
+            }
+          : DefaultSort,
         lean: true,
         ...paginateOptions,
         ...pagination,
@@ -222,7 +245,7 @@ export class OrderService {
     );
 
     //post order update
-    this.orderHelperService.postOrderUpdate(order, dto);
+    this.orderHelperService.postOrderUpdate(modified, dto);
     return modified;
   }
 
@@ -261,6 +284,10 @@ export class OrderService {
 
     groupOrder.summary = await this.calculationService.calculateSummery(
       groupOrder,
+    );
+
+    groupOrder.orderNumber = await this.orderHelperService.generateOrderNumber(
+      supplier._id,
     );
 
     const groupOrderObj = await this.orderModel.create(groupOrder);
@@ -335,6 +362,8 @@ export class OrderService {
       targetOrderDto.summary = await this.calculationService.calculateSummery(
         targetOrderDto,
       );
+      targetOrderDto.orderNumber =
+        await this.orderHelperService.generateOrderNumber(supplier._id);
       targetOrder = await this.orderModel.create(targetOrderDto);
     } else {
       targetOrder = await this.orderModel.findById(dto.targetOrderId);
@@ -361,12 +390,54 @@ export class OrderService {
     return targetOrder;
   }
 
+  async kitchenQueueProcess(req: any, dto: KitchenQueueProcessDto) {
+    const order = await this.orderModel.findById(dto.orderId);
+
+    if (!order) {
+      throw new NotFoundException(`Order not found`);
+    }
+
+    let actualDateObj: any = {};
+    if (dto.preparationStatus == PreparationStatus.StartedPreparing) {
+      actualDateObj = {
+        'preparationDetails.actualStartTime': new Date(),
+        status: PreparationStatus.StartedPreparing,
+      };
+    }
+    const dataToSet = {
+      $set: {
+        'items.$[element].preparationStatus': dto.preparationStatus,
+        ...actualDateObj,
+      },
+    };
+    let arrayFilter: any = {
+      arrayFilters: [{ 'element._id': { $ne: null } }],
+    };
+    if (dto.orderItemId) {
+      arrayFilter = {
+        arrayFilters: [
+          { 'element._id': new mongoose.Types.ObjectId(dto.orderItemId) },
+        ],
+      };
+    }
+    await this.orderModel.updateMany({ _id: dto.orderId }, dataToSet, {
+      ...arrayFilter,
+    });
+    this.orderHelperService.postKitchenQueueProcessing(
+      order,
+      dto.preparationStatus,
+    );
+    return true;
+  }
+
   async generalUpdate(
     req: any,
     orderId: string,
     dto: any,
   ): Promise<OrderDocument> {
-    const order = await this.orderModel.findByIdAndUpdate(orderId, dto);
+    const order = await this.orderModel.findByIdAndUpdate(orderId, dto, {
+      new: true,
+    });
 
     if (!order) {
       throw new NotFoundException();

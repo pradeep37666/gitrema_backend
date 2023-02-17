@@ -13,6 +13,9 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type InvoiceDocument = Invoice & Document;
 
+export type ItemDocument = Item & Document;
+
+@Schema({ _id: null })
 class Item {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -24,7 +27,13 @@ class Item {
   quantity: number;
 
   @Prop({ default: null })
-  amount: number;
+  totalWithTax: number;
+
+  @Prop({ default: null })
+  taxableAmount: number;
+
+  @Prop({ default: null })
+  tax: number;
 
   @Prop({ default: null })
   description: string;
@@ -49,7 +58,6 @@ export class Invoice {
 
   @Prop({
     required: true,
-    unique: true,
   })
   invoiceNumber: string;
 
@@ -87,7 +95,7 @@ export class Invoice {
   isReversedInvoice: boolean;
 
   @Prop({ type: [ItemSchema], default: [] })
-  items: Item[];
+  items: ItemDocument[];
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

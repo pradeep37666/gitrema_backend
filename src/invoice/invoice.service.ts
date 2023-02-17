@@ -7,13 +7,19 @@ import Handlebars from 'handlebars';
 import * as MomentHandler from 'handlebars.moment';
 import { FatooraService } from './fatoora.service';
 import { S3Service } from 'src/core/Providers/Storage/S3.service';
-import { Model, PaginateModel } from 'mongoose';
+import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { InvoiceDocument } from './schemas/invoice.schema';
 import { InvoiceType } from './invoice.enum';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { Order, OrderDocument } from 'src/order/schemas/order.schema';
 import { PaymentStatus } from 'src/order/enum/en.enum';
 import { InvoiceHelperService } from './invoice-helper.service';
+import {
+  DefaultSort,
+  PaginationDto,
+  pagination,
+} from 'src/core/Constants/pagination';
+import { QueryInvoiceDto } from './dto/query-invoice.dto';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -77,21 +83,43 @@ export class InvoiceService {
     dto.invoiceNumber = await this.invoiceHelperService.generateInvoiceNumber(
       order.supplierId._id,
     );
+    let invoiceData = { url: '', items: null },
+      refInvoice = null;
     // generate invoice
-    const { url } = await this.invoiceHelperService.generateInvoice(
-      order,
-      dto,
-      cancelledInvoice,
-    );
-
+    if (dto.type == InvoiceType.Invoice)
+      invoiceData = await this.invoiceHelperService.generateInvoice(
+        order,
+        dto,
+        cancelledInvoice,
+      );
+    else if (dto.type == InvoiceType.CreditMemo) {
+      refInvoice = await this.invoiceModel.findOne({
+        orderId: order._id,
+        type: InvoiceType.Invoice,
+      });
+      if (!refInvoice) {
+        throw new BadRequestException(`Ref Invoice not found`);
+      }
+      invoiceData = await this.invoiceHelperService.generateCreditMemo(
+        order,
+        dto,
+        refInvoice,
+        cancelledInvoice,
+      );
+    }
+    console.log(invoiceData);
     // create invoice record
     const invoice = await this.invoiceModel.create({
       ...dto,
       addedBy: req.user.userId,
       supplierId: order.supplierId,
       restaurantId: order.restaurantId,
-      url,
+      url: invoiceData.url,
+      items: invoiceData.items,
+      refInvoiceId: refInvoice ? refInvoice._id : null,
     });
+
+    this.invoiceHelperService.postInvoiceCreate(invoice, order);
 
     return invoice;
   }
@@ -120,6 +148,7 @@ export class InvoiceService {
       {
         orderId: invoice.orderId.toString(),
         type: invoice.type,
+        items: invoice.items,
       },
       invoice,
     );
@@ -127,5 +156,23 @@ export class InvoiceService {
     invoice.reversedInvoiceId = reversedInvoice._id;
     invoice.save();
     return reversedInvoice;
+  }
+
+  async all(
+    req: any,
+    queryInvoice: QueryInvoiceDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<InvoiceDocument>> {
+    const criteria: any = {
+      ...queryInvoice,
+    };
+
+    const invoices = await this.invoiceModelPag.paginate(criteria, {
+      sort: DefaultSort,
+      lean: true,
+      ...paginateOptions,
+      ...pagination,
+    });
+    return invoices;
   }
 }

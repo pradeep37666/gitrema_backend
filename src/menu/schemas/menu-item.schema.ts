@@ -142,6 +142,9 @@ export class MenuItem {
   @Prop({ default: null })
   deletedAt: Date;
 
+  @Prop({ default: 0 })
+  preparationTime: number;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,

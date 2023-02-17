@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Request,
@@ -34,13 +35,22 @@ export class InvoiceController {
     return await this.invoiceService.create(req, dto);
   }
 
-  // @Get()
-  // @PermissionGuard(PermissionSubject.Invoice, Permission.Common.LIST)
-  // async all(
-  //   @Request() req,
-  //   @Query() queryInvoice: QueryInvoiceDto,
-  //   @Query() paginateOptions: PaginationDto,
-  // ): Promise<PaginateResult<InvoiceDocument>> {
-  //   return await this.invoiceService.all(req, queryInvoice, paginateOptions);
-  // }
+  @Patch(':invoiceId/cancel')
+  @PermissionGuard(PermissionSubject.Invoice, Permission.Common.CANCEL)
+  async cancel(
+    @Request() req,
+    @Param('invoiceId') invoiceId: string,
+  ): Promise<InvoiceDocument> {
+    return await this.invoiceService.cancel(req, invoiceId);
+  }
+
+  @Get()
+  @PermissionGuard(PermissionSubject.Invoice, Permission.Common.LIST)
+  async all(
+    @Request() req,
+    @Query() queryInvoice: QueryInvoiceDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<InvoiceDocument>> {
+    return await this.invoiceService.all(req, queryInvoice, paginateOptions);
+  }
 }

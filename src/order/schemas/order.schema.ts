@@ -84,8 +84,8 @@ export class Order {
   })
   groupId: string;
 
-  // @Prop({ required: true })
-  // orderNumber: string;
+  @Prop({ required: true })
+  orderNumber: string;
 
   @Prop({ default: null })
   name: string;
@@ -108,7 +108,7 @@ export class Order {
   @Prop({ default: false })
   isGrouped: boolean;
 
-  @Prop({ default: null })
+  @Prop({ default: null, null: true })
   scheduledDateTime: Date;
 
   @Prop({ type: [OrderItemSchema], required: true })
@@ -202,6 +202,19 @@ export class Order {
     latitude: number;
     longitude: number;
     district: string;
+  };
+
+  @Prop({
+    type: Object,
+    default: null,
+  })
+  preparationDetails: {
+    preparationTime: number;
+    expectedStartTime: Date;
+    expectedEndTime: Date;
+    actualStartTime: Date;
+    actualEndTime: Date;
+    kitchenSortingNumber: number;
   };
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);

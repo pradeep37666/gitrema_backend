@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsNumber,
   IsNotEmpty,
@@ -6,7 +7,13 @@ import {
   IsOptional,
   IsBoolean,
   IsEmail,
+  ValidateNested,
+  IsArray,
 } from 'class-validator';
+import {
+  DefaultWorkingHoursDTO,
+  IndividualWorkHoursDTO,
+} from 'src/restaurant/dto/create-restaurant.dto';
 
 export class AddSupplierDto {
   @ApiProperty()
@@ -133,6 +140,59 @@ export class AddSupplierDto {
   @IsBoolean()
   @IsOptional()
   taxEnabledOnReservationFee: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isMenuBrowsingEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isAppOrderEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isDeliveryEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isPickupOrderEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isScheduledOrderEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isReservationEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isWaitingEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isDeliveryToCarEnabled: boolean;
+
+  @ApiProperty({ type: DefaultWorkingHoursDTO })
+  @ValidateNested({ each: true })
+  @Type(() => DefaultWorkingHoursDTO)
+  @IsNotEmpty()
+  defaultWorkingHours: DefaultWorkingHoursDTO;
+
+  @ApiProperty({ type: [IndividualWorkHoursDTO], required: false })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => IndividualWorkHoursDTO)
+  @IsOptional()
+  overrideWorkingHours: IndividualWorkHoursDTO[];
 }
 
 export class UpdateSupplierDto extends PartialType(AddSupplierDto) {

@@ -9,6 +9,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ReservationModule } from '../reservation/reservation.module';
 import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 import { InvoiceHelperService } from './invoice-helper.service';
+import { OrderModule } from 'src/order/order.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { InvoiceHelperService } from './invoice-helper.service';
       { name: Invoice.name, schema: InvoiceSchema },
       { name: Order.name, schema: OrderSchema },
     ]),
+    OrderModule,
   ],
   controllers: [InvoiceController],
   providers: [InvoiceService, FatooraService, InvoiceHelperService],

@@ -14,11 +14,6 @@ import { Transform, Type } from 'class-transformer';
 import * as moment from 'moment';
 import { OrderActivityType } from 'src/order/enum/en.enum';
 
-class OrderActivityDto {
-  activityType: OrderActivityType;
-
-  date: Date;
-}
 export class CreateActivityDto {
   @ApiProperty()
   @IsMongoId()
@@ -39,9 +34,7 @@ export class CreateActivityDto {
   @IsNotEmpty()
   type: ActivityType;
 
-  @ApiProperty({ type: OrderActivityDto })
-  @ValidateNested({ each: true })
-  @Type(() => OrderActivityDto)
+  @ApiProperty({ type: Object })
   @IsNotEmpty()
-  data: OrderActivityDto;
+  data: any;
 }

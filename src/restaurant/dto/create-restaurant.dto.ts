@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { Days, OrderTypes } from 'src/core/Constants/enum';
 
-class IndividualWorkHoursDTO {
+export class IndividualWorkHoursDTO {
   @ApiProperty({ type: String, enum: Days, enumName: 'Days' })
   @IsNotEmpty()
   @IsEnum(Days)
@@ -59,7 +59,7 @@ class BeforeConfirmOrderMessageDTO {
   ar: string;
 }
 
-class DefaultWorkingHoursDTO {
+export class DefaultWorkingHoursDTO {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

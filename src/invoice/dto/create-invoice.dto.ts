@@ -5,27 +5,16 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
+  IsNotIn,
   IsNumber,
   IsOptional,
   IsString,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { ObjectId } from 'mongoose';
 import { Type } from 'class-transformer';
 
-class ItemDto {
-  @ApiProperty({ required: false })
-  @ValidateIf((o) => !o.description)
-  @IsMongoId()
-  @IsNotEmpty()
-  itemId: string;
-
-  @ApiProperty({ required: false })
-  @IsNumber()
-  @IsOptional()
-  quantity: number;
-
+class InvoiceItemDto {
   @ApiProperty({ required: false })
   @ValidateIf((o) => !o.itemId)
   @IsString()
@@ -36,7 +25,18 @@ class ItemDto {
   @ValidateIf((o) => !o.itemId)
   @IsNumber()
   @IsNotEmpty()
-  amount: number;
+  totalWithTax: number;
+
+  @ApiProperty({ required: false })
+  @ValidateIf((o) => !o.description)
+  @IsMongoId()
+  @IsNotEmpty()
+  itemId: string;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  quantity: number;
 }
 export class CreateInvoiceDto {
   @ApiProperty({ type: String })
@@ -46,15 +46,17 @@ export class CreateInvoiceDto {
 
   @ApiProperty({ type: String, enum: InvoiceType })
   @IsEnum(InvoiceType)
+  @IsNotIn([InvoiceType.Receipt])
   @IsNotEmpty()
   type: InvoiceType;
 
-  @ApiProperty({ required: false, type: [ItemDto] })
+  @ApiProperty({ required: false, type: [InvoiceItemDto] })
+  @ValidateIf((o) => o.type == InvoiceType.CreditMemo)
   @ValidateNested({ each: true })
-  @Type(() => ItemDto)
+  @Type(() => InvoiceItemDto)
   @IsArray()
-  @IsOptional()
-  items?: ItemDto[];
+  @IsNotEmpty()
+  items?: any[];
 
   invoiceNumber?: string;
 }

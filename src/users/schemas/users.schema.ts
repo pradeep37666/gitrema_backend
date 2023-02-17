@@ -74,6 +74,9 @@ export class User {
   })
   cashier: CashierDocument;
 
+  @Prop({ default: true })
+  isDefaultWaiter: boolean;
+
   @Prop({ default: false })
   paused: boolean;
 

@@ -24,6 +24,7 @@ import { TableLog, TableLogDocument } from './schemas/table-log.schema';
 import { OrderStatus } from 'src/order/enum/en.enum';
 import { TableLogDto } from './dto/table-log.dto';
 import { TableStatus } from './enum/en.enum';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class TableService {
@@ -34,6 +35,8 @@ export class TableService {
     private readonly tableModelPag: AggregatePaginateModel<TableDocument>,
     @InjectModel(TableLog.name)
     private readonly tableLogModel: Model<TableLogDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   async create(req: any, dto: CreateTableDto): Promise<TableDocument> {
@@ -159,7 +162,6 @@ export class TableService {
                   then: { $arrayElemAt: ['$currentTableLog', 0] },
                   else: null,
                 },
-                //$arrayElemAt: ['$currentTableLog', 0],
               },
             },
           },
@@ -203,68 +205,6 @@ export class TableService {
     }
 
     return table;
-  }
-
-  async logTable(tableId: string, start = true): Promise<TableLogDocument> {
-    const table = await this.tableModel.findById(tableId);
-    if (!table) {
-      throw new NotFoundException();
-    }
-
-    let tableLog = await this.tableLogModel.findOne(
-      { tableId },
-      {},
-      { sort: { _id: -1 } },
-    );
-
-    if (start) {
-      if (tableLog && tableLog.closingTime == null) {
-        throw new BadRequestException('Table is already started');
-      }
-      tableLog = new this.tableLogModel({
-        supplierId: table.supplierId,
-        restaurantId: table.restaurantId,
-        tableId,
-        startingTime: new Date(),
-      });
-      this.update(tableId, {
-        status: TableStatus.InUse,
-        currentTableLog: tableLog._id,
-      });
-    } else {
-      if (!tableLog) {
-        throw new BadRequestException('Table has not started yet');
-      }
-
-      tableLog.closingTime = new Date();
-      this.update(tableId, {
-        status: TableStatus.Empty,
-        currentTableLog: null,
-      });
-    }
-
-    await tableLog.save();
-
-    return tableLog;
-  }
-
-  async updateLog(
-    tableId: string,
-    dto: TableLogDto,
-  ): Promise<TableLogDocument> {
-    const tableLog = await this.tableLogModel.findOneAndUpdate(
-      { tableId, closingTime: null },
-      dto,
-      {
-        new: true,
-      },
-    );
-
-    if (!tableLog) {
-      throw new NotFoundException(`Table has not started yet`);
-    }
-
-    return tableLog;
   }
 
   async remove(tableId: string): Promise<boolean> {

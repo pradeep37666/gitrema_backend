@@ -29,7 +29,7 @@ export class CreateOrderDto {
   @ApiProperty({ required: false })
   @IsMongoId()
   @IsOptional()
-  customerId: string;
+  customerId?: string;
 
   @ApiProperty({ required: false })
   @ValidateIf((o) => o.orderType == OrderType.DineIn)
@@ -40,17 +40,22 @@ export class CreateOrderDto {
   @ApiProperty({ required: false })
   @IsMongoId()
   @IsOptional()
-  waiterId: string;
+  waiterId?: string;
+
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  kitchenQueueId?: string;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  name: string;
+  name?: string;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  contactNumber: string;
+  contactNumber?: string;
 
   @ApiProperty({ type: String, enum: Source, enumName: 'Source' })
   @IsEnum(Source)
@@ -72,20 +77,18 @@ export class CreateOrderDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  isScheduled: boolean;
+  isScheduled?: boolean;
 
   @ApiProperty({ required: false })
   @ValidateIf((o) => o.isScheduled)
   @IsNotEmpty()
-  @Transform(
-    ({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD HH:MM')),
-  )
+  @Transform(({ value }) => new Date(value))
   @IsDate()
-  @MinDate(new Date(moment.utc().format('YYYY-MM-DD HH:MM')), {
+  @MinDate(new Date(), {
     message:
       'minimal allowed date for scheduledDate is ' + new Date().toISOString(),
   })
-  scheduledDateTime: Date;
+  scheduledDateTime?: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -93,22 +96,22 @@ export class CreateOrderDto {
     ({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD HH:MM')),
   )
   @IsDate()
-  menuQrCodeScannedTime: Date;
+  menuQrCodeScannedTime?: Date;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  notes: string;
+  notes?: string;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  couponCode: string;
+  couponCode?: string;
 
   @ApiProperty({ required: false, type: DeliveryAddressDto })
   @ValidateIf((o) => o.orderType == OrderType.Delivery)
   @ValidateNested()
   @Type(() => DeliveryAddressDto)
   @IsNotEmpty()
-  deliveryAddress: DeliveryAddressDto;
+  deliveryAddress?: DeliveryAddressDto;
 }

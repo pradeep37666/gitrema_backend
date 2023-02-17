@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 
 import { UpdateOrderDto, UpdateOrderItemDto } from './dto/update-order.dto';
@@ -17,7 +19,12 @@ import {
   MenuAddition,
   MenuAdditionDocument,
 } from 'src/menu/schemas/menu-addition.schema';
-import { OrderActivityType, OrderStatus, OrderType } from './enum/en.enum';
+import {
+  OrderActivityType,
+  OrderStatus,
+  OrderType,
+  PreparationStatus,
+} from './enum/en.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { CalculationType } from 'src/core/Constants/enum';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
@@ -28,6 +35,8 @@ import { ActivitySubject, ActivityType } from 'src/activity/enum/activity.enum';
 import { CreateActivityDto } from 'src/activity/dto/create-activity.dto';
 import { ApplicationType } from 'src/offer/enum/en.enum';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
+import { Cart, CartDocument, CartItem } from './schemas/cart.schema';
+import { CalculationService } from './calculation.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -44,6 +53,10 @@ export class OrderHelperService {
     private readonly tableLogModel: Model<TableLogDocument>,
     @InjectModel(Activity.name)
     private readonly activityModel: Model<ActivityDocument>,
+    @InjectModel(Cart.name)
+    private readonly cartModel: Model<CartDocument>,
+    @Inject(forwardRef(() => CalculationService))
+    private readonly calculationService: CalculationService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -287,12 +300,18 @@ export class OrderHelperService {
       preparedItems[i].itemTaxableAmount = roundOffNumber(itemTaxableAmount);
 
       preparedItems[i].tax = roundOffNumber(tax);
+
+      preparedItems[i].preparationTime = roundOffNumber(
+        preparedItems[i].menuItem.preparationTime * preparedItems[i].quantity,
+      );
     }
 
     return preparedItems;
   }
 
   async postOrderCreate(order: OrderDocument) {
+    if (order.isScheduled)
+      this.calculationService.identifyOrdersToRecalculateForScheduled(order);
     // store activity
     if (order.sittingStartTime)
       this.storeOrderStateActivity(
@@ -323,13 +342,17 @@ export class OrderHelperService {
     // update the table log
     if (order.tableId) {
       await this.tableLogModel.findOneAndUpdate(
-        { tableId: order.tableId },
+        { tableId: order.tableId, closingTime: null },
         { $push: { orders: order._id }, paymentNeeded: true },
+        { sort: { _id: -1 } },
       );
     }
   }
 
   async postOrderUpdate(order: OrderDocument, dto: UpdateOrderDto) {
+    // check if needs to recalculate the order timing
+    if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
+      this.calculationService.handleOrderPreparationAfterUpdate(order);
     // store activity
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
       this.storeOrderStateActivity(
@@ -337,12 +360,35 @@ export class OrderHelperService {
         OrderActivityType.SentToKitchen,
         order.sentToKitchenTime,
       );
+      if (!order.isScheduled) {
+        order.preparationDetails =
+          await this.calculationService.calculateOrderPreparationTiming(
+            order,
+            OrderStatus.SentToKitchen,
+          );
+        await order.save();
+        this.calculationService.identifyOrdersToRecalculateAfterSentToKitchen(
+          order,
+        );
+      } else {
+        this.calculationService.identifyOrdersToRecalculateForScheduled(
+          order,
+          OrderStatus.SentToKitchen,
+        );
+      }
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       this.storeOrderStateActivity(
         order,
         OrderActivityType.OrderReady,
         order.orderReadyTime,
       );
+    } else if (dto.status && dto.status == OrderStatus.Cancelled) {
+      // this.storeOrderStateActivity(
+      //   order,
+      //   OrderActivityType.OrderReady,
+      //   order.orderReadyTime,
+      // );
+      this.calculationService.identifyOrdersToRecalculateAfterCompleted(order);
     }
   }
 
@@ -392,5 +438,61 @@ export class OrderHelperService {
       ...activityDetails,
       supplierId: order.supplierId,
     });
+  }
+
+  async generateOrderNumber(supplierId: string): Promise<string> {
+    const order = await this.orderModel.findOne(
+      { supplierId },
+      {},
+      { sort: { _id: -1 } },
+    );
+    let n = 1;
+    if (order) {
+      n = parseInt(order.orderNumber) + 1;
+    }
+
+    return String(n).padStart(5, '0');
+  }
+
+  async storeCart(orderData) {
+    const cartItems = [];
+    orderData.items.forEach((oi) => {
+      const additions = [];
+      oi.additions.forEach((oia) => {
+        additions.push({
+          menuAdditionId: oia.menuAdditionId,
+          options: oia.options.map((o) => o.optionId),
+        });
+      });
+      cartItems.push({
+        menuItemId: oi.menuItem.menuItemId,
+        additions,
+      });
+    });
+    await this.cartModel.create({
+      cartItems,
+    });
+  }
+
+  async postKitchenQueueProcessing(
+    order: OrderDocument,
+    status: PreparationStatus,
+  ) {
+    if (status == PreparationStatus.DonePreparing) {
+      const modifiedOrder = await this.orderModel.findById(order._id);
+      if (
+        modifiedOrder.items.length ==
+        modifiedOrder.items.filter((oi) => {
+          return oi.preparationStatus == status;
+        }).length
+      ) {
+        modifiedOrder.status = OrderStatus.DonePreparing;
+        modifiedOrder.preparationDetails.actualEndTime = new Date();
+        await modifiedOrder.save();
+        this.calculationService.identifyOrdersToRecalculateAfterCompleted(
+          modifiedOrder,
+        );
+      }
+    }
   }
 }

@@ -43,3 +43,9 @@ export enum InvoiceStatus {
   Reversed = 'Reversed',
   CreditMemo = 'Credit Memo',
 }
+
+export enum PreparationStatus {
+  NotStarted = 'Not Started',
+  StartedPreparing = 'Started Preparing',
+  DonePreparing = 'Done Preparing',
+}

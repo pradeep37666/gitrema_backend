@@ -23,6 +23,7 @@ import { QueryOrderDto } from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
+import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -90,6 +91,12 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
   async moveItems(@Req() req, @Body() dto: MoveOrderItemDto) {
     return await this.orderService.moveItems(req, dto);
+  }
+
+  @Post('kitchen-queue-process')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  async kitchenQueueProcess(@Req() req, @Body() dto: KitchenQueueProcessDto) {
+    return await this.orderService.kitchenQueueProcess(req, dto);
   }
 
   @Post('group')

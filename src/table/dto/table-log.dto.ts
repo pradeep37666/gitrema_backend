@@ -26,4 +26,9 @@ export class TableLogDto {
   @IsOptional()
   @IsBoolean()
   helpNeeded: boolean;
+
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  waiterId: string;
 }

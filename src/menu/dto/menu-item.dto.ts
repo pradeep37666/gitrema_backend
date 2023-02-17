@@ -186,6 +186,11 @@ export class CreateMenuItemDTO {
   @IsOptional()
   @IsBoolean()
   manageQuantity: boolean;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  preparationTime: number;
 }
 
 export class UpdateMenuItemDTO extends PartialType(CreateMenuItemDTO) {

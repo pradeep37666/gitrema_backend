@@ -42,7 +42,22 @@ export class UserService {
     }
 
     const user = await new this.userModel(userDetails);
+    this.postUserCreate(user);
     return await user.save();
+  }
+
+  async postUserCreate(user: UserDocument) {
+    await this.userModel.updateMany(
+      {
+        supplierId: user.supplierId,
+        _id: { $ne: user._id },
+      },
+      {
+        $set: {
+          isDefaultWaiter: false,
+        },
+      },
+    );
   }
 
   async update(

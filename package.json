@@ -15,10 +15,11 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
+    "test:unit": "jest --config ./jest-unit.json",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "jest --config ./jest-e2e.json",
     "deploy": "npm ci && npm run build && npm run start:prod"
   },
   "dependencies": {
@@ -65,6 +66,7 @@
     "nest-fastify-multer": "^1.0.1",
     "nest-puppeteer": "^1.1.1",
     "nest-winston": "^1.8.0",
+    "node-mocks-http": "^1.12.1",
     "nodemailer": "^6.8.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
@@ -103,6 +105,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "28.1.3",
+    "mongodb-memory-server": "^8.11.4",
     "prettier": "^2.3.2",
     "run-script-webpack-plugin": "^0.1.1",
     "source-map-support": "^0.5.20",
@@ -122,7 +125,10 @@
       "ts"
     ],
     "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    },
+    "testRegex": ".*\\app.controller.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
@@ -130,6 +136,8 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "verbose": true
   }
 }

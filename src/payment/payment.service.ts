@@ -46,6 +46,7 @@ export class PaymentService {
     paymentRequestDetails: PaymentInitiateDto,
   ): Promise<any> {
     const order = await this.orderModel.findById(paymentRequestDetails.orderId);
+    if (!order) throw new NotFoundException(`Order is not found`);
     let transaction = null;
 
     let amountToCollect =
@@ -159,6 +160,13 @@ export class PaymentService {
     const order = await this.orderModel.findById(dto.orderId);
     if (!order) throw new NotFoundException('Order not found');
 
+    let transactions = await this.transactionModel.find({
+      orderId: order._id,
+      status: PaymentStatus.Pending,
+    });
+    if (transactions.length > 0) {
+      return transactions;
+    }
     const splittedAmount: number =
       (order.summary.totalWithTax - order.summary.totalPaid) / dto.split;
 
@@ -175,7 +183,7 @@ export class PaymentService {
     }
 
     await this.transactionModel.insertMany(transactionsToSave);
-    const transactions = await this.transactionModel.find({
+    transactions = await this.transactionModel.find({
       orderId: order._id,
     });
     this.orderService.generalUpdate(req, order._id, {

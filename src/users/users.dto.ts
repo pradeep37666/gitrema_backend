@@ -21,7 +21,7 @@ export class UserCreateDto {
   @IsString()
   @IsEmail()
   @ApiProperty({ required: false })
-  email: string;
+  email?: string;
 
   @IsNotEmpty()
   @IsString()
@@ -41,22 +41,22 @@ export class UserCreateDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  whatsappNumber: string;
+  whatsappNumber?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsMongoId()
-  kitchenQueue: string;
+  kitchenQueue?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsMongoId()
-  tableRegion: string;
+  tableRegion?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsMongoId()
-  cashier: string;
+  cashier?: string;
 }
 
 export class UserUpdateDto extends PartialType(
@@ -65,10 +65,15 @@ export class UserUpdateDto extends PartialType(
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  isBlocked: boolean;
+  isBlocked?: boolean;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  paused: boolean;
+  isDefaultWaiter?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  paused?: boolean;
 }

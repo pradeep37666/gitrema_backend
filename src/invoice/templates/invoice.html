@@ -124,7 +124,10 @@
             <div class="title">{{ order.restaurantId.nameAr }}</div>
             <div class="text-12">
               <span style="color: #0e110e; line-height: 22px"
-                >{{ order.restaurantId.localtion.address }} {{ order.restaurantId.localtion.district }} {{ order.restaurantId.localtion.city }} {{ order.restaurantId.localtion.state }}</span
+                >{{ order.restaurantId.localtion.address }} {{
+                order.restaurantId.localtion.district }} {{
+                order.restaurantId.localtion.city }} {{
+                order.restaurantId.localtion.state }}</span
               >
             </div>
           </div>
@@ -177,9 +180,13 @@
                 <tr key="{index}">
                   <td>{{ this.menuItem.nameAr }}</td>
                   <td>{{ this.quantity }}</td>
-                  <td>{{ math ../multiplier "*" math this.unitPriceAfterDiscount }}</td>
-                  <td>{{ this.tax }}</td>
-                  <td style="color: black">{{ math ../multiplier "*" this.amountAfterDiscount }}</td>
+                  <td>
+                    {{ math ../multiplier "*" this.unitPriceAfterDiscount }}
+                  </td>
+                  <td>{{ math ../multiplier "*" this.tax }}</td>
+                  <td style="color: black">
+                    {{ math ../multiplier "*" this.amountAfterDiscount }}
+                  </td>
                 </tr>
                 {{/each}}
               </tbody>
@@ -198,7 +205,7 @@
           "
         >
           <div>اجمالي المبلغ الخاضع للضريبة</div>
-          <div>{{ math ../multiplier "*" order.summary.totalTaxableAmount }}</div>
+          <div>{{ math multiplier "*" order.summary.totalTaxableAmount }}</div>
         </div>
         <div
           style="
@@ -209,7 +216,7 @@
           "
         >
           <div>ضريبة القيمة المضافة (15%)</div>
-          <div>{{ math ../multiplier "*" order.summary.totalTax }}</div>
+          <div>{{ math multiplier "*" order.summary.totalTax }}</div>
         </div>
         <div
           style="
@@ -220,15 +227,20 @@
           "
         >
           <div>المجموع مع ضريبة ال( 15%)</div>
-          <div>{{ math ../multiplier "*" order.summary.totalWithTax }}</div>
+          <div>{{ math multiplier "*" order.summary.totalWithTax }}</div>
         </div>
         <!-- <div style="text-align:center, ">اغلاق الفاتورة  0100</div> -->
         <div class="divider">
-          <span style="font-size: 8px; line-height: 15px"
-            > {{invoiceNumber}} اغلاق الفاتورة </span
-          >
+          <span style="font-size: 8px; line-height: 15px">
+            {{invoiceNumber}} اغلاق الفاتورة
+          </span>
         </div>
-        <img src="{{ qrCode }}" /></span>
+
+        <div
+          style="display: flex; justify-content: center; margin-bottom: 50px"
+        >
+          <img width="126.75px" src="{{ qrCode }}" alt="" />
+        </div>
       </div>
     </div>
   </body>

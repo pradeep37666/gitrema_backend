@@ -34,7 +34,7 @@ export class CreateTableDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsNumber()
-  totalChairs: number;
+  totalChairs?: number;
 
   @ApiProperty({
     type: String,
@@ -44,23 +44,23 @@ export class CreateTableDto {
   })
   @IsEnum(Shape)
   @IsOptional()
-  shape: Shape;
+  shape?: Shape;
 
   @ApiProperty({ required: false })
   @IsNumber()
   @Min(0)
   @IsOptional()
-  minimumOrderValue: number;
+  minimumOrderValue?: number;
 
   @ApiProperty({ required: false })
   @IsNumber()
   @Min(0)
   @IsOptional()
-  fees: number;
+  fees?: number;
 
   @ApiProperty({ required: false })
   @IsNumber()
   @Min(0)
   @IsOptional()
-  minutesAllowed: number;
+  minutesAllowed?: number;
 }

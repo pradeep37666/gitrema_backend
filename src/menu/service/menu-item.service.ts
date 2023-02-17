@@ -62,7 +62,9 @@ export class MenuItemService {
   }
 
   async findOne(menuItemId: string): Promise<MenuItemDocument> {
-    const exists = await this.menuItemModel.findById(menuItemId);
+    const exists = await this.menuItemModel
+      .findById(menuItemId)
+      .populate([{ path: 'additions', match: { deletedAt: null } }]);
 
     if (!exists) {
       throw new NotFoundException();

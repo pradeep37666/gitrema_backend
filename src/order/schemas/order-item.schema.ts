@@ -4,6 +4,7 @@ import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { MenuAdditionDocument } from 'src/menu/schemas/menu-addition.schema';
 import { Alergies } from 'src/menu/enum/en.enum';
+import { PreparationStatus } from '../enum/en.enum';
 
 export type OrderItemDocument = OrderItem & Document;
 
@@ -141,6 +142,9 @@ class MenuItem {
 
   @Prop({ type: [String], enum: Alergies })
   alergies: Alergies[];
+
+  @Prop({ default: 0 })
+  preparationTime: number;
 }
 const MenuItemSchema = SchemaFactory.createForClass(MenuItem);
 
@@ -181,5 +185,15 @@ export class OrderItem {
 
   @Prop({ default: null })
   notes: string;
+
+  @Prop({ default: 0 })
+  preparationTime: number;
+
+  @Prop({
+    type: String,
+    enum: PreparationStatus,
+    default: PreparationStatus.NotStarted,
+  })
+  preparationStatus: PreparationStatus;
 }
 export const OrderItemSchema = SchemaFactory.createForClass(OrderItem);

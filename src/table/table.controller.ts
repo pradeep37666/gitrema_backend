@@ -22,12 +22,17 @@ import { TableDocument } from './schemas/table.schema';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { QueryTableDto } from './dto/query-table.dto';
 import { TableLogDto } from './dto/table-log.dto';
+import { TableLogService } from './table-log.service';
+import { TableLogDocument } from './schemas/table-log.schema';
 
 @Controller('table')
 @ApiTags('Tables')
 @ApiBearerAuth('access-token')
 export class TableController {
-  constructor(private readonly tableService: TableService) {}
+  constructor(
+    private readonly tableService: TableService,
+    private readonly tableLogService: TableLogService,
+  ) {}
 
   @Post()
   @PermissionGuard(PermissionSubject.Table, Permission.Common.CREATE)
@@ -63,19 +68,29 @@ export class TableController {
   @Patch(':tableId/start-table')
   @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
   async startTable(@Param('tableId') tableId: string) {
-    return await this.tableService.logTable(tableId);
+    return await this.tableLogService.logTable(tableId);
   }
 
   @Patch(':tableId/close-table')
   @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
   async closeTable(@Param('tableId') tableId: string) {
-    return await this.tableService.logTable(tableId, false);
+    return await this.tableLogService.logTable(tableId, false);
   }
 
   @Patch(':tableId/update-log')
   @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
   async updateLog(@Param('tableId') tableId: string, @Body() dto: TableLogDto) {
-    return await this.tableService.updateLog(tableId, dto);
+    return await this.tableLogService.updateLog(tableId, dto);
+  }
+
+  @Get(':tableId/logs')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async logs(
+    @Req() req,
+    @Param('tableId') tableId: string,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<TableLogDocument>> {
+    return await this.tableLogService.logs(req, tableId, paginateOptions);
   }
 
   @Delete(':tableId')

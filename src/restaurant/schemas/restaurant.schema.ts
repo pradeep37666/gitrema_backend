@@ -8,7 +8,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 export type RestaurantDocument = Restaurant & Document;
 
 @Schema({ _id: false })
-class IndividualWorkingHours {
+export class IndividualWorkingHours {
   @Prop({ type: String, enum: Days, required: true })
   day: Days;
 
@@ -18,7 +18,7 @@ class IndividualWorkingHours {
   @Prop({ required: true })
   end: string;
 }
-const IndividualWorkingHoursSchema = SchemaFactory.createForClass(
+export const IndividualWorkingHoursSchema = SchemaFactory.createForClass(
   IndividualWorkingHours,
 );
 

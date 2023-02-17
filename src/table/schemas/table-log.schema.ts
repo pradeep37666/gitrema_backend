@@ -7,6 +7,7 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { TableDocument } from './table.schema';
+import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type TableLogDocument = TableLog & Document;
 
@@ -32,6 +33,13 @@ export class TableLog {
     required: true,
   })
   tableId: TableDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  })
+  waiterId: UserDocument;
 
   @Prop({
     type: [MongooseSchema.Types.ObjectId],
