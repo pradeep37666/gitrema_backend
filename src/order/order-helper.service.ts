@@ -344,7 +344,7 @@ export class OrderHelperService {
       await this.tableLogModel.findOneAndUpdate(
         { tableId: order.tableId, closingTime: null },
         { $push: { orders: order._id }, paymentNeeded: true },
-        { sort: { _id: -1 } },
+        { upsert: true, setDefaultsOnInsert: true, sort: { _id: -1 } },
       );
     }
   }
