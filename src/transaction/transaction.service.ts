@@ -129,7 +129,9 @@ export class TransactionService {
           'summary.totalPaid': total,
         };
         if (total >= order.summary.totalWithTax) {
-          dataToUpdate.status = OrderStatus.Closed;
+          dataToUpdate.status = OrderStatus.New
+            ? OrderStatus.SentToKitchen
+            : OrderStatus.Closed;
           dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
           dataToUpdate.paymentTime = new Date();
         }
