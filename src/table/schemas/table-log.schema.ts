@@ -48,7 +48,7 @@ export class TableLog {
   })
   orders: OrderDocument[];
 
-  @Prop({ default: null })
+  @Prop({ default: new Date() })
   startingTime: Date;
 
   @Prop({ default: null })

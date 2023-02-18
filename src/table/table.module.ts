@@ -6,6 +6,7 @@ import { Table, TableSchema } from './schemas/table.schema';
 import { TableLog, TableLogSchema } from './schemas/table-log.schema';
 import { User, UserSchema } from 'src/users/schemas/users.schema';
 import { TableLogService } from './table-log.service';
+import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { TableLogService } from './table-log.service';
       { name: Table.name, schema: TableSchema },
       { name: TableLog.name, schema: TableLogSchema },
       { name: User.name, schema: UserSchema },
+      { name: Order.name, schema: OrderSchema },
     ]),
   ],
   controllers: [TableController],

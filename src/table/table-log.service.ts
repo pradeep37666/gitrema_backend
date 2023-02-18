@@ -20,6 +20,8 @@ import { TableLogDto } from './dto/table-log.dto';
 import { TableStatus } from './enum/en.enum';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { TableService } from './table.service';
+import { Order, OrderDocument } from 'src/order/schemas/order.schema';
+import { OrderStatus } from 'src/order/enum/en.enum';
 
 @Injectable()
 export class TableLogService {
@@ -33,6 +35,8 @@ export class TableLogService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private tableService: TableService,
+    @InjectModel(Order.name)
+    private readonly orderModel: Model<OrderDocument>,
   ) {}
 
   async logs(
@@ -89,6 +93,15 @@ export class TableLogService {
     } else {
       if (!tableLog) {
         throw new BadRequestException('Table has not started yet');
+      }
+
+      if (
+        (await this.orderModel.count({
+          status: OrderStatus.Closed,
+          tableId: tableLog.tableId,
+        })) > 0
+      ) {
+        throw new BadRequestException('Some of the orders are not closed');
       }
 
       tableLog.closingTime = new Date();
