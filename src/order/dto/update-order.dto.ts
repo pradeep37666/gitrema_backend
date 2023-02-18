@@ -3,6 +3,7 @@ import { CreateOrderDto } from './create-order.dto';
 import { OrderItemDto } from './order-item.dto';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsMongoId,
   IsNotIn,
@@ -38,4 +39,9 @@ export class UpdateOrderDto extends PartialType(
   @IsNotIn([OrderStatus.Closed, OrderStatus.Cancelled])
   @IsOptional()
   status?: OrderStatus;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  chefRequestedClarification?: boolean;
 }

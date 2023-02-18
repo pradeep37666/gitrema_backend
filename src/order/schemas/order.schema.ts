@@ -27,6 +27,19 @@ import { TransactionDocument } from 'src/transaction/schemas/transactions.schema
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
+@Schema({})
+class ChefInquiry {
+  @Prop()
+  comment: string;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+  })
+  userId: UserDocument;
+}
+
+export const ChefInquirySchema = SchemaFactory.createForClass(ChefInquiry);
+
 @Schema({ timestamps: true })
 export class Order {
   @Prop({
@@ -216,6 +229,12 @@ export class Order {
     actualEndTime: Date;
     kitchenSortingNumber: number;
   };
+
+  @Prop({ default: false })
+  chefRequestedClarification: boolean;
+
+  @Prop({ type: [ChefInquirySchema], default: [] })
+  chefInquiry: ChefInquiry;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.plugin(paginate);

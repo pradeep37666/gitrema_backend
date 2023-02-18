@@ -216,6 +216,10 @@ export class OrderService {
       throw new BadRequestException(`Order is closed. No changes can be made`);
     }
 
+    if (dto.status && dto.status == order.status) {
+      throw new BadRequestException(`Order is already on ${dto.status}`);
+    }
+
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {

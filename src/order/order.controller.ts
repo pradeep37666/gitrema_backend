@@ -24,6 +24,7 @@ import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
+import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -80,10 +81,40 @@ export class OrderController {
   }
 
   @Patch(':orderId/cancel')
-  @PermissionGuard(PermissionSubject.Order, Permission.Common.CANCEL)
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.CancelOrder)
   async cancel(@Req() req, @Param('orderId') orderId: string) {
     return await this.orderService.update(req, orderId, {
       status: OrderStatus.Cancelled,
+    });
+  }
+
+  @Patch(':orderId/sent-to-kitchen')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.SentToKitchen)
+  async sentToKitchen(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.update(req, orderId, {
+      status: OrderStatus.SentToKitchen,
+    });
+  }
+
+  @Patch(':orderId/on-table')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.OnTable)
+  async onTable(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.update(req, orderId, {
+      status: OrderStatus.OnTable,
+    });
+  }
+
+  @Patch(':orderId/add-chef-inquiry-comment')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  async addChefInquiryComment(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    dto: ChefInquiryDto,
+  ) {
+    return await this.orderService.generalUpdate(req, orderId, {
+      $push: {
+        chefInquiry: { ...dto, userId: req.user.userId },
+      },
     });
   }
 

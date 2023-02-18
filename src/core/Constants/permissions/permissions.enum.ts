@@ -49,3 +49,14 @@ export enum CustomerPermission {
   CustomerProfileFetch = 'Customer Profile Fetch',
   CustomerProfileUpdate = 'Customer Profile Update',
 }
+
+export enum ClientFeedbackPermission {
+  SubmitFeedback = 'Submit Feedback',
+  ListFeedback = 'List Feedback',
+}
+
+export enum OrderPermissions {
+  CancelOrder = 'Cancel Order',
+  SentToKitchen = 'Sent To Kitchen',
+  OnTable = 'On Table',
+}
