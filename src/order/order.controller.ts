@@ -109,7 +109,7 @@ export class OrderController {
   async addChefInquiryComment(
     @Req() req,
     @Param('orderId') orderId: string,
-    dto: ChefInquiryDto,
+    @Body() dto: ChefInquiryDto,
   ) {
     return await this.orderService.generalUpdate(req, orderId, {
       $push: {

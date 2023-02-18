@@ -37,6 +37,9 @@ import { ApplicationType } from 'src/offer/enum/en.enum';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
 import { Cart, CartDocument, CartItem } from './schemas/cart.schema';
 import { CalculationService } from './calculation.service';
+import { TableStatus } from 'src/table/enum/en.enum';
+import { Table } from 'src/table/schemas/table.schema';
+import { TableDocument } from 'src/table/schemas/table.schema';
 
 @Injectable()
 export class OrderHelperService {
@@ -55,6 +58,8 @@ export class OrderHelperService {
     private readonly activityModel: Model<ActivityDocument>,
     @InjectModel(Cart.name)
     private readonly cartModel: Model<CartDocument>,
+    @InjectModel(Table.name)
+    private readonly tableModel: Model<TableDocument>,
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
   ) {}
@@ -341,11 +346,18 @@ export class OrderHelperService {
     // }
     // update the table log
     if (order.tableId) {
-      await this.tableLogModel.findOneAndUpdate(
+      const tableLog = await this.tableLogModel.findOneAndUpdate(
         { tableId: order.tableId, closingTime: null },
-        { $push: { orders: order._id }, paymentNeeded: true },
+        {
+          $push: { orders: order._id },
+          paymentNeeded: true,
+        },
         { upsert: true, setDefaultsOnInsert: true, sort: { _id: -1 } },
       );
+      await this.tableModel.findByIdAndUpdate(order.tableId, {
+        status: TableStatus.InUse,
+        currentTableLog: tableLog._id,
+      });
     }
   }
 
