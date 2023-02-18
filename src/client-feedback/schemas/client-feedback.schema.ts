@@ -9,6 +9,7 @@ import { AnswerOption } from '../enum/en.enum';
 
 export type ClientFeedbackDocument = ClientFeedback & Document;
 
+@Schema({})
 class Question {
   @Prop({ required: true })
   question: string;

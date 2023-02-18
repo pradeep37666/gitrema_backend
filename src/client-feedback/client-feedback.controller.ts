@@ -21,6 +21,8 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { ClientFeedbackDocument } from './schemas/client-feedback.schema';
+import { SubmitClientFeedbackDto } from './dto/submit-client-feedback.dto';
+import { ClientFeedbackAnswerDocument } from './schemas/client-feedback-answers.schema';
 
 @Controller('client-feedback')
 @ApiTags('Client Feedback')
@@ -57,6 +59,40 @@ export class ClientFeedbackController {
     @Body() dto: UpdateClientFeedbackDto,
   ) {
     return await this.clientFeedbackService.update(req, clientFeedbackId, dto);
+  }
+
+  @Post(':clientFeedbackId/submit-feedback')
+  @PermissionGuard(
+    PermissionSubject.ClientFeedback,
+    Permission.ClientFeedback.SubmitFeedback,
+  )
+  async submitFeedback(
+    @Req() req,
+    @Param('clientFeedbackId') clientFeedbackId: string,
+    @Body() dto: SubmitClientFeedbackDto,
+  ) {
+    return await this.clientFeedbackService.submitFeedback(
+      req,
+      clientFeedbackId,
+      dto,
+    );
+  }
+
+  @Get(':clientFeedbackId/feedbacks')
+  @PermissionGuard(
+    PermissionSubject.ClientFeedback,
+    Permission.ClientFeedback.ListFeedback,
+  )
+  async feedbacks(
+    @Req() req,
+    @Param('clientFeedbackId') clientFeedbackId: string,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<ClientFeedbackAnswerDocument>> {
+    return await this.clientFeedbackService.listFeedbacks(
+      req,
+      clientFeedbackId,
+      paginateOptions,
+    );
   }
 
   @Delete(':clientFeedbackId')

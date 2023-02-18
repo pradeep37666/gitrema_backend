@@ -6,11 +6,16 @@ import {
   ClientFeedback,
   ClientFeedbackSchema,
 } from './schemas/client-feedback.schema';
+import {
+  ClientFeedbackAnswer,
+  ClientFeedbackAnswerSchema,
+} from './schemas/client-feedback-answers.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ClientFeedback.name, schema: ClientFeedbackSchema },
+      { name: ClientFeedbackAnswer.name, schema: ClientFeedbackAnswerSchema },
     ]),
   ],
   controllers: [ClientFeedbackController],

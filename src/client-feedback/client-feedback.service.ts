@@ -14,6 +14,11 @@ import {
 } from './schemas/client-feedback.schema';
 import { CreateClientFeedbackDto } from './dto/create-client-feedback.dto';
 import { UpdateClientFeedbackDto } from './dto/update-client-feedback.dto';
+import { SubmitClientFeedbackDto } from './dto/submit-client-feedback.dto';
+import {
+  ClientFeedbackAnswer,
+  ClientFeedbackAnswerDocument,
+} from './schemas/client-feedback-answers.schema';
 
 @Injectable()
 export class ClientFeedbackService {
@@ -22,6 +27,10 @@ export class ClientFeedbackService {
     private readonly clientFeedbackModel: Model<ClientFeedbackDocument>,
     @InjectModel(ClientFeedback.name)
     private readonly clientFeedbackModelPag: PaginateModel<ClientFeedbackDocument>,
+    @InjectModel(ClientFeedbackAnswer.name)
+    private readonly clientFeedbackAnswerModel: Model<ClientFeedbackAnswerDocument>,
+    @InjectModel(ClientFeedbackAnswer.name)
+    private readonly clientFeedbackAnswerModelPag: PaginateModel<ClientFeedbackAnswerDocument>,
   ) {}
 
   async create(
@@ -96,6 +105,49 @@ export class ClientFeedbackService {
     }
 
     return clientFeedback;
+  }
+
+  async submitFeedback(
+    req: any,
+    clientFeedbackId: string,
+    dto: SubmitClientFeedbackDto,
+  ) {
+    const exists = await this.clientFeedbackModel.findById(clientFeedbackId);
+
+    if (!exists) {
+      throw new NotFoundException();
+    }
+
+    const feedback = await this.clientFeedbackAnswerModel.findOneAndUpdate(
+      { feedbackId: clientFeedbackId, customerId: req.user.userId },
+      {
+        customerId: req.user.userId,
+        feedbackId: clientFeedbackId,
+        answers: dto.answers,
+      },
+      { upsert: true, setDefaultsOnInsert: true, new: true },
+    );
+    return feedback;
+  }
+
+  async listFeedbacks(
+    req: any,
+    clientFeedbackId: string,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<ClientFeedbackAnswerDocument>> {
+    const clientFeedbacks = await this.clientFeedbackAnswerModelPag.paginate(
+      {
+        supplierId: req.user.supplierId,
+        feedbackId: clientFeedbackId,
+      },
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+    return clientFeedbacks;
   }
 
   async remove(clientFeedbackId: string): Promise<boolean> {
