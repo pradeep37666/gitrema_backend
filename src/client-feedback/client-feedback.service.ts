@@ -124,6 +124,7 @@ export class ClientFeedbackService {
         customerId: req.user.userId,
         feedbackId: clientFeedbackId,
         answers: dto.answers,
+        supplierId: req.user.supplierId,
       },
       { upsert: true, setDefaultsOnInsert: true, new: true },
     );
@@ -137,7 +138,6 @@ export class ClientFeedbackService {
   ): Promise<PaginateResult<ClientFeedbackAnswerDocument>> {
     const clientFeedbacks = await this.clientFeedbackAnswerModelPag.paginate(
       {
-        supplierId: req.user.supplierId,
         feedbackId: clientFeedbackId,
       },
       {
