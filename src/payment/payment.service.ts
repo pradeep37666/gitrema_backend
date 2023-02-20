@@ -47,6 +47,11 @@ export class PaymentService {
   ): Promise<any> {
     const order = await this.orderModel.findById(paymentRequestDetails.orderId);
     if (!order) throw new NotFoundException(`Order is not found`);
+
+    if ([OrderStatus.Closed, OrderStatus.Cancelled].includes(order.status))
+      throw new NotFoundException(
+        `Payment are not allowed on cancelled or closed orders`,
+      );
     let transaction = null;
 
     let amountToCollect =
