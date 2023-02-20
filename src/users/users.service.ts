@@ -16,11 +16,14 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
+import { Role, RoleDocument } from 'src/role/schemas/roles.schema';
+import { RoleSlug } from 'src/core/Constants/enum';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     @InjectModel(User.name) private userModelPag: PaginateModel<UserDocument>,
   ) {}
 
@@ -29,11 +32,23 @@ export class UserService {
     if (userExists) {
       throw new BadRequestException(STATUS_MSG.ERROR.EMAIL_EXISTS);
     }
+    if (userRequest.role) {
+      const role = await this.roleModel.findById(userRequest.role);
+      if (!role) throw new NotFoundException(`Role not found`);
+
+      if (
+        req.user.supplierId &&
+        (req.user.supplierId != role.supplierId ||
+          ![RoleSlug.SupplierAdmin].includes(role.slug))
+      ) {
+        throw new NotFoundException(`Invalid Role`);
+      }
+    }
     let userDetails: any = userRequest;
     if (req) {
       userDetails = {
         ...userDetails,
-        supplierId: req.user.supplierId,
+        supplierId: req.user.supplierId ?? null,
         addedBy: req.user ? req.user.userId : null,
       };
     }
