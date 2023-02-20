@@ -46,6 +46,7 @@ import { PaymentModule } from './payment/payment.module';
 import { PuppeteerModule } from 'nest-puppeteer';
 import { InvoiceModule } from './invoice/invoice.module';
 import { CustomerModule } from './customer/customer.module';
+import { ScreenDisplayModule } from './screen-display/screen-display.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { CustomerModule } from './customer/customer.module';
     PaymentModule,
     InvoiceModule,
     CustomerModule,
+    ScreenDisplayModule,
   ],
   controllers: [AppController],
   providers: [
