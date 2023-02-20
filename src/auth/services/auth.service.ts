@@ -63,7 +63,11 @@ export class AuthService {
     if (user && (await bcrypt.compare(password, user.password))) {
       delete user.password;
       await user.populate([
-        { path: 'role', select: { name: 1 } },
+        {
+          path: 'role',
+          select: { name: 1 },
+          populate: [{ path: 'screenDisplays' }],
+        },
         { path: 'supplierId', select: { active: 1 } },
       ]);
       return user.toObject();
@@ -88,7 +92,13 @@ export class AuthService {
     });
     if (user && (await bcrypt.compare(loginRequest.password, user.password))) {
       delete user.password;
-      await user.populate([{ path: 'role', select: { name: 1 } }]);
+      await user.populate([
+        {
+          path: 'role',
+          select: { name: 1 },
+          populate: [{ path: 'screenDisplays' }],
+        },
+      ]);
       const payload = {
         userId: user._id,
         supplierId: user.supplierId,
@@ -124,7 +134,13 @@ export class AuthService {
     };
 
     const user = await this.userService.create(null, userCreateReq);
-    await user.populate([{ path: 'role', select: { name: 1 } }]);
+    await user.populate([
+      {
+        path: 'role',
+        select: { name: 1 },
+        populate: [{ path: 'screenDisplays' }],
+      },
+    ]);
     return user.toObject();
   }
 
@@ -174,7 +190,13 @@ export class AuthService {
         roleId: customer.role,
         supplierId: verificationOtpDetails.supplierId,
       };
-
+      await customer.populate([
+        {
+          path: 'role',
+          select: { name: 1 },
+          populate: [{ path: 'screenDisplays' }],
+        },
+      ]);
       return {
         accessToken: await this.generateAuthToken(payload),
         customer,
