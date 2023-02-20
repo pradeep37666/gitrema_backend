@@ -4,12 +4,18 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TransactionController } from './transaction.controller';
 import { TransactionService } from './transaction.service';
 import { Transaction, TransactionSchema } from './schemas/transactions.schema';
+import { Order, OrderSchema } from 'src/order/schemas/order.schema';
+import { OrderModule } from 'src/order/order.module';
+import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
+      { name: Order.name, schema: OrderSchema },
+      { name: TableLog.name, schema: TableLogSchema },
     ]),
+    OrderModule,
   ],
   providers: [TransactionService],
   exports: [TransactionService],

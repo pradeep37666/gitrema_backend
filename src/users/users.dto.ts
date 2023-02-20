@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsMongoId,
   IsUrl,
+  IsBoolean,
 } from 'class-validator';
 import {
   ApiProperty,
@@ -20,15 +21,15 @@ export class UserCreateDto {
   @IsString()
   @IsEmail()
   @ApiProperty({ required: false })
-  email: string;
+  email?: string;
 
   @IsNotEmpty()
   @IsString()
   @ApiProperty()
   name: string;
 
-  @ApiProperty({ type: String })
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsMongoId()
   role?: Role;
 
@@ -40,14 +41,39 @@ export class UserCreateDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  whatsappNumber: string;
+  whatsappNumber?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId()
+  kitchenQueue?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId()
+  tableRegion?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId()
+  cashier?: string;
 }
 
 export class UserUpdateDto extends PartialType(
   OmitType(UserCreateDto, ['email'] as const),
 ) {
+  @ApiProperty({ required: false })
   @IsOptional()
-  @IsUrl()
-  @ApiPropertyOptional()
-  profileImage: string;
+  @IsBoolean()
+  isBlocked?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  isDefaultWaiter?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  paused?: boolean;
 }

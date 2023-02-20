@@ -1,6 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ToBoolean } from '../Helpers/custom.validators';
 
 export class PaginationDto {
@@ -22,6 +29,18 @@ export class PaginationDto {
   @IsBoolean()
   @Type(() => Boolean)
   pagination?: boolean;
+
+  @IsString()
+  @ApiPropertyOptional({ default: '_id' })
+  @IsOptional()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsInt()
+  @ApiPropertyOptional({ default: -1 })
+  @Type(() => Number)
+  @IsIn([1, -1])
+  sortDirection?: number;
 }
 
 export const pagination = { allowDiskUse: true };

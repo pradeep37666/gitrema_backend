@@ -312,17 +312,7 @@ export enum ProfileStatus {
   Inactive = 'Inactive',
   Obsolete = 'Obsolete',
 }
-export enum PaymentMethod {
-  Amex = 'Amex',
-  Visa = 'Visa',
-  MC = 'Mastercard',
-  Mada = 'Mada',
-  Check = 'Check',
-  Cash = 'Cash',
-  Account = 'Account',
-  GiftCertificate = 'Gift Certificate',
-  Online = 'Online',
-}
+
 export enum FileDocumentType {
   Passport = 'Passport',
   DriverLicense = 'Driver License',
@@ -358,11 +348,7 @@ export enum VehicleTypes {
   Boat = 'Boat',
 }
 export enum ListType {
-  Referral = 'Referral',
-  MarketSegment = 'Market Segment',
-  Maintenance = 'Maintenance',
-  NotesTypes = 'Notes Types',
-  HousekeepingZones = 'Housekeeping Zones',
+  TableRegion = 'Table Region',
 }
 export enum ListStatus {
   Active = 'Active',

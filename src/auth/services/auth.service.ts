@@ -28,6 +28,10 @@ import { AddSupplierDto } from 'src/supplier/Supplier.dto';
 import { OtpStatus, RoleSlug } from 'src/core/Constants/enum';
 import { Otp, OtpDocument } from '../schemas/otp.schema';
 import { MailService } from 'src/notification/mail/mail.service';
+import {
+  Customer,
+  CustomerDocument,
+} from 'src/customer/schemas/customer.schema';
 
 @Injectable()
 export class AuthService {
@@ -35,6 +39,8 @@ export class AuthService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(Customer.name)
+    private customerModel: Model<CustomerDocument>,
     @InjectModel(Role.name)
     private roleModel: Model<RoleDocument>,
     @InjectModel(Otp.name)
@@ -50,11 +56,21 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<LeanDocument<User>> {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userModel.findOne({
+      email,
+    });
+    await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
       delete user.password;
-
-      return user;
+      await user.populate([
+        {
+          path: 'role',
+          select: { name: 1 },
+          populate: [{ path: 'screenDisplays' }],
+        },
+        { path: 'supplierId', select: { active: 1 } },
+      ]);
+      return user.toObject();
     }
     return null;
   }
@@ -63,8 +79,8 @@ export class AuthService {
     const payload = {
       email: user.email,
       userId: user._id,
-      supplierId: user.supplierId,
-      roleId: user.role,
+      supplierId: user.supplierId?._id,
+      roleId: user.role._id,
     };
 
     return await this.generateAuthToken(payload);
@@ -76,11 +92,18 @@ export class AuthService {
     });
     if (user && (await bcrypt.compare(loginRequest.password, user.password))) {
       delete user.password;
+      await user.populate([
+        {
+          path: 'role',
+          select: { name: 1 },
+          populate: [{ path: 'screenDisplays' }],
+        },
+      ]);
       const payload = {
         userId: user._id,
         supplierId: user.supplierId,
         restaurantId: user.restaurantId,
-        roleId: user.role,
+        roleId: user.role._id,
       };
 
       return { user, accessToken: await this.generateAuthToken(payload) };
@@ -111,7 +134,14 @@ export class AuthService {
     };
 
     const user = await this.userService.create(null, userCreateReq);
-    return user;
+    await user.populate([
+      {
+        path: 'role',
+        select: { name: 1 },
+        populate: [{ path: 'screenDisplays' }],
+      },
+    ]);
+    return user.toObject();
   }
 
   async requestOtp(req, requestOtpDetails: RequestOtpDto): Promise<any> {
@@ -124,7 +154,7 @@ export class AuthService {
     throw new BadRequestException(STATUS_MSG.ERROR.ERROR_SMS);
   }
 
-  async verifyOtp(
+  async verifyCustomerOtp(
     req,
     verificationOtpDetails: VerificationOtpDto,
   ): Promise<any> {
@@ -137,21 +167,39 @@ export class AuthService {
       }
     }
 
-    const user = await this.userModel.findOne({
+    let customer = await this.customerModel.findOne({
       phoneNumber: verificationOtpDetails.phoneNumber,
     });
 
-    if (user) {
+    if (!customer) {
+      const customerRole = await this.roleModel.findOne({
+        slug: RoleSlug.Customer,
+      });
+      if (!customerRole)
+        throw new BadRequestException(
+          `Role is not defined. Please contact admin`,
+        );
+      customer = await this.customerModel.create({
+        phoneNumber: verificationOtpDetails.phoneNumber,
+        role: customerRole._id,
+      });
+    }
+    if (customer) {
       const payload = {
-        userId: user._id,
-        roleId: user.role,
-        restaurantId: user.restaurantId,
-        supplierId: user.supplierId,
+        userId: customer._id,
+        roleId: customer.role,
+        supplierId: verificationOtpDetails.supplierId,
       };
-
+      await customer.populate([
+        {
+          path: 'role',
+          select: { name: 1 },
+          populate: [{ path: 'screenDisplays' }],
+        },
+      ]);
       return {
         accessToken: await this.generateAuthToken(payload),
-        user,
+        customer,
       };
     }
     throw new BadRequestException(STATUS_MSG.ERROR.SERVER_ERROR);

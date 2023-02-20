@@ -31,7 +31,7 @@ export class ClientCommentService {
   ): Promise<ClientCommentDocument> {
     return await this.clientCommentModel.create({
       ...dto,
-      addedBy: req.user.userId,
+      customerId: req.user.userId,
     });
   }
 
@@ -40,7 +40,7 @@ export class ClientCommentService {
     query: QueryClientCommentDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<ClientCommentDocument>> {
-    const kitchenQueues = await this.clientCommentModelPag.paginate(
+    const comments = await this.clientCommentModelPag.paginate(
       {
         ...query,
         supplierId: req.user.supplierId,
@@ -50,8 +50,22 @@ export class ClientCommentService {
         lean: true,
         ...paginateOptions,
         ...pagination,
+        populate: [
+          {
+            path: 'customerId',
+            select: { name: 1 },
+          },
+          {
+            path: 'menuItemId',
+            select: { name: 1, nameAr: 1 },
+          },
+          {
+            path: 'orderId',
+            select: { orderType: 1 },
+          },
+        ],
       },
     );
-    return kitchenQueues;
+    return comments;
   }
 }

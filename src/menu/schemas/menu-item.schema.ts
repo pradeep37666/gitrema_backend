@@ -4,11 +4,27 @@ import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { MenuCategoryDocument } from './menu-category.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
-import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/menu.enum';
+import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuAdditionDocument } from './menu-addition.schema';
+import { CalculationType } from 'src/core/Constants/enum';
 
 export type MenuItemDocument = MenuItem & Document;
+
+@Schema({ _id: false })
+export class Quantity {
+  @Prop({ required: true })
+  quantity: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Restaurant',
+    index: true,
+    required: true,
+  })
+  restaurantId: RestaurantDocument;
+}
+const QuantitySchema = SchemaFactory.createForClass(Quantity);
 
 @Schema({ timestamps: true })
 export class MenuItem {
@@ -46,10 +62,16 @@ export class MenuItem {
   description: string;
 
   @Prop({ default: null })
-  description_ar: string;
+  descriptionAr: string;
 
   @Prop({ required: true })
   price: number;
+
+  @Prop({ required: false })
+  cost: number;
+
+  @Prop({ default: false })
+  taxEnabled: boolean;
 
   @Prop({ default: null })
   priceInStar: number;
@@ -58,19 +80,22 @@ export class MenuItem {
   starGain: number;
 
   @Prop({ default: null })
+  order: number;
+
+  @Prop({ default: null })
   calories: number;
 
   @Prop({ default: null })
   image: string;
 
-  @Prop({ required: true })
+  @Prop({ default: null })
   waiterCode: string;
 
   @Prop({ type: [String], enum: Alergies })
   alergies: Alergies[];
 
-  @Prop({ default: 0 })
-  quantity: number;
+  @Prop({ default: [], type: [QuantitySchema] })
+  quantities: Quantity[];
 
   @Prop({
     type: [MongooseSchema.Types.ObjectId],
@@ -80,11 +105,19 @@ export class MenuItem {
   })
   suggestedItems: MenuItemDocument[];
 
-  @Prop({ default: false })
-  hideFromMenu: boolean;
+  @Prop({
+    type: [MongooseSchema.Types.ObjectId],
+    ref: 'Restaurant',
+    index: true,
+    default: [],
+  })
+  hideFromMenu: RestaurantDocument[];
 
   @Prop({ default: false })
   soldOut: boolean;
+
+  @Prop({ default: false })
+  manageQuantity: boolean;
 
   @Prop({ default: false })
   canBuyWithStars: boolean;
@@ -105,6 +138,12 @@ export class MenuItem {
 
   @Prop({ default: true })
   active: boolean;
+
+  @Prop({ default: null })
+  deletedAt: Date;
+
+  @Prop({ default: 0 })
+  preparationTime: number;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

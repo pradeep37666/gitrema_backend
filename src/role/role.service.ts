@@ -7,13 +7,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { LeanDocument, Model, PaginateModel, PaginateResult } from 'mongoose';
 import { Role, RoleDocument } from './schemas/roles.schema';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
-import { RoleCreateDto } from './role.dto';
+import { RoleCreateDto, RoleUpdateDto } from './role.dto';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import {
   DefaultSort,
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
+import { SubjectsRestrictedForSupplier } from 'src/core/Constants/permissions/permissions.enum';
 
 @Injectable()
 export class RoleService {
@@ -25,9 +26,24 @@ export class RoleService {
   ) {}
 
   async create(req: any, roleDetails: RoleCreateDto): Promise<RoleDocument> {
+    if (req.user.supplierId) {
+      delete roleDetails.slug;
+      const subjects: any = roleDetails.permissions.map((p) => p.subject);
+      if (
+        subjects.some(
+          (r) => Object.values(SubjectsRestrictedForSupplier).indexOf(r) >= 0,
+        )
+      ) {
+        throw new BadRequestException(
+          `${Object.values(SubjectsRestrictedForSupplier).join(
+            ',',
+          )} are not allowed for supplier`,
+        );
+      }
+    }
     const role = new this.roleModel({
       ...roleDetails,
-      supplierId: req.user.supplierId,
+      supplierId: req.user.supplierId ?? null,
       addedBy: req.user.userId,
     });
     await role.save();
@@ -36,9 +52,25 @@ export class RoleService {
   }
 
   async update(
+    req,
     roleId: string,
-    roleDetails: RoleCreateDto,
+    roleDetails: RoleUpdateDto,
   ): Promise<LeanDocument<RoleDocument>> {
+    if (req.user.supplierId) {
+      delete roleDetails.slug;
+      const subjects: any = roleDetails.permissions.map((p) => p.subject);
+      if (
+        subjects.some(
+          (r) => Object.values(SubjectsRestrictedForSupplier).indexOf(r) >= 0,
+        )
+      ) {
+        throw new BadRequestException(
+          `${Object.values(SubjectsRestrictedForSupplier).join(
+            ',',
+          )} are not allowed for supplier`,
+        );
+      }
+    }
     const role = await this.roleModel
       .findByIdAndUpdate(roleId, roleDetails, {
         new: true,
@@ -68,12 +100,16 @@ export class RoleService {
       lean: true,
       ...paginateOptions,
       ...pagination,
+      populate: [{ path: 'screenDisplays' }],
     });
     return roles;
   }
 
   async fetch(roleId: string): Promise<LeanDocument<RoleDocument>> {
-    const role = await this.roleModel.findOne({ _id: roleId }).lean();
+    const role = await this.roleModel
+      .findOne({ _id: roleId })
+      .populate([{ path: 'screenDisplays' }])
+      .lean();
     if (!role) {
       throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
     }

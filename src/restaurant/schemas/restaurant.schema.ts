@@ -8,7 +8,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 export type RestaurantDocument = Restaurant & Document;
 
 @Schema({ _id: false })
-class IndividualWorkingHours {
+export class IndividualWorkingHours {
   @Prop({ type: String, enum: Days, required: true })
   day: Days;
 
@@ -18,7 +18,7 @@ class IndividualWorkingHours {
   @Prop({ required: true })
   end: string;
 }
-const IndividualWorkingHoursSchema = SchemaFactory.createForClass(
+export const IndividualWorkingHoursSchema = SchemaFactory.createForClass(
   IndividualWorkingHours,
 );
 
@@ -78,6 +78,9 @@ export class Restaurant {
   isMenuBrowsingEnabled: boolean;
 
   @Prop({ default: true })
+  isAppOrderEnabled: boolean;
+
+  @Prop({ default: true })
   isDeliveryEnabled: boolean;
 
   @Prop({ default: true })
@@ -88,6 +91,15 @@ export class Restaurant {
 
   @Prop({ default: true })
   isDeliveryToCarEnabled: boolean;
+
+  @Prop({ default: true })
+  isReservationEnabled: boolean;
+
+  @Prop({ default: true })
+  isWaitingEnabled: boolean;
+
+  @Prop({ default: null })
+  minimumDeliveryOrderValue: number;
 
   @Prop({ type: Object, required: true })
   location: {
@@ -101,8 +113,8 @@ export class Restaurant {
     district: string;
   };
 
-  @Prop({ default: true })
-  isActive: boolean;
+  @Prop({ default: false })
+  active: boolean;
 
   @Prop({ default: [], type: [TermsAndConditionSchema] })
   terms: TermsAndCondition[];

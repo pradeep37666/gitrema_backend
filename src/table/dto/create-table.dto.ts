@@ -4,16 +4,22 @@ import {
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
 } from 'class-validator';
-import { Shape } from '../enum/table.enum';
+import { Shape } from '../enum/en.enum';
 
 export class CreateTableDto {
   @ApiProperty()
   @IsMongoId()
   @IsNotEmpty()
   restaurantId: string;
+
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  tableRegionId: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -25,37 +31,36 @@ export class CreateTableDto {
   @IsString()
   nameAr: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsNumber()
-  totalChairs: number;
+  totalChairs?: number;
 
-  @ApiProperty({ type: String, enum: Shape })
+  @ApiProperty({
+    type: String,
+    enum: Shape,
+    enumName: 'Shape',
+    required: false,
+  })
   @IsEnum(Shape)
-  @IsNotEmpty()
-  shape: Shape;
+  @IsOptional()
+  shape?: Shape;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsNumber()
   @Min(0)
-  @IsNotEmpty()
-  minimumOrderValue: number;
+  @IsOptional()
+  minimumOrderValue?: number;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsNumber()
   @Min(0)
-  @IsNotEmpty()
-  fees: number;
+  @IsOptional()
+  fees?: number;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsNumber()
   @Min(0)
-  @IsNotEmpty()
-  minutesAllowed: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @Min(0)
-  @IsNotEmpty()
-  initialMinutesAllowed: number;
+  @IsOptional()
+  minutesAllowed?: number;
 }

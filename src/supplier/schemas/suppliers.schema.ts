@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import {
+  IndividualWorkingHours,
+  IndividualWorkingHoursSchema,
+} from 'src/restaurant/schemas/restaurant.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type SupplierDocument = Supplier & Document;
@@ -65,10 +69,58 @@ export class Supplier {
   incorporationContractDoc: string;
 
   @Prop({ default: null })
-  IbanCertDoc: string;
+  ibanCertDoc: string;
 
   @Prop({ default: null })
-  IdDoc: string;
+  idDoc: string;
+
+  @Prop({ default: false })
+  taxEnabled: boolean;
+
+  @Prop({ default: 0 })
+  taxRate: number;
+
+  @Prop({ default: 0 })
+  reservationFee: number;
+
+  @Prop({ default: false })
+  taxEnabledOnReservationFee: boolean;
+
+  @Prop({ default: false })
+  taxEnabledOnTableFee: boolean;
+
+  @Prop({ default: true })
+  isMenuBrowsingEnabled: boolean;
+
+  @Prop({ default: true })
+  isAppOrderEnabled: boolean;
+
+  @Prop({ default: true })
+  isDeliveryEnabled: boolean;
+
+  @Prop({ default: true })
+  isPickupOrderEnabled: boolean;
+
+  @Prop({ default: true })
+  isScheduledOrderEnabled: boolean;
+
+  @Prop({ default: true })
+  isDeliveryToCarEnabled: boolean;
+
+  @Prop({ default: true })
+  isReservationEnabled: boolean;
+
+  @Prop({ default: true })
+  isWaitingEnabled: boolean;
+
+  @Prop({ required: true, type: Object })
+  defaultWorkingHours: {
+    start: string;
+    end: string;
+  };
+
+  @Prop({ default: [], type: [IndividualWorkingHoursSchema] })
+  overrideWorkingHours: IndividualWorkingHours[];
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -79,7 +131,7 @@ export class Supplier {
   @Prop({ default: null })
   deletedAt: Date;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   active: boolean;
 }
 

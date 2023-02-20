@@ -16,7 +16,7 @@ import asmscSmsConfiguration from './config/asmsc-sms.configuration';
 import { UserModule } from './users/users.module';
 import { SupplierModule } from './supplier/Supplier.module';
 import { RoleModule } from './role/role.module';
-import { EnumModule } from './core/enum/enum.module';
+import { EnumModule } from './enum/enum.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -36,6 +36,17 @@ import { ClientFeedbackModule } from './client-feedback/client-feedback.module';
 import { SeedModule } from './seed/seed.module';
 import { PaymentSetupModule } from './payment-setup/payment-setup.module';
 import { FileUploaderModule } from './file-uploader/file-uploader.module';
+import { ListModule } from './list/list.module';
+import { ActivityModule } from './activity/activity.module';
+import { WaitingQueueModule } from './waiting-queue/waiting-queue.module';
+import { ReservationModule } from './reservation/reservation.module';
+import { OrderModule } from './order/order.module';
+import { OfferModule } from './offer/offer.module';
+import { PaymentModule } from './payment/payment.module';
+import { PuppeteerModule } from 'nest-puppeteer';
+import { InvoiceModule } from './invoice/invoice.module';
+import { CustomerModule } from './customer/customer.module';
+import { ScreenDisplayModule } from './screen-display/screen-display.module';
 
 @Module({
   imports: [
@@ -57,10 +68,10 @@ import { FileUploaderModule } from './file-uploader/file-uploader.module';
         uri: config.get('mongo.dbUrl'), // Loaded from .ENV
       }),
     }),
-    // PuppeteerModule.forRoot({
-    //   isGlobal: true,
-    //   executablePath: '/usr/bin/google-chrome',
-    // }),
+    PuppeteerModule.forRoot({
+      isGlobal: true,
+      executablePath: '/usr/bin/google-chrome',
+    }),
     AuthModule,
     UserModule,
     SupplierModule,
@@ -81,6 +92,16 @@ import { FileUploaderModule } from './file-uploader/file-uploader.module';
 
     SeedModule,
     FileUploaderModule,
+    ListModule,
+    ActivityModule,
+    WaitingQueueModule,
+    ReservationModule,
+    OrderModule,
+    OfferModule,
+    PaymentModule,
+    InvoiceModule,
+    CustomerModule,
+    ScreenDisplayModule,
   ],
   controllers: [AppController],
   providers: [

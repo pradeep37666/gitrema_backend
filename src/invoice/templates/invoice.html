@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .text-12 {
+        font-size: 12px;
+      }
+      .text-8 {
+        font-size: 8px;
+      }
+      .fw-600 {
+        font-weight: 600;
+      }
+      .title {
+        font-family: 'Cairo';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 20px;
+        line-height: 37px;
+        color: #0e110e;
+      }
+      .divider {
+        height: 1px;
+        width: 100%;
+        margin: 30px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .divider span {
+        padding: 0 10px;
+        background-color: #fff;
+      }
+      .container {
+        width: 383.63px;
+        margin: 10px auto;
+        padding: 10px 21px;
+        font-family: 'Cairo';
+        border-radius: 4px;
+        background: #ffffff;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      }
+
+      .topContainer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .mainTable table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+      table {
+        border-collapse: collapse;
+      }
+
+      td,
+      th {
+        border: 1px solid #00000033;
+        padding: 6px;
+        text-align: left;
+      }
+      body {
+        background: #f5f5f5;
+        line-height: 22px;
+        font-family: 'Cairo', sans-serif;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div>
+        <div style="text-align: center">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              padding-bottom: 20px;
+              text-align: center;
+              border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            "
+          >
+            <div class="title">فاتورة ضريبية مبسطة</div>
+            <div
+              class="text-12 fw-600"
+              style="color: #5c5c5c; margin-top: 8px; line-height: 22px"
+            >
+              <span>رقم الفاتورة : </span><span>{{ invoiceNumber }}</span>
+            </div>
+          </div>
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              padding-bottom: 20px;
+              text-align: center;
+              margin-top: 5px;
+            "
+          >
+            <div class="title">{{ order.restaurantId.nameAr }}</div>
+            <div class="text-12">
+              <span style="color: #0e110e; line-height: 22px"
+                >{{ order.restaurantId.localtion.address }} {{
+                order.restaurantId.localtion.district }} {{
+                order.restaurantId.localtion.city }} {{
+                order.restaurantId.localtion.state }}</span
+              >
+            </div>
+          </div>
+          <div
+            class="text-12"
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              padding-bottom: 10px;
+              text-align: right;
+            "
+          >
+            <div style="color: #5c5c5c; padding-bottom: 8px" class="fw-600">
+              التاريخ : {{ moment format="L" }}
+            </div>
+            <div style="color: #0e110e">
+              رقم تسجيل ضريبة القيمة المضافة :
+              <span class="fw-600" style="color: #090909">311151351200003</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        dir="rtl"
+        style="
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          padding-bottom: 40px;
+          color: #5c5c5c;
+        "
+        class="tableData"
+      >
+        <div
+          class="text-8"
+          style="margin: 8px 0px; text-align: center; line-height: 15px"
+        >
+          <div class="">
+            <table style="width: 100%">
+              <thead>
+                <tr>
+                  <th>المنتجات</th>
+                  <th>الكمية</th>
+                  <th>سعر الواحدة</th>
+                  <th>ضريبة القيمة المضافة</th>
+                  <th style="color: black">السعر شامل الضريبة</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each order.items}}
+                <tr key="{index}">
+                  <td>{{ this.menuItem.nameAr }}</td>
+                  <td>{{ this.quantity }}</td>
+                  <td>
+                    {{ math ../multiplier "*" this.unitPriceAfterDiscount }}
+                  </td>
+                  <td>{{ math ../multiplier "*" this.tax }}</td>
+                  <td style="color: black">
+                    {{ math ../multiplier "*" this.amountAfterDiscount }}
+                  </td>
+                </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+          <div></div>
+        </div>
+      </div>
+
+      <div dir="rtl" class="text-12" style="position: relative; color: #0e110e">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0px;
+          "
+        >
+          <div>اجمالي المبلغ الخاضع للضريبة</div>
+          <div>{{ math multiplier "*" order.summary.totalTaxableAmount }}</div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+
+            margin: 15px 0px;
+          "
+        >
+          <div>ضريبة القيمة المضافة (15%)</div>
+          <div>{{ math multiplier "*" order.summary.totalTax }}</div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+
+            margin: 15px 0px;
+          "
+        >
+          <div>المجموع مع ضريبة ال( 15%)</div>
+          <div>{{ math multiplier "*" order.summary.totalWithTax }}</div>
+        </div>
+        <!-- <div style="text-align:center, ">اغلاق الفاتورة  0100</div> -->
+        <div class="divider">
+          <span style="font-size: 8px; line-height: 15px">
+            {{invoiceNumber}} اغلاق الفاتورة
+          </span>
+        </div>
+
+        <div
+          style="display: flex; justify-content: center; margin-bottom: 50px"
+        >
+          <img width="126.75px" src="{{ qrCode }}" alt="" />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

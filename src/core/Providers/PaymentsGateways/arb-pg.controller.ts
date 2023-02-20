@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   Body,
   Controller,
   HttpStatus,
@@ -48,18 +49,8 @@ export class ArbPgController {
         },
       );
 
-      // if (transObj.result == 'CAPTURED') {
-      //   this.transactionService.postOnlineTransactionSuccessCalculation(
-      //     transaction,
-      //     {
-      //       variableFee: this.arbPgService.config.variableFee,
-      //       fixedFee: this.arbPgService.config.fixedFee,
-      //       taxOnFee: this.arbPgService.config.taxOnFee,
-      //     },
-      //   );
-
-      //   this.transactionService.postTransactionProcess(null, transaction);
-      // }
+      if (transObj.result == 'CAPTURED')
+        this.transactionService.postTransactionProcess(null, transaction);
 
       const supplier = await this.supplierService.getOne(
         transaction.supplierId.toString(),
@@ -79,5 +70,6 @@ export class ArbPgController {
       }
       return { statusCode: HttpStatus.FOUND, url };
     }
+    throw new BadGatewayException('Something went wrong');
   }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class QueryMenuItemDto {
   @ApiProperty({ required: false })
@@ -11,4 +11,9 @@ export class QueryMenuItemDto {
   @IsMongoId()
   @IsOptional()
   categoryId: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  search: string;
 }

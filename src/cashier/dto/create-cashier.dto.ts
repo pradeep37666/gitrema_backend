@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateCashierDto {
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  restaurantId: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
@@ -11,9 +16,4 @@ export class CreateCashierDto {
   @IsNotEmpty()
   @IsString()
   nameAr: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  startingAmount: number;
 }

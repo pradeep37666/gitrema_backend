@@ -9,8 +9,35 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  ValidateNested,
 } from 'class-validator';
-import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/menu.enum';
+import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
+import { Type } from 'class-transformer';
+import { CalculationType } from 'src/core/Constants/enum';
+
+class QuantityDto {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  quantity: number;
+
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  restaurantId: string;
+}
+
+class DiscountDto {
+  @ApiProperty()
+  @IsEnum(CalculationType)
+  @IsNotEmpty()
+  type: CalculationType;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  value: number;
+}
 
 export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
@@ -41,12 +68,17 @@ export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  description_ar: string;
+  descriptionAr: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
   price: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  taxEnabled: boolean;
 
   @ApiProperty({ required: false })
   @IsNumber()
@@ -63,21 +95,28 @@ export class CreateMenuItemDTO {
   @IsNotEmpty()
   calories: number;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   waiterCode: string;
 
-  @ApiProperty({ type: [String], enum: Alergies, required: false })
+  @ApiProperty({
+    type: [String],
+    enum: Alergies,
+    enumName: 'Alergies',
+    required: false,
+  })
   @IsEnum(Alergies, { each: true })
   @IsOptional()
   @IsArray()
   alergies: Alergies[];
 
-  @ApiProperty({ required: false })
-  @IsNumber()
+  @ApiProperty({ required: false, type: [QuantityDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QuantityDto)
   @IsOptional()
-  quantity: number;
+  quantities: QuantityDto[];
 
   @ApiProperty({ required: false, type: [String] })
   @IsArray()
@@ -91,12 +130,22 @@ export class CreateMenuItemDTO {
   @IsOptional()
   additions: string[];
 
-  @ApiProperty({ type: String, enum: MenuSticker, required: false })
+  @ApiProperty({
+    type: String,
+    enum: MenuSticker,
+    enumName: 'MenuSticker',
+    required: false,
+  })
   @IsEnum(MenuSticker)
   @IsOptional()
   sticker: MenuSticker;
 
-  @ApiProperty({ type: [String], enum: MenuStickerStyle, required: false })
+  @ApiProperty({
+    type: [String],
+    enum: MenuStickerStyle,
+    enumName: 'MenuStickerStyle',
+    required: false,
+  })
   @IsArray()
   @IsEnum(MenuStickerStyle, { each: true })
   @IsOptional()
@@ -107,10 +156,11 @@ export class CreateMenuItemDTO {
   @IsOptional()
   image: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, type: [String] })
+  @IsArray()
+  @IsMongoId({ each: true })
   @IsOptional()
-  @IsBoolean()
-  hideFromMenu: boolean;
+  hideFromMenu: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -121,6 +171,26 @@ export class CreateMenuItemDTO {
   @IsOptional()
   @IsBoolean()
   soldOut: boolean;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  cost: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  manageQuantity: boolean;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  preparationTime: number;
 }
 
 export class UpdateMenuItemDTO extends PartialType(CreateMenuItemDTO) {

@@ -5,10 +5,11 @@ import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { AnswerOption } from '../enum/client-feedback.enum';
+import { AnswerOption } from '../enum/en.enum';
 
 export type ClientFeedbackDocument = ClientFeedback & Document;
 
+@Schema({})
 class Question {
   @Prop({ required: true })
   question: string;

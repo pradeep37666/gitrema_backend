@@ -5,6 +5,7 @@ import * as paginate from 'mongoose-paginate-v2';
 import { RoleSlug } from 'src/core/Constants/enum';
 import { PermissionActions } from 'src/core/Constants/permission.type';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
+import { ScreenDisplayDocument } from 'src/screen-display/schemas/screen-display.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
@@ -35,8 +36,15 @@ export class Role {
   @Prop({ type: [PermissionSchemaSchema] })
   permissions: PermissionSchema[];
 
-  @Prop({ type: [String], enum: RoleSlug })
-  slug: RoleSlug[];
+  @Prop({
+    type: [MongooseSchema.Types.ObjectId],
+    ref: 'ScreenDisplay',
+    default: [],
+  })
+  screenDisplays: ScreenDisplayDocument[];
+
+  @Prop({ type: String, enum: RoleSlug })
+  slug: RoleSlug;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

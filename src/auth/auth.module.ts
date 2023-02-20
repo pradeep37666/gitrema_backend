@@ -22,14 +22,21 @@ import {
   EmailTemplate,
   EmailTemplateSchema,
 } from 'src/notification/email-templates/schemas/email-template.schema';
+import {
+  Supplier,
+  SupplierSchema,
+} from 'src/supplier/schemas/suppliers.schema';
+import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
+      { name: Supplier.name, schema: SupplierSchema },
       { name: Role.name, schema: RoleSchema },
       { name: Otp.name, schema: OtpSchema },
       { name: EmailTemplate.name, schema: EmailTemplateSchema },
+      { name: Customer.name, schema: CustomerSchema },
     ]),
 
     UserModule,

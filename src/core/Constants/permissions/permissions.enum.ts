@@ -17,6 +17,21 @@ export enum PermissionSubject {
   ClientComment = 'Client Comment',
   ClientFeedback = 'Client Feedback',
   PaymentSetup = 'Payment Setup',
+  List = 'List',
+  Activity = 'Activity',
+  WaitingQueue = 'Waiting Queue',
+  Reservation = 'Reservation',
+  Order = 'Order',
+  Business = 'Business',
+  Offer = 'Offer',
+  Invoice = 'Invoice',
+  Customer = 'Customer',
+  ScreenDisplay = 'Screen Display',
+}
+export enum SubjectsRestrictedForSupplier {
+  ALL = 'ALL',
+  Supplier = 'Supplier',
+  ScreenDisplay = 'Screen Display',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
@@ -24,5 +39,30 @@ export enum CommonPermissions {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
+  START = 'START',
+  CLOSE = 'CLOSE',
+  PAUSE = 'PAUSE',
+  RESUME = 'RESUME',
+  CANCEL = 'CANCEL',
   MANAGE = 'MANAGE',
+}
+
+export enum CashierPermission {
+  OverrideCashierClose = 'Override Cashier Close',
+}
+
+export enum CustomerPermission {
+  CustomerProfileFetch = 'Customer Profile Fetch',
+  CustomerProfileUpdate = 'Customer Profile Update',
+}
+
+export enum ClientFeedbackPermission {
+  SubmitFeedback = 'Submit Feedback',
+  ListFeedback = 'List Feedback',
+}
+
+export enum OrderPermissions {
+  CancelOrder = 'Cancel Order',
+  SentToKitchen = 'Sent To Kitchen',
+  OnTable = 'On Table',
 }

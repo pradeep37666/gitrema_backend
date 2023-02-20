@@ -18,3 +18,7 @@ export const getHBVars = (text) => {
   }
   return tags;
 };
+
+export const roundOffNumber = (value: number, precision = 2): number => {
+  return parseFloat(value?.toFixed(precision));
+};

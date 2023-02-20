@@ -41,6 +41,11 @@ export class VerificationOtpDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
+  supplierId: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
   phoneNumber: string;
 
   @ApiProperty()

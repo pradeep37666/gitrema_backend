@@ -7,13 +7,14 @@ import {
   IsMobilePhone,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { Days, OrderTypes } from 'src/core/Constants/enum';
 
-class IndividualWorkHoursDTO {
-  @ApiProperty({ type: String, enum: Days })
+export class IndividualWorkHoursDTO {
+  @ApiProperty({ type: String, enum: Days, enumName: 'Days' })
   @IsNotEmpty()
   @IsEnum(Days)
   day: Days;
@@ -30,7 +31,7 @@ class IndividualWorkHoursDTO {
 }
 
 class TermsAndConditionDTO {
-  @ApiProperty({ type: String, enum: OrderTypes })
+  @ApiProperty({ type: String, enum: OrderTypes, enumName: 'OrderTypes' })
   @IsEnum(OrderTypes)
   @IsNotEmpty()
   type: OrderTypes;
@@ -58,7 +59,7 @@ class BeforeConfirmOrderMessageDTO {
   ar: string;
 }
 
-class DefaultWorkingHoursDTO {
+export class DefaultWorkingHoursDTO {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -70,7 +71,7 @@ class DefaultWorkingHoursDTO {
   end: string;
 }
 
-class LocationDto {
+export class LocationDto {
   @IsString()
   @ApiProperty()
   @IsNotEmpty()
@@ -97,13 +98,13 @@ class LocationDto {
   country: string;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   latitude?: string;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   longitude?: string;
 
   @IsString()
@@ -150,17 +151,22 @@ export class CreateRestaurantDto {
   @IsNotEmpty()
   defaultWorkingHours: DefaultWorkingHoursDTO;
 
-  @ApiProperty({ type: [IndividualWorkHoursDTO] })
+  @ApiProperty({ type: [IndividualWorkHoursDTO], required: false })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => IndividualWorkHoursDTO)
-  @IsNotEmpty()
+  @IsOptional()
   overrideWorkingHours: IndividualWorkHoursDTO[];
 
   @ApiProperty()
   @IsBoolean()
   @IsNotEmpty()
   isMenuBrowsingEnabled: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isAppOrderEnabled: boolean;
 
   @ApiProperty()
   @IsBoolean()
@@ -180,22 +186,32 @@ export class CreateRestaurantDto {
   @ApiProperty()
   @IsBoolean()
   @IsNotEmpty()
-  isDeliveryToCarEnabled: boolean;
+  isReservationEnabled: boolean;
 
   @ApiProperty()
   @IsBoolean()
   @IsNotEmpty()
-  isActive: boolean;
+  isWaitingEnabled: boolean;
 
-  @ApiProperty({ type: [TermsAndConditionDTO] })
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  minimumDeliveryOrderValue: number;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  isDeliveryToCarEnabled: boolean;
+
+  @ApiProperty({ type: [TermsAndConditionDTO], required: false })
   @ValidateNested({ each: true })
   @Type(() => TermsAndConditionDTO)
-  @IsNotEmpty()
+  @IsOptional()
   terms: TermsAndConditionDTO[];
 
   @ValidateNested()
   @Type(() => LocationDto)
-  @ApiProperty({ type: LocationDto })
-  @ValidateNested()
+  @ApiProperty({ type: LocationDto, required: false })
+  @IsOptional()
   location: LocationDto;
 }

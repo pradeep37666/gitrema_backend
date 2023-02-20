@@ -21,12 +21,18 @@ import { PaginateResult } from 'mongoose';
 import { QueryKitchenQueueDto } from './dto/query-kitchen-queue.dto';
 import { KitchenQueueDocument } from './schemas/kitchen-queue.schema';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { KitchenQueueLogService } from './kitchen-queue-log.service';
+import { PauseDto } from 'src/cashier/dto/pause.dto';
+import { KitchenQueueLogDocument } from './schemas/kitchen-queue-log.schema';
 
 @Controller('kitchen-queue')
 @ApiTags('Kitchen Queues')
 @ApiBearerAuth('access-token')
 export class KitchenQueueController {
-  constructor(private readonly kitchenQueueService: KitchenQueueService) {}
+  constructor(
+    private readonly kitchenQueueService: KitchenQueueService,
+    private readonly kitchenQueueLogService: KitchenQueueLogService,
+  ) {}
 
   @Post()
   @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.CREATE)
@@ -69,5 +75,52 @@ export class KitchenQueueController {
   @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.DELETE)
   async remove(@Param('kitchenQueueId') kitchenQueueId: string) {
     return await this.kitchenQueueService.remove(kitchenQueueId);
+  }
+
+  @Post(':kitchenQueueId/start')
+  @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.START)
+  async start(@Req() req, @Param('kitchenQueueId') kitchenQueueId: string) {
+    return await this.kitchenQueueLogService.start(req, kitchenQueueId);
+  }
+
+  @Post(':kitchenQueueId/close')
+  @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.CLOSE)
+  async close(@Req() req, @Param('kitchenQueueId') kitchenQueueId: string) {
+    return await this.kitchenQueueLogService.close(req, kitchenQueueId);
+  }
+
+  @Post(':kitchenQueueId/pause')
+  @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.PAUSE)
+  async pause(
+    @Param('kitchenQueueId') kitchenQueueId: string,
+    @Body() dto: PauseDto,
+  ) {
+    return await this.kitchenQueueLogService.pause(kitchenQueueId, dto);
+  }
+
+  @Post(':kitchenQueueId/resume')
+  @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.RESUME)
+  async resume(@Param('kitchenQueueId') kitchenQueueId: string) {
+    return await this.kitchenQueueLogService.pause(kitchenQueueId);
+  }
+
+  @Get(':kitchenQueueId/current-log')
+  @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.FETCH)
+  async currentLog(@Param('kitchenQueueId') kitchenQueueId: string) {
+    return await this.kitchenQueueLogService.current(kitchenQueueId);
+  }
+
+  @Get(':kitchenQueueId/logs')
+  @PermissionGuard(PermissionSubject.KitchenQueue, Permission.Common.FETCH)
+  async logs(
+    @Req() req,
+    @Param('kitchenQueueId') kitchenQueueId: string,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<KitchenQueueLogDocument>> {
+    return await this.kitchenQueueLogService.logs(
+      req,
+      kitchenQueueId,
+      paginateOptions,
+    );
   }
 }

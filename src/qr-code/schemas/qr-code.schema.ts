@@ -3,7 +3,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { PageType } from '../enum/qr-code.enum';
+import { PageType } from '../enum/en.enum';
 import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 

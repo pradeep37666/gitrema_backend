@@ -6,6 +6,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 
 import { UserDocument } from 'src/users/schemas/users.schema';
+import { Bank } from '../enum/en.enum';
 
 export type PaymentSetupDocument = PaymentSetup & Document;
 
@@ -18,14 +19,6 @@ export class PaymentSetup {
     required: true,
   })
   supplierId: SupplierDocument;
-
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Restaurant',
-    index: true,
-    required: true,
-  })
-  restaurantId: RestaurantDocument;
 
   @Prop({
     type: Object,
@@ -63,8 +56,8 @@ export class PaymentSetup {
   @Prop({ default: null })
   bankAccountHolderEmail: string;
 
-  @Prop({ default: null })
-  bankName: string;
+  @Prop({ default: null, type: String, enum: Bank })
+  bankName: Bank;
 
   @Prop({ default: null })
   otherBank: string;

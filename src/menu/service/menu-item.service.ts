@@ -11,6 +11,10 @@ import {
 import { MenuItem, MenuItemDocument } from '../schemas/menu-item.schema';
 import { CreateMenuItemDTO, UpdateMenuItemDTO } from '../dto/menu-item.dto';
 import { QueryMenuItemDto } from '../dto/query-menu-item.dto';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/schemas/suppliers.schema';
 
 @Injectable()
 export class MenuItemService {
@@ -19,9 +23,16 @@ export class MenuItemService {
     private readonly menuItemModel: Model<MenuItemDocument>,
     @InjectModel(MenuItem.name)
     private readonly menuItemModelPag: PaginateModel<MenuItemDocument>,
+    @InjectModel(Supplier.name)
+    private readonly supplierModel: Model<SupplierDocument>,
   ) {}
 
   async create(req: any, dto: CreateMenuItemDTO): Promise<MenuItemDocument> {
+    if (dto.taxEnabled !== true && dto.taxEnabled !== false) {
+      const supplier = await this.supplierModel.findById(req.user.supplierId);
+      dto.taxEnabled = supplier.taxEnabled ?? false;
+    }
+
     return await this.menuItemModel.create({
       ...dto,
       supplierId: req.user.supplierId,
@@ -34,9 +45,16 @@ export class MenuItemService {
     query: QueryMenuItemDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<MenuItemDocument>> {
+    const queryObj: any = { ...query };
+    if (query.search) {
+      queryObj.$or = [
+        { name: { $regex: query.search, $options: 'i' } },
+        { nameAr: { $regex: query.search, $options: 'i' } },
+      ];
+    }
     const menuItems = await this.menuItemModelPag.paginate(
       {
-        ...query,
+        ...queryObj,
         supplierId: req.user.supplierId,
         deletedAt: null,
       },
@@ -51,7 +69,9 @@ export class MenuItemService {
   }
 
   async findOne(menuItemId: string): Promise<MenuItemDocument> {
-    const exists = await this.menuItemModel.findById(menuItemId);
+    const exists = await this.menuItemModel
+      .findById(menuItemId)
+      .populate([{ path: 'additions', match: { deletedAt: null } }]);
 
     if (!exists) {
       throw new NotFoundException();

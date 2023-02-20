@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
-import {
-  PaymentMethod,
-  PaymentStatus,
-  PaymentTarget,
-} from 'src/core/Constants/enum';
+import { PaymentStatus, PaymentTarget } from 'src/core/Constants/enum';
+
+import { OrderDocument } from 'src/order/schemas/order.schema';
+import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
@@ -62,19 +61,6 @@ class RagSettlement {
   netRevenue: number;
 }
 
-@Schema({ _id: false })
-class Item {
-  @Prop({})
-  number: string;
-
-  @Prop({})
-  description: string;
-
-  @Prop({})
-  amount: number;
-}
-const ItemSchema = SchemaFactory.createForClass(Item);
-
 @Schema({ timestamps: true })
 export class Transaction {
   @Prop({
@@ -88,15 +74,13 @@ export class Transaction {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
-    default: null,
+    ref: 'Order',
+    required: true,
   })
-  dataId?: ObjectId;
+  orderId?: OrderDocument;
 
-  @Prop({})
+  @Prop({ required: true })
   amount: number;
-
-  @Prop({ type: [ItemSchema], default: null })
-  items: Item[];
 
   @Prop({
     required: true,
@@ -106,13 +90,6 @@ export class Transaction {
     default: PaymentStatus.Pending,
   })
   status: PaymentStatus;
-
-  @Prop({
-    index: true,
-    type: String,
-    enum: PaymentTarget,
-  })
-  type: PaymentTarget;
 
   @Prop({
     index: true,
@@ -141,6 +118,9 @@ export class Transaction {
 
   @Prop({ default: false })
   isRemitted: boolean;
+
+  @Prop({ default: false })
+  isRefund: boolean;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
