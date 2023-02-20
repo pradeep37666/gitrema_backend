@@ -50,6 +50,12 @@ export class RoleCreateDto {
   @IsNotEmpty()
   permissions: PermissionDto[];
 
+  @ApiProperty({ type: [String], required: false })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  screenDisplays: string[];
+
   @ApiPropertyOptional({ type: String, enum: RoleSlug, enumName: 'RoleSlug' })
   @IsEnum(RoleSlug)
   @IsOptional()
