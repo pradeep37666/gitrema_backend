@@ -78,7 +78,7 @@ export class OfferService {
     if (!exists) {
       throw new NotFoundException();
     }
-    if (exists.maxNumberAllowed >= exists.totalUsed)
+    if (exists.maxNumberAllowed && exists.maxNumberAllowed <= exists.totalUsed)
       throw new NotFoundException(`Coupon is used to its max capacity`);
     return exists;
   }

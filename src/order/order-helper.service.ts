@@ -176,7 +176,12 @@ export class OrderHelperService {
           { sort: { priority: 1 } },
         );
 
-        if (offer && offer.maxNumberAllowed >= offer.totalUsed) offer = null;
+        if (
+          offer &&
+          offer.maxNumberAllowed &&
+          offer.maxNumberAllowed <= offer.totalUsed
+        )
+          offer = null;
       }
       if (offer) {
         discount =
