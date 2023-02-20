@@ -20,6 +20,11 @@ export class QueryOrderDto {
   @IsOptional()
   tableId: string;
 
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  customerId: string;
+
   @ApiProperty({ required: false, type: String, example: 'New,Processing' })
   @IsOptional()
   @IsArray()
