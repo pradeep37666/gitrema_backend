@@ -54,6 +54,9 @@ export class CashierLog {
   overrideReason: string;
 
   @Prop({ default: null })
+  overridenBalance?: number;
+
+  @Prop({ default: null })
   closingNote: string;
 
   @Prop({ default: null })

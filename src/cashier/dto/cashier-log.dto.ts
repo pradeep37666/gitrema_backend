@@ -33,6 +33,10 @@ export class OpenCashierDto {
 
   @ApiProperty()
   @IsOptional()
+  overridenBalance?: number;
+
+  @ApiProperty()
+  @IsOptional()
   images?: string[];
 }
 

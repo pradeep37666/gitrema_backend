@@ -8,12 +8,16 @@ import { PauseDto } from './dto/pause.dto';
 import { Cashier, CashierDocument } from './schemas/cashier.schema';
 import { Transaction, TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { exec } from 'child_process';
 
 @Injectable()
 export class CashierLogService {
   constructor(
     @InjectModel(CashierLog.name)
     private readonly cashierLogModel: Model<CashierLogDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
 
     @InjectModel(CashierLog.name)
     private readonly cashierLogModelPag: PaginateModel<CashierLogDocument>,
@@ -41,12 +45,17 @@ export class CashierLogService {
     if (!(await this.cashierModel.findById(cashierId))) throw new NotFoundException();
 
     const activeShift = await this.current(cashierId);
-    const transactions = await this.transactionModel
-      .find({
-        cashierId: cashierId,
-        createdAt: { $gte: activeShift.startedAt },
-      })
-      .lean();
+    const shiftWithTransactions = <CashierLogDocument>(await activeShift.populate({
+      path: 'transactions',
+      model: 'Transaction',
+      select: {
+        'amount': 1,
+        'isRefund': 1,
+        'paymentMethod': 1
+      }
+    })).toObject();
+
+    const transactions = shiftWithTransactions.transactions;
 
     const refunds = transactions.filter(t => t.isRefund);
     const sales = transactions.filter(t => !t.isRefund);
@@ -87,6 +96,13 @@ export class CashierLogService {
   }
 
   async start(req: any, dto: OpenCashierDto): Promise<CashierLogDocument> {
+
+    const cashier = await this.cashierModel.findById(dto.cashierId);
+    if (!cashier) throw new NotFoundException(`Cannot find Cashier with id ${dto.userId}`);
+
+    const user = await this.userModel.findById(dto.userId);
+    if (!user) throw new NotFoundException(`Cannot find User with id ${dto.userId}`);
+
     const cashierLog = await this.cashierLogModel.findOne(
       { cashierId: dto.cashierId },
       {},
@@ -159,4 +175,13 @@ export class CashierLogService {
 
     return cashierLog;
   }
+
+  async logTransactionAsync(cashierId: string, transactionId: string): Promise<void> {
+    const activeShift = await this.current(cashierId);
+    await this.cashierLogModel
+      .findOneAndUpdate(
+        { _id: activeShift._id }, { $push: { 'transactions': transactionId } }
+      );
+  }
 }
+
