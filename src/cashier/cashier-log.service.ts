@@ -1,25 +1,13 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
-
-import {
-  DefaultSort,
-  PaginationDto,
-  pagination,
-} from 'src/core/Constants/pagination';
-
+import { DefaultSort, PaginationDto, pagination } from 'src/core/Constants/pagination';
 import { CashierLog, CashierLogDocument } from './schemas/cashier-log.schema';
-import {
-  CloseCashierDto,
-  OpenCashierDto,
-  OverrideCloseCashierDto,
-} from './dto/cashier-log.dto';
+import { CloseCashierDto, OpenCashierDto } from './dto/cashier-log.dto';
 import { PauseDto } from './dto/pause.dto';
+import { Cashier, CashierDocument } from './schemas/cashier.schema';
+import { Transaction, TransactionDocument } from 'src/transaction/schemas/transactions.schema';
+import { PaymentMethod } from 'src/payment/enum/en.enum';
 
 @Injectable()
 export class CashierLogService {
@@ -29,11 +17,15 @@ export class CashierLogService {
 
     @InjectModel(CashierLog.name)
     private readonly cashierLogModelPag: PaginateModel<CashierLogDocument>,
+    @InjectModel(Transaction.name)
+    private readonly transactionModel: Model<TransactionDocument>,
+    @InjectModel(Cashier.name)
+    private readonly cashierModel: Model<CashierDocument>,
   ) {}
 
   async current(cashierId: string): Promise<CashierLogDocument> {
     const exists = await this.cashierLogModel.findOne(
-      { cashierId },
+      { cashierId, closedAt: null },
       {},
       { sort: { _id: -1 } },
     );
@@ -43,6 +35,36 @@ export class CashierLogService {
     }
 
     return exists;
+  }
+
+  async findDashboard(cashierId: string): Promise<any> {
+    if (!(await this.cashierModel.findById(cashierId))) throw new NotFoundException();
+
+    const activeShift = await this.current(cashierId);
+    const transactions = await this.transactionModel
+      .find({
+        cashierId: cashierId,
+        createdAt: { $gte: activeShift.startedAt },
+      })
+      .lean();
+
+    const refunds = transactions.filter(t => t.isRefund);
+    const sales = transactions.filter(t => !t.isRefund);
+    const cashSales = sales.filter(s => s.paymentMethod === PaymentMethod.Cash);
+    const bankSales = sales.filter(s => s.paymentMethod === PaymentMethod.Online);
+
+    const dashboard = {
+      openingBalance: activeShift.openingBalance,
+      totalRefunds: this.foldAmount(refunds),
+      totalSales: this.foldAmount(sales),
+      totalInCash: this.foldAmount(cashSales),
+      totalInBank: this.foldAmount(bankSales),
+    }
+    return dashboard;
+  }
+
+  private foldAmount(records: any[]): number {
+    return records.reduce((prev, acc) => prev + acc.amount, 0)
   }
 
   async logs(
@@ -83,7 +105,7 @@ export class CashierLogService {
 
   async close(
     req: any,
-    dto: CloseCashierDto | OverrideCloseCashierDto,
+    dto: CloseCashierDto,
   ): Promise<CashierLogDocument> {
     const cashierLog = await this.cashierLogModel.findOne(
       { cashierId: dto.cashierId },
@@ -95,7 +117,9 @@ export class CashierLogService {
       throw new BadRequestException('No instance open to close');
     }
     // validate balance
-    cashierLog.set({ ...dto, closedAt: new Date() });
+    const { totalInCash } = await this.findDashboard(dto.cashierId);
+    const difference = dto.closingBalance - totalInCash;
+    cashierLog.set({ ...dto, closedAt: new Date(), difference });
     await cashierLog.save();
     return cashierLog;
   }

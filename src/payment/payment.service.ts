@@ -79,6 +79,7 @@ export class PaymentService {
         supplierId: order.supplierId,
         orderId: order._id,
         amount: amountToCollect,
+        cashierId: paymentRequestDetails.cashierId,
         paymentGateway:
           paymentRequestDetails.paymentMethod == PaymentMethod.Online
             ? this.arbPgService.config.name

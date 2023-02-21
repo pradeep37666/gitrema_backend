@@ -1,14 +1,5 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Request,
-  Query,
-  Req,
+  Controller, Get, Post, Body, Patch, Param, Delete, Query, Req
 } from '@nestjs/common';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
@@ -20,11 +11,7 @@ import { CashierService } from './cashier.service';
 import { CreateCashierDto } from './dto/create-cashier.dto';
 import { UpdateCashierDto } from './dto/update-cashier.dto';
 import { CashierDocument } from './schemas/cashier.schema';
-import {
-  CloseCashierDto,
-  OpenCashierDto,
-  OverrideCloseCashierDto,
-} from './dto/cashier-log.dto';
+import { CloseCashierDto, OpenCashierDto } from './dto/cashier-log.dto';
 import { CashierLogDocument } from './schemas/cashier-log.schema';
 import { CashierLogService } from './cashier-log.service';
 import { PauseDto } from './dto/pause.dto';
@@ -59,6 +46,12 @@ export class CashierController {
     return await this.cashierService.findOne(cashierId);
   }
 
+  @Get(':cashierId/dashboard')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async findDashboard(@Param('cashierId') cashierId: string) {
+    return await this.cashierLogService.findDashboard(cashierId);
+  }
+
   @Patch(':cashierId')
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.UPDATE)
   async update(
@@ -80,14 +73,14 @@ export class CashierController {
     return await this.cashierLogService.close(req, dto);
   }
 
-  @Post('override-close')
-  @PermissionGuard(
-    PermissionSubject.Cashier,
-    Permission.Cashier.OverrideCashierClose,
-  )
-  async overrideClose(@Req() req, @Body() dto: OverrideCloseCashierDto) {
-    return await this.cashierLogService.close(req, dto);
-  }
+  // @Post('override-close')
+  // @PermissionGuard(
+  //   PermissionSubject.Cashier,
+  //   Permission.Cashier.OverrideCashierClose,
+  // )
+  // async overrideClose(@Req() req, @Body() dto: OverrideCloseCashierDto) {
+  //   return await this.cashierLogService.close(req, dto);
+  // }
 
   @Post(':cashierId/pause')
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.PAUSE)
