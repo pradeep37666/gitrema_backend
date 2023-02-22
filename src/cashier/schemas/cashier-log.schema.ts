@@ -6,7 +6,6 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 import { CashierDocument } from './cashier.schema';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { PausedLog, PausedLogSchema } from './paused-log.schema';
-import { OrderDocument } from 'src/order/schemas/order.schema';
 
 export type CashierLogDocument = CashierLog & Document;
 
@@ -53,6 +52,15 @@ export class CashierLog {
 
   @Prop({ default: null })
   overrideReason: string;
+
+  @Prop({ default: null })
+  overridenBalance?: number;
+
+  @Prop({ default: null })
+  closingNote: string;
+
+  @Prop({ default: null })
+  images: string[]
 
   @Prop({
     type: [MongooseSchema.Types.ObjectId],

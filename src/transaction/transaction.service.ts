@@ -1,10 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-
 import { LeanDocument, Model, PaginateModel, PaginateResult } from 'mongoose';
-
 import { TransactionQueryDto } from './transaction.dto';
-
 import {
   Transaction,
   TransactionDocument,
@@ -23,9 +20,8 @@ import {
   OrderStatus,
   PaymentStatus as OrderPaymentStatus,
 } from 'src/order/enum/en.enum';
-import { capitalize } from 'src/core/Helpers/universal.helper';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
-
+import { CashierLog, CashierLogDocument } from 'src/cashier/schemas/cashier-log.schema';
 @Injectable()
 export class TransactionService {
   constructor(
@@ -38,6 +34,7 @@ export class TransactionService {
     @InjectModel(TableLog.name)
     private readonly tableLogModel: Model<TableLogDocument>,
     private orderHelperService: OrderHelperService,
+
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {

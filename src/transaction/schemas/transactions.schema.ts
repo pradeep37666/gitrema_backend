@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { PaymentStatus, PaymentTarget } from 'src/core/Constants/enum';
 
 import { OrderDocument } from 'src/order/schemas/order.schema';
@@ -81,6 +82,14 @@ export class Transaction {
 
   @Prop({ required: true })
   amount: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'Cashier',
+    required: false,
+  })
+  cashierId?: CashierDocument;
 
   @Prop({
     required: true,

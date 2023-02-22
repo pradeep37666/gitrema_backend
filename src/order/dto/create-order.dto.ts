@@ -48,6 +48,11 @@ export class CreateOrderDto {
   kitchenQueueId?: string;
 
   @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  cashierId?: string;
+
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   name?: string;
