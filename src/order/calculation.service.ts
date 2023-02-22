@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   forwardRef,
@@ -176,111 +177,150 @@ export class CalculationService {
       console.log('Inside --> Calculate Sent To Kitchen');
       statusToCheck = [OrderStatus.SentToKitchen];
     }
+    // commenting the  schedule activities
+    // if (isScheduled) {
+    //   preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
+    //     moment.utc(scheduledDateTime).toDate();
+    //   preparationDetails.expectedStartTime =
+    //     preparationDetails.actualStartTime = moment
+    //       .utc(scheduledDateTime)
+    //       .add(-1 * preparationDetails.preparationTime, 'm')
+    //       .toDate();
+    //   const lastOrderBeforeScheduled = await this.orderModel.findOne(
+    //     {
+    //       'preparationDetails.expectedEndTime': {
+    //         $lte: preparationDetails.expectedStartTime,
+    //       },
+    //       kitchenQueueId: orderData.kitchenQueueId,
+    //       status: { $in: [OrderStatus.SentToKitchen, OrderStatus.New] },
+    //     },
+    //     {},
+    //     { sort: { 'preparationDetails.expectedStartTime': -1 } },
+    //   );
+    //   console.log(lastOrderBeforeScheduled);
+    //   if (lastOrderBeforeScheduled)
+    //     preparationDetails.kitchenSortingNumber =
+    //       lastOrderBeforeScheduled.preparationDetails.kitchenSortingNumber + 1;
 
-    if (isScheduled) {
-      preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
-        moment.utc(scheduledDateTime).toDate();
-      preparationDetails.expectedStartTime =
-        preparationDetails.actualStartTime = moment
-          .utc(scheduledDateTime)
-          .add(-1 * preparationDetails.preparationTime, 'm')
-          .toDate();
-      const lastOrderBeforeScheduled = await this.orderModel.findOne(
-        {
-          'preparationDetails.expectedEndTime': {
-            $lte: preparationDetails.expectedStartTime,
+    //   //check conflicts with existing scheduled orders
+    //   const { expectedStartTime, expectedEndTime, preparationTime } =
+    //     preparationDetails;
+    //   const scheduledOrders = await this.orderModel
+    //     .find(
+    //       {
+    //         isScheduled: true,
+    //         kitchenQueueId: orderData.kitchenQueueId,
+    //         status: { $in: [OrderStatus.New, OrderStatus.SentToKitchen] },
+    //       },
+    //       {},
+    //       {
+    //         sort: {
+    //           'preparationDetails.expectedStartTime': 1,
+    //         },
+    //       },
+    //     )
+    //     .lean();
+
+    //   scheduledOrders.forEach((order, index, arr) => {
+    //     if (
+    //       order.preparationDetails.expectedStartTime <= expectedEndTime &&
+    //       order.preparationDetails.expectedEndTime >= expectedStartTime
+    //     ) {
+    //       // Calculte available slots before and after conflicted order
+
+    //       // const nextScheduled = arr[index  1];
+    //       // let availableSlot;
+    //       // if (nextScheduled) {
+    //       //check if order fits in between
+    //       // } else {
+    //       // availableSlot = moment(order.preparationDetails.expectedEndTime)
+    //       //   .add(preparationTime, 'm')
+    //       //   .toDate();
+    //       //  }
+    //       throw new ForbiddenException(
+    //         `Cannot schedule order, slot already reserved for respective kitchen ${orderData.kitchenQueueId}.`,
+    //       );
+    //     }
+    //   });
+
+    //   orderData.preparationDetails = preparationDetails;
+    // } else {
+    if (kitchenQueueId) {
+      const orderList = await this.orderModel
+        .find(
+          {
+            kitchenQueueId,
+            status: { $in: statusToCheck },
+            _id: { $ne: orderData._id },
+            'preparationDetails.expectedEndTime': {
+              $gte: preparationDetails.expectedStartTime,
+            },
           },
-          kitchenQueueId: orderData.kitchenQueueId,
-          status: { $in: [OrderStatus.SentToKitchen, OrderStatus.New] },
-        },
-        {},
-        { sort: { 'preparationDetails.expectedStartTime': -1 } },
-      );
-      console.log(lastOrderBeforeScheduled);
-      if (lastOrderBeforeScheduled)
-        preparationDetails.kitchenSortingNumber =
-          lastOrderBeforeScheduled.preparationDetails.kitchenSortingNumber + 1;
-
-      orderData.preparationDetails = preparationDetails;
-    } else {
-      if (kitchenQueueId) {
-        const orderList = await this.orderModel
-          .find(
-            {
-              kitchenQueueId,
-              status: { $in: statusToCheck },
-              _id: { $ne: orderData._id },
+          {},
+          {
+            sort: {
+              'preparationDetails.expectedStartTime': 1,
             },
-            {},
-            {
-              sort: {
-                'preparationDetails.expectedStartTime': 1,
-              },
-            },
-          )
-          .lean();
+          },
+        )
+        .lean();
 
-        const idx = orderList.findIndex((o, idx) => {
-          if (idx == 0) {
-            return (
-              preparationDetails.expectedEndTime.getTime() <=
-              o.preparationDetails.expectedStartTime.getTime()
-            );
-          } else {
-            console.log(
-              idx,
-              orderList[idx].preparationDetails.expectedStartTime.getTime(),
-              orderList[idx - 1].preparationDetails.expectedEndTime.getTime(),
-              preparationDetails.preparationTime * 60 * 1000,
-            );
-            return (
-              orderList[idx].preparationDetails.expectedStartTime.getTime() -
-                orderList[
-                  idx - 1
-                ].preparationDetails.expectedEndTime.getTime() >=
-              preparationDetails.preparationTime * 60 * 1000
-            );
-          }
-        });
-        console.log(orderList, idx);
-        let lastOrder = null;
-        if (orderList.length) {
-          lastOrder =
-            idx == -1 && orderList.length > 0
-              ? orderList[orderList.length - 1]
-              : idx > 0
-              ? orderList[idx - 1]
-              : null;
-        }
-        console.log(lastOrder);
-        if (lastOrder) {
-          preparationDetails.expectedStartTime =
-            preparationDetails.actualStartTime = moment
-              .utc(lastOrder.preparationDetails.expectedEndTime)
-              .toDate();
-          preparationDetails.expectedEndTime =
-            preparationDetails.actualEndTime = moment
-              .utc(lastOrder.preparationDetails.expectedEndTime)
-              .add(preparationDetails.preparationTime, 'm')
-              .toDate();
-          preparationDetails.kitchenSortingNumber =
-            lastOrder.preparationDetails.kitchenSortingNumber + 1;
+      const idx = orderList.findIndex((o, idx) => {
+        if (idx == 0) {
+          return (
+            preparationDetails.expectedEndTime.getTime() <=
+            o.preparationDetails.expectedStartTime.getTime()
+          );
         } else {
-          preparationDetails.expectedStartTime =
-            preparationDetails.actualStartTime = moment.utc().toDate();
-          preparationDetails.expectedEndTime =
-            preparationDetails.actualEndTime = moment
-              .utc()
-              .add(preparationDetails.preparationTime, 'm')
-              .toDate();
+          console.log(
+            idx,
+            orderList[idx].preparationDetails.expectedStartTime.getTime(),
+            orderList[idx - 1].preparationDetails.expectedEndTime.getTime(),
+            preparationDetails.preparationTime * 60 * 1000,
+          );
+          return (
+            orderList[idx].preparationDetails.expectedStartTime.getTime() -
+              orderList[idx - 1].preparationDetails.expectedEndTime.getTime() >=
+            preparationDetails.preparationTime * 60 * 1000
+          );
         }
+      });
+      console.log(orderList, idx);
+      let lastOrder = null;
+      if (orderList.length) {
+        lastOrder =
+          idx == -1 && orderList.length > 0
+            ? orderList[orderList.length - 1]
+            : idx > 0
+            ? orderList[idx - 1]
+            : null;
+      }
+      console.log(lastOrder);
+      if (lastOrder) {
+        preparationDetails.expectedStartTime =
+          preparationDetails.actualStartTime = moment
+            .utc(lastOrder.preparationDetails.expectedEndTime)
+            .toDate();
+        preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
+          moment
+            .utc(lastOrder.preparationDetails.expectedEndTime)
+            .add(preparationDetails.preparationTime, 'm')
+            .toDate();
+        preparationDetails.kitchenSortingNumber =
+          lastOrder.preparationDetails.kitchenSortingNumber + 1;
       } else {
         preparationDetails.expectedStartTime =
           preparationDetails.actualStartTime = moment.utc().toDate();
         preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
           moment.utc().add(preparationDetails.preparationTime, 'm').toDate();
       }
+    } else {
+      preparationDetails.expectedStartTime =
+        preparationDetails.actualStartTime = moment.utc().toDate();
+      preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
+        moment.utc().add(preparationDetails.preparationTime, 'm').toDate();
     }
+    //}
     console.log('Setting Order Preparation ', preparationDetails);
     return preparationDetails;
   }
@@ -332,7 +372,7 @@ export class CalculationService {
     console.log('Inside After Sent To Kitchen');
     const ordersToRecalculate = await this.orderModel.find(
       {
-        isScheduled: false,
+        // isScheduled: false,
         kitchenQueueId: orderData.kitchenQueueId,
         status: OrderStatus.New,
       },
@@ -375,7 +415,7 @@ export class CalculationService {
         'preparationDetails.expectedStartTime': {
           $gt: orderData.preparationDetails.expectedStartTime,
         },
-        isScheduled: false,
+        // isScheduled: false,
         kitchenQueueId: orderData.kitchenQueueId,
         status: { $in: [OrderStatus.SentToKitchen, OrderStatus.New] },
       },
@@ -475,6 +515,9 @@ export class CalculationService {
           kitchenQueueId: orderData.kitchenQueueId,
           status: { $in: statusToCheck },
           _id: { $ne: orderData._id },
+          'preparationDetails.expectedStartTime': {
+            $gt: orderData.preparationDetails.expectedStartTime,
+          },
         },
         {},
         {
@@ -500,7 +543,7 @@ export class CalculationService {
     startTime,
     kitchenSortingNumber,
   ) {
-    let preparationDetails = orderData.preparationDetails;
+    const preparationDetails = orderData.preparationDetails;
     preparationDetails.expectedStartTime = preparationDetails.actualStartTime =
       moment.utc(startTime).toDate();
     preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
@@ -510,10 +553,10 @@ export class CalculationService {
         .toDate();
     preparationDetails.kitchenSortingNumber = kitchenSortingNumber + 1;
     console.log('Before Recalculate ', preparationDetails);
-    preparationDetails = await this.validateSlotAndReCalculateIfNeeded(
-      orderList,
-      preparationDetails,
-    );
+    // preparationDetails = await this.validateSlotAndReCalculateIfNeeded(
+    //   orderList,
+    //   preparationDetails,
+    // );
     this.orderService.generalUpdate(null, orderData._id, {
       preparationDetails,
     });
