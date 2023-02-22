@@ -73,8 +73,8 @@ export class DefaultWorkingHoursDTO {
 
 export class LocationDto {
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   address: string;
 
   @IsString()
@@ -83,18 +83,18 @@ export class LocationDto {
   city: string;
 
   @IsNumber()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   zipCode: number;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   state: string;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   country: string;
 
   @IsString()
@@ -108,8 +108,8 @@ export class LocationDto {
   longitude?: string;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   district: string;
 }
 
