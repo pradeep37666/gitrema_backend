@@ -27,12 +27,17 @@ import {
   SupplierSchema,
 } from 'src/supplier/schemas/suppliers.schema';
 import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
+import {
+  SupplierPackage,
+  SupplierPackageSchema,
+} from 'src/supplier/schemas/supplier-package.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Supplier.name, schema: SupplierSchema },
+      { name: SupplierPackage.name, schema: SupplierPackageSchema },
       { name: Role.name, schema: RoleSchema },
       { name: Otp.name, schema: OtpSchema },
       { name: EmailTemplate.name, schema: EmailTemplateSchema },

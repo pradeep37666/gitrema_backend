@@ -9,12 +9,18 @@ import {
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
 import { Model } from 'mongoose';
+import {
+  SupplierPackage,
+  SupplierPackageDocument,
+} from 'src/supplier/schemas/supplier-package.schema';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @InjectModel(Supplier.name)
     private supplierModel: Model<SupplierDocument>,
+    @InjectModel(SupplierPackage.name)
+    private supplierPackageModel: Model<SupplierPackageDocument>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,8 +31,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: LoggedInUserPayload) {
     if (payload.supplierId) {
-      const supplier = await this.supplierModel.findById(payload.supplierId);
-      if (supplier.active === false) {
+      const supplier = await this.supplierModel.findOne({
+        _id: payload.supplierId,
+        active: true,
+      });
+      if (!supplier) {
         throw new BadRequestException(
           'Supplier is not activated! Please contact administrator',
         );
