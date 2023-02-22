@@ -2,9 +2,9 @@ import {
   BadGatewayException,
   Body,
   Controller,
+  Get,
   HttpStatus,
   Post,
-  Redirect,
   Req,
   Request,
 } from '@nestjs/common';
@@ -14,9 +14,9 @@ import { PaymentStatus } from 'src/core/Constants/enum';
 import { Public } from 'src/core/decorators/public.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { TransactionService } from 'src/transaction/transaction.service';
+import { Redirect } from '@nestjsplus/redirect';
 
 @Public()
-//@ApiTags('Common')
 @Controller('arb-pg-webhook')
 export class ArbPgController {
   constructor(
