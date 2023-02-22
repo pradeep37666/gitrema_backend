@@ -9,6 +9,11 @@ import {
   MenuAddition,
   MenuAdditionSchema,
 } from 'src/menu/schemas/menu-addition.schema';
+import { Package, PackageSchema } from 'src/package/schemas/package.schema';
+import {
+  SupplierPackage,
+  SupplierPackageSchema,
+} from './schemas/supplier-package.schema';
 
 @Module({
   imports: [
@@ -16,6 +21,8 @@ import {
       { name: Supplier.name, schema: SupplierSchema },
       { name: MenuItem.name, schema: MenuItemSchema },
       { name: MenuAddition.name, schema: MenuAdditionSchema },
+      { name: Package.name, schema: PackageSchema },
+      { name: SupplierPackage.name, schema: SupplierPackageSchema },
     ]),
   ],
   controllers: [SupplierController],
