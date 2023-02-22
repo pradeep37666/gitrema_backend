@@ -10,7 +10,7 @@ import { TransactionDocument } from 'src/transaction/schemas/transactions.schema
 
 export type SupplierPackageDocument = SupplierPackage & Document;
 
-@Schema({ _id: false })
+@Schema({ timestamps: true })
 export class SupplierPackage {
   @Prop({
     type: MongooseSchema.Types.ObjectId,

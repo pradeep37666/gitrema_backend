@@ -29,6 +29,12 @@ export class PackageService {
   ) {}
 
   async create(req: any, dto: CreatePackageDto): Promise<PackageDocument> {
+    if (dto.isDefaultPackage == true) {
+      await this.packageModel.updateMany(
+        {},
+        { $set: { isDefaultPackage: false } },
+      );
+    }
     return await this.packageModel.create({
       ...dto,
       addedBy: req.user.userId,
@@ -66,6 +72,12 @@ export class PackageService {
     packageId: string,
     dto: UpdatePackageDto,
   ): Promise<PackageDocument> {
+    if (dto.isDefaultPackage == true) {
+      await this.packageModel.updateMany(
+        {},
+        { $set: { isDefaultPackage: false } },
+      );
+    }
     const packageObj = await this.packageModel.findByIdAndUpdate(
       packageId,
       dto,

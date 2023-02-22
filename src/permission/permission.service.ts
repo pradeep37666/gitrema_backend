@@ -13,7 +13,7 @@ import {
   SupplierPackage,
   SupplierPackageDocument,
 } from 'src/supplier/schemas/supplier-package.schema';
-import moment from 'moment';
+import * as moment from 'moment';
 
 @Injectable()
 export class PermissionService {

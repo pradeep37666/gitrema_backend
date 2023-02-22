@@ -181,10 +181,15 @@ export class SupplierService {
       };
     }
 
+    const packageObjToApply = packageObj.toObject();
+    delete packageObjToApply._id;
+    delete packageObjToApply.createdAt;
+    delete packageObjToApply.updatedAt;
+
     const supplierPackage = await this.supplierPackagemodel.create({
       supplierId,
       packageId: packageObj._id,
-      ...packageObj,
+      ...packageObjToApply,
       ...dates,
       addedBy: req ? req.user.userId : null,
     });

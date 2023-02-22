@@ -7,6 +7,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Min,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreatePackageDto {
@@ -34,6 +36,13 @@ export class CreatePackageDto {
   @IsOptional()
   @IsNumber()
   gracePeriod: number;
+
+  @ApiProperty({ required: false })
+  @ValidateIf((o) => o.isDefaultPackage == true)
+  @Min(1)
+  @IsNotEmpty()
+  @IsNumber()
+  trialPeriod: number;
 
   @ApiProperty({ type: [String] })
   @IsArray()
