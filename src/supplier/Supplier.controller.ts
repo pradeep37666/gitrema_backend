@@ -22,12 +22,9 @@ import { PaginateResult } from 'mongoose';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
-import {
-  Supplier,
-  SupplierAggregated,
-  SupplierDocument,
-} from './schemas/suppliers.schema';
+import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
 import { PaginationDto } from 'src/core/Constants/pagination';
+import { SupplierAggregated } from './interfaces/suppliers.interface';
 
 @ApiTags('Suppliers')
 @Controller('supplier')

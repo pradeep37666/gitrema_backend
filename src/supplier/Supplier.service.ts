@@ -7,11 +7,7 @@ import {
   SupplierQueryDto,
   UpdateSupplierDto,
 } from './Supplier.dto';
-import {
-  Supplier,
-  SupplierAggregated,
-  SupplierDocument,
-} from './schemas/suppliers.schema';
+import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
 import {
   DefaultSort,
   PaginationDto,
@@ -23,6 +19,7 @@ import {
   MenuAddition,
   MenuAdditionDocument,
 } from 'src/menu/schemas/menu-addition.schema';
+import { SupplierAggregated } from './interfaces/suppliers.interface';
 
 @Injectable()
 export class SupplierService {
