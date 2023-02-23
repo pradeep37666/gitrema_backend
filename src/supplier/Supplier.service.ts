@@ -89,54 +89,57 @@ export class SupplierService {
   async getAggregatedOne(
     supplierId: string,
   ): Promise<SupplierAggregated | any> {
-    return await this.supplierModel.aggregate([
-      {
-        $match: {
-          _id: new mongoose.Types.ObjectId(supplierId),
-          deletedAt: null,
+    return await this.supplierModel.aggregate(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(supplierId),
+            deletedAt: null,
+          },
         },
-      },
-      {
-        $lookup: {
-          from: 'paymentsetups',
-          localField: '_id',
-          foreignField: 'supplierId',
-          as: 'paymentsetups',
+        {
+          $lookup: {
+            from: 'paymentsetups',
+            localField: '_id',
+            foreignField: 'supplierId',
+            as: 'paymentsetups',
+          },
         },
-      },
-      {
-        $lookup: {
-          from: 'cashiers',
-          localField: '_id',
-          foreignField: 'supplierId',
-          as: 'cashiers',
+        {
+          $lookup: {
+            from: 'cashiers',
+            localField: '_id',
+            foreignField: 'supplierId',
+            as: 'cashiers',
+          },
         },
-      },
-      {
-        $lookup: {
-          from: 'restaurants',
-          localField: '_id',
-          foreignField: 'supplierId',
-          as: 'restaurants',
+        {
+          $lookup: {
+            from: 'restaurants',
+            localField: '_id',
+            foreignField: 'supplierId',
+            as: 'restaurants',
+          },
         },
-      },
-      {
-        $lookup: {
-          from: 'kitchenqueues',
-          localField: '_id',
-          foreignField: 'supplierId',
-          as: 'kitchenqueues',
+        {
+          $lookup: {
+            from: 'kitchenqueues',
+            localField: '_id',
+            foreignField: 'supplierId',
+            as: 'kitchenqueues',
+          },
         },
-      },
-      {
-        $addFields: {
-          totalRestaurants: { $size: '$restaurants' },
-          totalPaymentsetups: { $size: '$paymentsetups' },
-          totalCashiers: { $size: '$cashiers' },
-          totalKitchens: { $size: '$kitchenqueues' },
+        {
+          $addFields: {
+            totalRestaurants: { $size: '$restaurants' },
+            totalPaymentsetups: { $size: '$paymentsetups' },
+            totalCashiers: { $size: '$cashiers' },
+            totalKitchens: { $size: '$kitchenqueues' },
+          },
         },
-      },
-    ]);
+      ],
+      { allowDiskUse: true },
+    );
   }
 
   async getByDomain(domain: string): Promise<SupplierDocument> {
