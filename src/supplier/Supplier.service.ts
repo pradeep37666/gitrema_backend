@@ -116,17 +116,32 @@ export class SupplierService {
         {
           $lookup: {
             from: 'restaurants',
-            localField: '_id',
-            foreignField: 'supplierId',
+            let: {
+              id: '$_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$supplierId', '$$id'],
+                  },
+                },
+              },
+              {
+                $lookup: {
+                  from: 'kitchenqueues',
+                  localField: '_id',
+                  foreignField: 'restaurantId',
+                  as: 'kitchenqueues',
+                },
+              },
+              {
+                $addFields: {
+                  totalKitchens: { $size: '$kitchenqueues' },
+                },
+              },
+            ],
             as: 'restaurants',
-          },
-        },
-        {
-          $lookup: {
-            from: 'kitchenqueues',
-            localField: '_id',
-            foreignField: 'supplierId',
-            as: 'kitchenqueues',
           },
         },
         {
@@ -134,7 +149,6 @@ export class SupplierService {
             totalRestaurants: { $size: '$restaurants' },
             totalPaymentsetups: { $size: '$paymentsetups' },
             totalCashiers: { $size: '$cashiers' },
-            totalKitchens: { $size: '$kitchenqueues' },
           },
         },
       ],
