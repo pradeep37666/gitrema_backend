@@ -13,18 +13,18 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type SupplierDocument = Supplier & Document;
 
-export interface RestaurantWithKitchens extends Restaurant {
+export interface RestaurantDetailed extends Restaurant {
+  kitchenqueues: KitchenQueue[];
+  cashiers: Cashier[];
   totalKitchens: number;
+  totalCashiers: number;
 }
 
 export interface SupplierAggregated extends Supplier {
   paymentsetups: PaymentSetup[];
-  cashiers: Cashier[];
-  restaurants: RestaurantWithKitchens[];
-  kitchenqueues: KitchenQueue[];
+  restaurants: RestaurantDetailed[];
   totalRestaurants: number;
   totalPaymentsetups: number;
-  totalCashiers: number;
 }
 
 @Schema({ timestamps: true })
