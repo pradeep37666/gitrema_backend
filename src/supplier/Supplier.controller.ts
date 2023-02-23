@@ -26,6 +26,7 @@ import { Permission } from 'src/core/Constants/permission.type';
 import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { SupplierPackageDocument } from './schemas/supplier-package.schema';
+import { SupplierAggregated } from './interfaces/suppliers.interface';
 
 @ApiTags('Suppliers')
 @Controller('supplier')
@@ -62,6 +63,12 @@ export class SupplierController {
   @PermissionGuard(PermissionSubject.Business, Permission.Common.FETCH)
   fetchSelfSupplier(@Req() req): Promise<Supplier> {
     return this.supplierService.getOne(req.user.supplierId);
+  }
+
+  @Get('self-aggregated')
+  @PermissionGuard(PermissionSubject.Business, Permission.Common.FETCH)
+  fetchSelfSupplierAggregated(@Req() req): Promise<SupplierAggregated | any> {
+    return this.supplierService.getAggregatedOne(req.user.supplierId);
   }
 
   @Put('self-update')
