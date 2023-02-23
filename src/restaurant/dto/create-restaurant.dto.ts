@@ -78,8 +78,8 @@ export class LocationDto {
   address: string;
 
   @IsString()
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   city: string;
 
   @IsNumber()
