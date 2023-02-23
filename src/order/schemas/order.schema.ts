@@ -18,7 +18,11 @@ import {
 } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
-import { OrderItemDocument, OrderItemSchema } from './order-item.schema';
+import {
+  OrderItem,
+  OrderItemDocument,
+  OrderItemSchema,
+} from './order-item.schema';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
@@ -75,18 +79,17 @@ export class Order {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Cashier',
-    default: null,
-    required: false
-  })
-  cashierId: CashierDocument;
-
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
     ref: 'KitchenQueue',
     default: null,
   })
   kitchenQueueId: KitchenQueueDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Cashier',
+    default: null,
+  })
+  cashierId: CashierDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

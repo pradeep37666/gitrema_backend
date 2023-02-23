@@ -51,9 +51,6 @@ Thumbs.db
 *.mov
 *.wmv
 
-# VS Code
-.vscode
-
 
 # Elastic Beanstalk Files
 # .elasticbeanstalk/*

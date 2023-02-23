@@ -28,7 +28,6 @@ import {
   PaymentStatus as OrderPaymentStatus,
   OrderStatus,
 } from 'src/order/enum/en.enum';
-import { CashierLogService } from 'src/cashier/cashier-log.service';
 
 @Injectable()
 export class PaymentService {
@@ -40,7 +39,6 @@ export class PaymentService {
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
-    private readonly cashierLogService: CashierLogService
   ) {}
 
   async create(
@@ -81,7 +79,6 @@ export class PaymentService {
         supplierId: order.supplierId,
         orderId: order._id,
         amount: amountToCollect,
-        cashierId: paymentRequestDetails.cashierId,
         paymentGateway:
           paymentRequestDetails.paymentMethod == PaymentMethod.Online
             ? this.arbPgService.config.name
@@ -109,7 +106,6 @@ export class PaymentService {
             ? this.arbPgService.config.name
             : null,
         paymentMethod: paymentRequestDetails.paymentMethod,
-        cashierId: paymentRequestDetails.cashierId,
       });
 
       await transaction.save();
@@ -133,12 +129,6 @@ export class PaymentService {
     }
 
     this.transactionService.postTransactionProcess(req, transaction);
-
-    //update cashier log with the respective transaction
-    if (paymentRequestDetails.cashierId) {
-      this.cashierLogService.logTransactionAsync(paymentRequestDetails.cashierId, transaction.id);
-    }
-
     return true;
   }
 
@@ -155,7 +145,6 @@ export class PaymentService {
     const transaction = await this.transactionModel.create({
       supplierId: order.supplierId,
       orderId: order._id,
-      cashierId: dto.cashierId,
       amount: dto.amount,
       paymentMethod: PaymentMethod.Cash,
       status: PaymentStatus.Success,
@@ -169,10 +158,6 @@ export class PaymentService {
           : OrderPaymentStatus.PartiallyRefunded,
       $push: { transactions: transaction._id },
     });
-
-    if (dto.cashierId) {
-      this.cashierLogService.logTransactionAsync(dto.cashierId, transaction._id);
-    }
     return transaction;
   }
 
