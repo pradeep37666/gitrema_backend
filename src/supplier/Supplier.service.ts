@@ -1,4 +1,4 @@
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import mongoose, { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -7,7 +7,11 @@ import {
   SupplierQueryDto,
   UpdateSupplierDto,
 } from './Supplier.dto';
-import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
+import {
+  Supplier,
+  SupplierAggregated,
+  SupplierDocument,
+} from './schemas/suppliers.schema';
 import {
   DefaultSort,
   PaginationDto,
@@ -80,6 +84,59 @@ export class SupplierService {
 
   async getOne(supplierId: string): Promise<Supplier> {
     return await this.supplierModel.findOne({ _id: supplierId });
+  }
+
+  async getAggregatedOne(
+    supplierId: string,
+  ): Promise<SupplierAggregated | any> {
+    return await this.supplierModel.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(supplierId),
+          deletedAt: null,
+        },
+      },
+      {
+        $lookup: {
+          from: 'paymentsetups',
+          localField: '_id',
+          foreignField: 'supplierId',
+          as: 'paymentsetups',
+        },
+      },
+      {
+        $lookup: {
+          from: 'cashiers',
+          localField: '_id',
+          foreignField: 'supplierId',
+          as: 'cashiers',
+        },
+      },
+      {
+        $lookup: {
+          from: 'restaurants',
+          localField: '_id',
+          foreignField: 'supplierId',
+          as: 'restaurants',
+        },
+      },
+      {
+        $lookup: {
+          from: 'kitchenqueues',
+          localField: '_id',
+          foreignField: 'supplierId',
+          as: 'kitchenqueues',
+        },
+      },
+      {
+        $addFields: {
+          totalRestaurants: { $size: '$restaurants' },
+          totalPaymentsetups: { $size: '$paymentsetups' },
+          totalCashiers: { $size: '$cashiers' },
+          totalKitchens: { $size: '$kitchenqueues' },
+        },
+      },
+    ]);
   }
 
   async getByDomain(domain: string): Promise<SupplierDocument> {

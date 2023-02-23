@@ -1,13 +1,28 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
+import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
+import { PaymentSetupDocument } from 'src/payment-setup/schemas/payment-setup.schema';
 import {
   IndividualWorkingHours,
   IndividualWorkingHoursSchema,
+  RestaurantDocument,
 } from 'src/restaurant/schemas/restaurant.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type SupplierDocument = Supplier & Document;
+
+export interface SupplierAggregated extends Supplier {
+  paymentsetups: PaymentSetupDocument[];
+  cashiers: CashierDocument[];
+  restaurants: RestaurantDocument[];
+  kitchenqueues: KitchenQueueDocument[];
+  totalRestaurants: number;
+  totalPaymentsetups: number;
+  totalCashiers: number;
+  totalKitchens: number;
+}
 
 @Schema({ timestamps: true })
 export class Supplier {

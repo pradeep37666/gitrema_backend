@@ -22,7 +22,11 @@ import { PaginateResult } from 'mongoose';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
-import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
+import {
+  Supplier,
+  SupplierAggregated,
+  SupplierDocument,
+} from './schemas/suppliers.schema';
 import { PaginationDto } from 'src/core/Constants/pagination';
 
 @ApiTags('Suppliers')
@@ -60,6 +64,12 @@ export class SupplierController {
   @PermissionGuard(PermissionSubject.Business, Permission.Common.FETCH)
   fetchSelfSupplier(@Req() req): Promise<Supplier> {
     return this.supplierService.getOne(req.user.supplierId);
+  }
+
+  @Get('self-aggregated')
+  @PermissionGuard(PermissionSubject.Business, Permission.Common.FETCH)
+  fetchSelfSupplierAggregated(@Req() req): Promise<SupplierAggregated | any> {
+    return this.supplierService.getAggregatedOne(req.user.supplierId);
   }
 
   @Put('self-update')
