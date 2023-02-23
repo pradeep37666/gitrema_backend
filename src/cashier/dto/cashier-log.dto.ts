@@ -26,18 +26,6 @@ export class OpenCashierDto {
   @IsNumber()
   @Min(0)
   openingBalance: number;
-
-  @ApiProperty()
-  @IsOptional()
-  overrideReason?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  overridenBalance?: number;
-
-  @ApiProperty()
-  @IsOptional()
-  images?: string[];
 }
 
 export class CloseCashierDto {
@@ -51,22 +39,14 @@ export class CloseCashierDto {
   @IsNumber()
   @Min(0)
   closingBalance: number;
-
-  @ApiProperty()
-  @IsOptional()
-  closingNote?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  images?: string[];
 }
 
-// export class OverrideCloseCashierDto extends CloseCashierDto {
-//   @ApiProperty()
-//   @IsNotEmpty()
-//   @IsString()
-//   overrideReason: string;
-// }
+export class OverrideCloseCashierDto extends CloseCashierDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  overrideReason: string;
+}
 
 export class QueryCashierLogDto {
   @ApiProperty({ required: false })
