@@ -1,4 +1,4 @@
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import mongoose, { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -26,6 +26,7 @@ import {
   SupplierPackageDocument,
 } from './schemas/supplier-package.schema';
 import * as moment from 'moment';
+import { SupplierAggregated } from './interfaces/suppliers.interface';
 
 @Injectable()
 export class SupplierService {
@@ -91,6 +92,76 @@ export class SupplierService {
 
   async getOne(supplierId: string): Promise<Supplier> {
     return await this.supplierModel.findOne({ _id: supplierId });
+  }
+
+  async getAggregatedOne(
+    supplierId: string,
+  ): Promise<SupplierAggregated | any> {
+    return await this.supplierModel.aggregate(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(supplierId),
+            deletedAt: null,
+          },
+        },
+        {
+          $lookup: {
+            from: 'paymentsetups',
+            localField: '_id',
+            foreignField: 'supplierId',
+            as: 'paymentsetups',
+          },
+        },
+        {
+          $lookup: {
+            from: 'restaurants',
+            let: {
+              id: '$_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$supplierId', '$$id'],
+                  },
+                },
+              },
+              {
+                $lookup: {
+                  from: 'kitchenqueues',
+                  localField: '_id',
+                  foreignField: 'restaurantId',
+                  as: 'kitchenqueues',
+                },
+              },
+              {
+                $lookup: {
+                  from: 'cashiers',
+                  localField: '_id',
+                  foreignField: 'restaurantId',
+                  as: 'cashiers',
+                },
+              },
+              {
+                $addFields: {
+                  totalKitchens: { $size: '$kitchenqueues' },
+                  totalCashiers: { $size: '$cashiers' },
+                },
+              },
+            ],
+            as: 'restaurants',
+          },
+        },
+        {
+          $addFields: {
+            totalRestaurants: { $size: '$restaurants' },
+            totalPaymentsetups: { $size: '$paymentsetups' },
+          },
+        },
+      ],
+      { allowDiskUse: true },
+    );
   }
 
   async getByDomain(domain: string): Promise<SupplierDocument> {
