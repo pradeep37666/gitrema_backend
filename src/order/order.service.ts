@@ -128,6 +128,7 @@ export class OrderService {
     query: QueryOrderDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
+    const queryToApply: any = { ...query };
     const orders = await this.orderModelPag.paginate(
       {
         supplierId: req.user.supplierId,
@@ -165,7 +166,14 @@ export class OrderService {
     const orders = await this.orderModelPag.paginate(
       {
         ...query,
-        customerId: req.user.userId,
+        $or: [
+          {
+            customerId: req.user.userId,
+          },
+          {
+            addedBy: req.user.userId,
+          },
+        ],
       },
       {
         sort: DefaultSort,

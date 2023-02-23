@@ -112,6 +112,7 @@ export class OrderController {
     @Body() dto: ChefInquiryDto,
   ) {
     return await this.orderService.generalUpdate(req, orderId, {
+      ...dto,
       $push: {
         chefInquiry: { ...dto, userId: req.user.userId },
       },

@@ -19,7 +19,8 @@ export class PermissionSchema {
   @Prop({ type: [String], enum: PermissionActions })
   permissions: PermissionActions[];
 }
-const PermissionSchemaSchema = SchemaFactory.createForClass(PermissionSchema);
+export const PermissionSchemaSchema =
+  SchemaFactory.createForClass(PermissionSchema);
 
 @Schema({ timestamps: true })
 export class Role {

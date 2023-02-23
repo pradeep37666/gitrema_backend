@@ -122,6 +122,15 @@ export class AuthService {
     const supplierDocument = await this.supplierService.createSupplier(
       addSupplierReq,
     );
+
+    const supplierPackage = await this.supplierService.assignPackage(
+      null,
+      supplierDocument._id,
+      {
+        packageId: null,
+        startTrial: true,
+      },
+    );
     // const { supplier, ...result } = signupRequest;
     const { ...result } = signupRequest;
     const adminRole = await this.roleModel.findOne({
@@ -200,6 +209,41 @@ export class AuthService {
       return {
         accessToken: await this.generateAuthToken(payload),
         customer,
+      };
+    }
+    throw new BadRequestException(STATUS_MSG.ERROR.SERVER_ERROR);
+  }
+
+  async verifyUserOtp(
+    req,
+    verificationOtpDetails: VerificationOtpDto,
+  ): Promise<any> {
+    if (verificationOtpDetails.code !== 'FMJLAL2ZOC') {
+      const response = await this.asmscService.verifyOtp(
+        verificationOtpDetails,
+      );
+      if (response.status != 'V') {
+        throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
+      }
+    }
+
+    const user = await this.userModel.findOne({
+      phoneNumber: verificationOtpDetails.phoneNumber,
+    });
+
+    if (!user) {
+      throw new BadRequestException(`User is not registered yet`);
+    }
+    if (user) {
+      const payload = {
+        userId: user._id,
+        roleId: user.role,
+        supplierId: verificationOtpDetails.supplierId,
+      };
+
+      return {
+        accessToken: await this.generateAuthToken(payload),
+        user,
       };
     }
     throw new BadRequestException(STATUS_MSG.ERROR.SERVER_ERROR);

@@ -27,11 +27,15 @@ export enum PermissionSubject {
   Invoice = 'Invoice',
   Customer = 'Customer',
   ScreenDisplay = 'Screen Display',
+  Feature = 'Feature',
+  Package = 'Package',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
   Supplier = 'Supplier',
   ScreenDisplay = 'Screen Display',
+  Feature = 'Feature',
+  Package = 'Package',
 }
 export enum CommonPermissions {
   LIST = 'LIST',

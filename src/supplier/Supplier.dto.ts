@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsNumber,
   IsNotEmpty,
@@ -9,11 +9,15 @@ import {
   IsEmail,
   ValidateNested,
   IsArray,
+  IsMongoId,
+  IsDate,
+  MinDate,
 } from 'class-validator';
 import {
   DefaultWorkingHoursDTO,
   IndividualWorkHoursDTO,
 } from 'src/restaurant/dto/create-restaurant.dto';
+import * as moment from 'moment';
 
 export class AddSupplierDto {
   @ApiProperty()
@@ -200,6 +204,36 @@ export class UpdateSupplierDto extends PartialType(AddSupplierDto) {
   @IsBoolean()
   @IsOptional()
   active: boolean;
+}
+
+export class AssignPackageDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsMongoId()
+  packageId: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  startTrial?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
+  @IsDate()
+  @MinDate(new Date(moment.utc().format('YYYY-MM-DD')), {
+    message:
+      'minimal allowed date for startDate is ' + new Date().toDateString(),
+  })
+  startDate?: Date;
+}
+
+export class ModifyPackageFeaturesDto {
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsNotEmpty()
+  features: string[];
 }
 
 export class SupplierQueryDto {

@@ -320,8 +320,9 @@ export class OrderHelperService {
   }
 
   async postOrderCreate(order: OrderDocument) {
-    if (order.isScheduled)
-      this.calculationService.identifyOrdersToRecalculateForScheduled(order);
+    // commenting the  schedule activities
+    // if (order.isScheduled)
+    //   this.calculationService.identifyOrdersToRecalculateForScheduled(order);
     // store activity
     if (order.sittingStartTime)
       this.storeOrderStateActivity(
@@ -388,10 +389,11 @@ export class OrderHelperService {
           order,
         );
       } else {
-        this.calculationService.identifyOrdersToRecalculateForScheduled(
-          order,
-          OrderStatus.SentToKitchen,
-        );
+        // commenting the  schedule activities
+        // this.calculationService.identifyOrdersToRecalculateForScheduled(
+        //   order,
+        //   OrderStatus.SentToKitchen,
+        // );
       }
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       this.storeOrderStateActivity(
