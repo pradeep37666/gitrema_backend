@@ -74,6 +74,14 @@ export class AuthController {
     );
   }
 
+  @Post('verify-user-otp')
+  async verifyUserOtp(
+    @Req() req,
+    @Body() verificationOtpDetails: VerificationOtpDto,
+  ): Promise<any> {
+    return await this.authService.verifyUserOtp(req, verificationOtpDetails);
+  }
+
   @Get('public-token')
   async getTokenToAccessPublicApis(
     @Query('domain') domain: string,

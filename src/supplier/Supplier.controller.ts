@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import {
   AddSupplierDto,
+  AssignPackageDto,
   SupplierQueryDto,
   UpdateSupplierDto,
 } from './Supplier.dto';
@@ -24,6 +25,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
 import { PaginationDto } from 'src/core/Constants/pagination';
+import { SupplierPackageDocument } from './schemas/supplier-package.schema';
 import { SupplierAggregated } from './interfaces/suppliers.interface';
 
 @ApiTags('Suppliers')
@@ -85,6 +87,16 @@ export class SupplierController {
     @Body() supplierDetails: UpdateSupplierDto,
   ): Promise<Supplier> {
     return this.supplierService.update(supplierId, supplierDetails);
+  }
+
+  @Post(':supplierId/assign-package')
+  @PermissionGuard(PermissionSubject.Supplier, Permission.Common.UPDATE)
+  async assignPackage(
+    @Req() req,
+    @Param('supplierId') supplierId: string,
+    @Body() dto: AssignPackageDto,
+  ): Promise<SupplierPackageDocument> {
+    return await this.supplierService.assignPackage(req, supplierId, dto);
   }
 
   @Delete(':supplierId')

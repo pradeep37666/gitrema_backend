@@ -47,6 +47,8 @@ import { PuppeteerModule } from 'nest-puppeteer';
 import { InvoiceModule } from './invoice/invoice.module';
 import { CustomerModule } from './customer/customer.module';
 import { ScreenDisplayModule } from './screen-display/screen-display.module';
+import { FeatureModule } from './feature/feature.module';
+import { PackageModule } from './package/package.module';
 
 @Module({
   imports: [
@@ -102,6 +104,8 @@ import { ScreenDisplayModule } from './screen-display/screen-display.module';
     InvoiceModule,
     CustomerModule,
     ScreenDisplayModule,
+    FeatureModule,
+    PackageModule,
   ],
   controllers: [AppController],
   providers: [

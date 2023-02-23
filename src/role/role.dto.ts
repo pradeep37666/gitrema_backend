@@ -13,7 +13,7 @@ import { RoleSlug } from 'src/core/Constants/enum';
 import { PermissionActions } from 'src/core/Constants/permission.type';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 
-class PermissionDto {
+export class PermissionDto {
   @ApiProperty({
     type: String,
     enum: PermissionSubject,

@@ -56,11 +56,6 @@ export class PaymentInitiateDto {
   transactionId?: string;
 
   @ApiProperty({ required: false })
-  @IsMongoId()
-  @IsOptional()
-  cashierId?: string;
-
-  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   metaId?: string;
