@@ -8,6 +8,8 @@ import {
   Delete,
   Req,
   Query,
+  Header,
+  StreamableFile,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -25,6 +27,8 @@ import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
+import { QueryOrderReportGeneralDto } from './dto/query-order-report-general.dto';
+import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -135,5 +139,26 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
   async group(@Req() req, @Body() dto: GroupOrderDto) {
     return await this.orderService.groupOrders(req, dto);
+  }
+
+  @Get('report/general')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async generalReport(
+    @Req() req,
+    @Query() query: QueryOrderReportGeneralDto,
+  ): Promise<OrderDocument> {
+    return await this.orderService.getGeneralReportData(req, query);
+  }
+
+  @Get('report/general/export-csv')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="transactions.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async generalReportExportCsv(
+    @Req() req,
+    @Query() query: QueryOrderReportGeneralDto,
+  ): Promise<StreamableFile> {
+    return await this.orderService.exportGeneralReportCSV(req, query);
   }
 }

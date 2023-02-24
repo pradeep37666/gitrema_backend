@@ -1,0 +1,20 @@
+export const REPORT_HEADER = {
+  GENERAL: [
+    'id',
+    'restaurantName',
+    'restaurantNameAr',
+    'status',
+    'createdAt',
+    'orderType',
+    'tableName',
+    'tableNameAr',
+    'paymentStatus',
+    'paymentMethod',
+    'couponCode',
+    'totalOrderAmount',
+    'refundAmount',
+    'customerName',
+    'customerEmail',
+    'customerPhoneNumber',
+  ],
+};

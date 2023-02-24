@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
   forwardRef,
+  StreamableFile,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -29,6 +30,14 @@ import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
+import { PaymentType } from 'src/core/Constants/enum';
+import { QueryOrderReportGeneralDto } from './dto/query-order-report-general.dto';
+import { createReadStream } from 'fs';
+import {
+  createXlsxFileFromJson,
+  DefaultPath,
+} from 'src/core/Helpers/excel.helper';
+import { REPORT_HEADER } from 'src/core/Constants/reports.constant';
 
 @Injectable()
 export class OrderService {
@@ -156,6 +165,159 @@ export class OrderService {
       },
     );
     return orders;
+  }
+
+  async getGeneralReportData(
+    req: any,
+    query: QueryOrderReportGeneralDto,
+  ): Promise<OrderDocument | any> {
+    if (query.restaurantId) {
+      query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
+    }
+
+    if (query.startDate && query.endDate) {
+      const condition = {
+        $and: [
+          { createdAt: { $gte: query.startDate } },
+          { createdAt: { $lte: query.endDate } },
+        ],
+      };
+
+      delete query.startDate;
+      delete query.endDate;
+      query = { ...query, ...condition };
+    }
+
+    const orders = await this.orderModel.aggregate([
+      {
+        $match: {
+          supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          ...query,
+        },
+      },
+      {
+        $lookup: {
+          from: 'customers',
+          localField: 'customerId',
+          foreignField: '_id',
+          as: 'customers',
+        },
+      },
+      {
+        $addFields: {
+          customer: { $first: '$customers' },
+        },
+      },
+      {
+        $addFields: {
+          transactionId: { $first: '$transactions' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'transactions',
+          localField: 'transactionId',
+          foreignField: '_id',
+          as: 'transactions',
+        },
+      },
+      {
+        $addFields: {
+          transaction: { $first: '$transactions' },
+        },
+      },
+      {
+        $addFields: {
+          paymentMedium: {
+            $cond: {
+              if: {
+                $eq: ['$transaction.paymentMethod', PaymentType.Cash],
+              },
+              then: PaymentType.Cash,
+              else: '$transaction.pgResponse.cardType',
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'restaurants',
+          localField: 'restaurantId',
+          foreignField: '_id',
+          as: 'restaurants',
+        },
+      },
+      {
+        $addFields: {
+          restaurant: { $first: '$restaurants' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'tables',
+          localField: 'tableId',
+          foreignField: '_id',
+          as: 'tables',
+        },
+      },
+      {
+        $addFields: {
+          tables: { $first: '$tables' },
+        },
+      },
+      {
+        $facet: {
+          data: [
+            {
+              $project: {
+                _id: 0,
+                id: { $toString: '$_id' },
+                restaurantName: '$restaurant.name',
+                restaurantNameAr: '$restaurant.nameAr',
+                status: 1,
+                createdAt: 1,
+                orderType: 1,
+                tableName: '$tables.name',
+                tableNameAr: '$tables.nameAr',
+                paymentStatus: '$paymentStatus',
+                paymentMethod: '$paymentMedium',
+                couponCode: 1,
+                totalOrderAmount: '$summary.totalWithTax',
+                refundAmount: '$summary.totalRefunded',
+                customerName: '$customer.name',
+                customerEmail: '$customer.email',
+                customerPhoneNumber: '$customer.phoneNumber',
+              },
+            },
+          ],
+          metadata: [
+            {
+              $group: {
+                _id: null,
+                totalOrders: { $sum: 1 },
+                totalOrdersAmount: { $sum: '$summary.totalWithTax' },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    return orders;
+  }
+
+  async exportGeneralReportCSV(
+    req: any,
+    query: QueryOrderReportGeneralDto,
+  ): Promise<StreamableFile> {
+    const orders = await this.getGeneralReportData(req, query);
+    const { data: orderData } = orders[0];
+
+    if (!(await createXlsxFileFromJson(orderData, REPORT_HEADER.GENERAL)))
+      throw new NotFoundException();
+
+    const file = createReadStream(DefaultPath);
+    return new StreamableFile(file);
   }
 
   async findByCustomer(
