@@ -9,9 +9,11 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+
 import { RoleSlug } from 'src/core/Constants/enum';
 import { PermissionActions } from 'src/core/Constants/permission.type';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 export class PermissionDto {
   @ApiProperty({
@@ -55,6 +57,15 @@ export class RoleCreateDto {
   @IsMongoId({ each: true })
   @IsOptional()
   screenDisplays: string[];
+
+  @ApiProperty({
+    type: [String],
+    enum: SocketEvents,
+    enumName: 'SocketEvents',
+  })
+  @IsEnum(SocketEvents, { each: true })
+  @IsNotEmpty()
+  events: SocketEvents[];
 
   @ApiPropertyOptional({ type: String, enum: RoleSlug, enumName: 'RoleSlug' })
   @IsEnum(RoleSlug)

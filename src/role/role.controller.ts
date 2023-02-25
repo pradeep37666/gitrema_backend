@@ -22,6 +22,7 @@ import { Permission } from 'src/core/Constants/permission.type';
 import { RoleDocument } from './schemas/roles.schema';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 @Controller('roles')
 @ApiTags('Roles')
@@ -59,7 +60,11 @@ export class RoleController {
 
   @Get('permissions')
   async permissions(): Promise<any> {
-    return { permissions: Permission, subjects: PermissionSubject };
+    return {
+      permissions: Permission,
+      subjects: PermissionSubject,
+      events: SocketEvents,
+    };
   }
 
   @Get(':roleId')
