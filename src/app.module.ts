@@ -49,6 +49,7 @@ import { CustomerModule } from './customer/customer.module';
 import { ScreenDisplayModule } from './screen-display/screen-display.module';
 import { FeatureModule } from './feature/feature.module';
 import { PackageModule } from './package/package.module';
+import { ReportModule } from './reports/report.module';
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { PackageModule } from './package/package.module';
     ScreenDisplayModule,
     FeatureModule,
     PackageModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [

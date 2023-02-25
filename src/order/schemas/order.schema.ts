@@ -24,6 +24,7 @@ import {
   OrderItemSchema,
 } from './order-item.schema';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
@@ -238,3 +239,4 @@ export class Order {
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.plugin(paginate);
+OrderSchema.plugin(mongooseAggregatePaginate);

@@ -1,11 +1,12 @@
 import Excel = require('exceljs');
 
+export const DefaultSheetName = 'Data';
 export const DefaultPath = '/tmp/data.xlsx';
 
 export const createXlsxFileFromJson = async (
   jsonData: Array<Object>,
   header: Array<String>,
-  sheetName: string = 'data',
+  sheetName: string = DefaultSheetName,
   pathToWrite: string = DefaultPath,
 ): Promise<boolean> => {
   if (jsonData.length > 0) {

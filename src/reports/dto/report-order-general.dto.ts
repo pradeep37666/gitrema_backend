@@ -1,25 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsDate,
-  IsEnum,
-  IsMongoId,
-  IsOptional,
-  IsString,
-  Validate,
-} from 'class-validator';
+import { IsDate, IsEnum, IsMongoId, IsOptional } from 'class-validator';
 import {
   OrderStatus,
   PaymentStatus as OrderPaymentStatus,
   OrderType,
-} from '../enum/en.enum';
+} from 'src/order/enum/en.enum';
 import { Transform, Type } from 'class-transformer';
 import * as moment from 'moment';
 import { ShouldBeBeforeNow } from 'src/core/Validators/ShouldBeBeforeNow.validator';
 import { ShouldBeBefore } from 'src/core/Validators/ShouldBeBefore.validator';
 import { ShouldBeAfter } from 'src/core/Validators/ShouldBeAfter.validator';
 
-export class QueryOrderReportGeneralDto {
+export class ReportOrderGeneralDto {
   @ApiProperty({ type: String, required: false })
   @IsMongoId()
   @IsOptional()
