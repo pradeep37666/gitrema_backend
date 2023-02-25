@@ -22,6 +22,9 @@ import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { TableService } from './table.service';
 import { Order, OrderDocument } from 'src/order/schemas/order.schema';
 import { OrderStatus, PaymentStatus } from 'src/order/enum/en.enum';
+import { SocketIoService } from 'src/socket-io/socket-io.service';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 @Injectable()
 export class TableLogService {
@@ -37,6 +40,7 @@ export class TableLogService {
     private tableService: TableService,
     @InjectModel(Order.name)
     private readonly orderModel: Model<OrderDocument>,
+    private socketGateway: SocketIoGateway,
   ) {}
 
   async logs(
@@ -132,6 +136,12 @@ export class TableLogService {
     if (!tableLog) {
       throw new NotFoundException(`Table has not started yet`);
     }
+
+    this.socketGateway.emit(
+      tableLog.supplierId.toString(),
+      SocketEvents.TableLog,
+      tableLog.toObject(),
+    );
 
     return tableLog;
   }
