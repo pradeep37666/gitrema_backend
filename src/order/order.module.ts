@@ -19,6 +19,7 @@ import { Offer, OfferSchema } from 'src/offer/schemas/offer.schema';
 import { Activity, ActivitySchema } from 'src/activity/schemas/activity.schema';
 import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
 import { Cart, CartSchema } from './schemas/cart.schema';
+import { SocketIoModule } from 'src/socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { Cart, CartSchema } from './schemas/cart.schema';
       { name: TableLog.name, schema: TableLogSchema },
       { name: Cart.name, schema: CartSchema },
     ]),
+    SocketIoModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderHelperService, CalculationService],

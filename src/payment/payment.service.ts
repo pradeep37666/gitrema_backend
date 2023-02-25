@@ -28,6 +28,8 @@ import {
   PaymentStatus as OrderPaymentStatus,
   OrderStatus,
 } from 'src/order/enum/en.enum';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 
 @Injectable()
 export class PaymentService {
@@ -39,6 +41,7 @@ export class PaymentService {
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
+    private socketGateway: SocketIoGateway,
   ) {}
 
   async create(
@@ -129,6 +132,11 @@ export class PaymentService {
     }
 
     this.transactionService.postTransactionProcess(req, transaction);
+    // this.socketGateway.emit(
+    //   transaction.supplierId.toString(),
+    //   SocketEvents.Cashier,
+    //   { cashierId: paymentRequestDetails.cashierId, refresh: true },
+    // );
     return true;
   }
 

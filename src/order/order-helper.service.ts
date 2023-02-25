@@ -40,6 +40,8 @@ import { CalculationService } from './calculation.service';
 import { TableStatus } from 'src/table/enum/en.enum';
 import { Table } from 'src/table/schemas/table.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 @Injectable()
 export class OrderHelperService {
@@ -62,6 +64,7 @@ export class OrderHelperService {
     private readonly tableModel: Model<TableDocument>,
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
+    private socketGateway: SocketIoGateway,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -360,6 +363,11 @@ export class OrderHelperService {
         },
         { upsert: true, setDefaultsOnInsert: true, sort: { _id: -1 } },
       );
+      this.socketGateway.emit(
+        tableLog.supplierId.toString(),
+        SocketEvents.TableLog,
+        tableLog.toObject(),
+      );
       await this.tableModel.findByIdAndUpdate(order.tableId, {
         status: TableStatus.InUse,
         currentTableLog: tableLog._id,
@@ -368,9 +376,6 @@ export class OrderHelperService {
   }
 
   async postOrderUpdate(order: OrderDocument, dto: UpdateOrderDto) {
-    // check if needs to recalculate the order timing
-    if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
-      this.calculationService.handleOrderPreparationAfterUpdate(order);
     // store activity
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
       this.storeOrderStateActivity(
@@ -408,6 +413,10 @@ export class OrderHelperService {
       //   order.orderReadyTime,
       // );
       this.calculationService.identifyOrdersToRecalculateAfterCompleted(order);
+    } else {
+      // check if needs to recalculate the order timing
+      if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
+        this.calculationService.handleOrderPreparationAfterUpdate(order);
     }
   }
 

@@ -17,6 +17,8 @@ import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { OrderStatus } from './enum/en.enum';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { OrderService } from './order.service';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 @Injectable()
 export class CalculationService {
@@ -29,6 +31,7 @@ export class CalculationService {
     private readonly menuItemModel: Model<MenuItemDocument>,
     @InjectModel(Order.name)
     private readonly orderModel: Model<OrderDocument>,
+    private socketGateway: SocketIoGateway,
   ) {}
 
   async calculateSummery(orderData) {
@@ -406,6 +409,11 @@ export class CalculationService {
         preparationDetails.kitchenSortingNumber,
       );
     }
+    this.socketGateway.emit(
+      orderData.supplierId.toString(),
+      SocketEvents.KitchenQueue,
+      { KitchenQueueId: orderData.kitchenQueueId, orderListRefresh: true },
+    );
   }
 
   async identifyOrdersToRecalculateAfterCompleted(orderData) {

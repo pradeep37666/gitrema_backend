@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
@@ -11,6 +15,10 @@ import {
 import { QrCode, QrCodeDocument } from './schemas/qr-code.schema';
 import { CreateQrCodeDto } from './dto/create-qr-code.dto';
 import { UpdateQrCodeDto } from './dto/update-qr-code.dto';
+import * as QrCodeLib from 'qrcode';
+import { QrCodeType } from './enum/en.enum';
+import { Table, TableDocument } from 'src/table/schemas/table.schema';
+import { S3Service } from 'src/core/Providers/Storage/S3.service';
 
 @Injectable()
 export class QrCodeService {
@@ -19,14 +27,62 @@ export class QrCodeService {
     private readonly qrCodeModel: Model<QrCodeDocument>,
     @InjectModel(QrCode.name)
     private readonly qrCodeModelPag: PaginateModel<QrCodeDocument>,
+    @InjectModel(Table.name)
+    private readonly tableModel: Model<TableDocument>,
+    private readonly s3Service: S3Service,
   ) {}
 
   async create(req: any, dto: CreateQrCodeDto): Promise<QrCodeDocument> {
-    return await this.qrCodeModel.create({
-      ...dto,
-      supplierId: req.user.supplierId,
-      addedBy: req.user.userId,
+    return await this.qrCodeModel.findOneAndUpdate(
+      {
+        supplierId: req.user.supplierId,
+        type: dto.type,
+        dataId: dto.dataId,
+      },
+      {
+        ...dto,
+        supplierId: req.user.supplierId,
+        addedBy: req.user.userId,
+        url: await this.generateAndStoreQrCode(dto.type, dto.dataId),
+      },
+      { upsert: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async generateAndStoreQrCode(type, dataId) {
+    let url = '',
+      directory = '';
+    if (type == QrCodeType.Table) {
+      const table = await this.tableModel.findById(dataId).populate([
+        {
+          path: 'supplierId',
+        },
+      ]);
+      if (!table) throw new BadRequestException(`Table not found`);
+      if (!table?.supplierId?.domain)
+        throw new BadRequestException(`Domain not set`);
+      const domain = table.supplierId.domain.endsWith('/')
+        ? table.supplierId.domain.slice(0, -1)
+        : table.supplierId.domain;
+      url = domain + '/' + table.restaurantId + '/' + table._id;
+      directory = table.supplierId._id + '/' + table.restaurantId + '/qrcodes/';
+    }
+    const pattern = /^((http|https):\/\/)/;
+
+    if (!pattern.test(url)) {
+      url = 'https://' + url;
+    }
+    const path = './upload/' + dataId + '.png';
+    await QrCodeLib.toFile(path, url, {
+      errorCorrectionLevel: 'H',
+      scale: 20,
+      margin: 5,
     });
+
+    const s3Url: any = await this.s3Service.uploadLocalFile(path, directory);
+    if (s3Url.Location) return s3Url.Location;
+
+    throw new BadRequestException(`Error Generating Qrcode`);
   }
 
   async findAll(

@@ -10,6 +10,7 @@ import {
   TransactionSchema,
 } from 'src/transaction/schemas/transactions.schema';
 import { Order, OrderSchema } from 'src/order/schemas/order.schema';
+import { SocketIoModule } from 'src/socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { Order, OrderSchema } from 'src/order/schemas/order.schema';
     PaymentGatewayModule,
     TransactionModule,
     OrderModule,
+    SocketIoModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],

@@ -17,6 +17,7 @@ import {
   WinstonModule,
 } from 'nest-winston';
 import { ConfigService } from '@nestjs/config';
+import { SocketAdapter } from './core/adapters/socket.adapter';
 
 declare const module: any;
 
@@ -95,6 +96,7 @@ async function bootstrap() {
   );
   await app.register(contentParser);
   app.enableCors();
+  app.useWebSocketAdapter(new SocketAdapter(app));
 
   await app.listen(appConfig.get('app.port'));
   if (module.hot) {
