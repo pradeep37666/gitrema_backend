@@ -3,3 +3,6 @@ export enum PageType {
   A6 = 'A6',
   A7 = 'A7',
 }
+export enum QrCodeType {
+  Table = 'Table',
+}

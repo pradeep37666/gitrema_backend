@@ -49,6 +49,7 @@ import { CustomerModule } from './customer/customer.module';
 import { ScreenDisplayModule } from './screen-display/screen-display.module';
 import { FeatureModule } from './feature/feature.module';
 import { PackageModule } from './package/package.module';
+import { SocketIoModule } from './socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { PackageModule } from './package/package.module';
     ScreenDisplayModule,
     FeatureModule,
     PackageModule,
+    SocketIoModule,
   ],
   controllers: [AppController],
   providers: [

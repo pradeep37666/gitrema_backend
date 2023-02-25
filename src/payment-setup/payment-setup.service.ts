@@ -29,11 +29,18 @@ export class PaymentSetupService {
     req: any,
     dto: CreatePaymentSetupDto,
   ): Promise<PaymentSetupDocument> {
-    return await this.paymentSetupModel.create({
-      ...dto,
-      supplierId: req.user.supplierId,
-      addedBy: req.user.userId,
-    });
+    return await this.paymentSetupModel.findOneAndUpdate(
+      {
+        supplierId: req.user.supplierId,
+        active: true,
+      },
+      {
+        ...dto,
+        supplierId: req.user.supplierId,
+        addedBy: req.user.userId,
+      },
+      { upsert: true, setDefaultsOnInsert: true },
+    );
   }
 
   async findAll(

@@ -8,20 +8,18 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { PageType } from '../enum/en.enum';
+import { PageType, QrCodeType } from '../enum/en.enum';
 
 export class CreateQrCodeDto {
-  @ApiProperty({ required: false, type: [String] })
-  @IsArray()
-  @IsMongoId({ each: true })
-  @IsOptional()
-  restaurants: string[];
+  @ApiProperty({ type: String, enum: QrCodeType, enumName: 'QrCodeType' })
+  @IsEnum(QrCodeType)
+  @IsNotEmpty()
+  type: QrCodeType;
 
-  @ApiProperty({ required: false, type: [String] })
-  @IsArray()
-  @IsMongoId({ each: true })
+  @ApiProperty({ type: String })
+  @IsMongoId()
   @IsOptional()
-  tables: string[];
+  dataId: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -78,8 +76,8 @@ export class CreateQrCodeDto {
   @IsBoolean()
   showLogo: boolean;
 
-  @ApiProperty({ type: String, enum: PageType, enumName: 'PageType' })
-  @IsEnum(PageType)
-  @IsNotEmpty()
-  pageType: PageType;
+  // @ApiProperty({ type: String, enum: PageType, enumName: 'PageType' })
+  // @IsEnum(PageType)
+  // @IsNotEmpty()
+  // pageType: PageType;
 }

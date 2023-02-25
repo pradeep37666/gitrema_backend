@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { PageType } from '../enum/en.enum';
+import { PageType, QrCodeType } from '../enum/en.enum';
 import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
@@ -19,19 +19,14 @@ export class QrCode {
   })
   supplierId: SupplierDocument;
 
-  @Prop({
-    type: [MongooseSchema.Types.ObjectId],
-    ref: 'Restaurant',
-    index: true,
-  })
-  restaurants: RestaurantDocument[];
+  @Prop({ type: String, enum: QrCodeType })
+  type: QrCodeType;
 
   @Prop({
-    type: [MongooseSchema.Types.ObjectId],
-    ref: 'Table',
+    type: MongooseSchema.Types.ObjectId,
     index: true,
   })
-  tables: TableDocument[];
+  dataId: ObjectId;
 
   @Prop({ required: true })
   titleAr: string;
@@ -51,8 +46,8 @@ export class QrCode {
   @Prop({ default: null })
   footer: string;
 
-  @Prop({ type: String, enum: PageType })
-  pageType: PageType;
+  // @Prop({ type: String, enum: PageType })
+  // pageType: PageType;
 
   @Prop({ default: null })
   backgroundColor: string;
@@ -68,6 +63,9 @@ export class QrCode {
 
   @Prop({ default: true })
   showLogo: boolean;
+
+  @Prop({ default: null })
+  url: string;
 
   @Prop({ default: true })
   active: boolean;

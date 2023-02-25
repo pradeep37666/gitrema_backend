@@ -7,6 +7,7 @@ import { TableLog, TableLogSchema } from './schemas/table-log.schema';
 import { User, UserSchema } from 'src/users/schemas/users.schema';
 import { TableLogService } from './table-log.service';
 import { Order, OrderSchema } from 'src/order/schemas/order.schema';
+import { SocketIoModule } from 'src/socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { Order, OrderSchema } from 'src/order/schemas/order.schema';
       { name: User.name, schema: UserSchema },
       { name: Order.name, schema: OrderSchema },
     ]),
+    SocketIoModule,
   ],
   controllers: [TableController],
   providers: [TableService, TableLogService],
