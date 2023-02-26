@@ -50,6 +50,7 @@ import { ScreenDisplayModule } from './screen-display/screen-display.module';
 import { FeatureModule } from './feature/feature.module';
 import { PackageModule } from './package/package.module';
 import { SocketIoModule } from './socket-io/socket-io.module';
+import { ReportModule } from './reports/report.module';
 
 @Module({
   imports: [
@@ -107,6 +108,7 @@ import { SocketIoModule } from './socket-io/socket-io.module';
     ScreenDisplayModule,
     FeatureModule,
     PackageModule,
+    ReportModule,
     SocketIoModule,
   ],
   controllers: [AppController],
