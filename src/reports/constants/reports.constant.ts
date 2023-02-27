@@ -1,5 +1,5 @@
 export const REPORT_HEADER = {
-  GENERAL: [
+  ORDER_GENERAL: [
     'id',
     'restaurantName',
     'restaurantNameAr',
@@ -17,4 +17,28 @@ export const REPORT_HEADER = {
     'customerEmail',
     'customerPhoneNumber',
   ],
+  ORDER_USER: [
+    'restaurantName',
+    'restaurantNameAr',
+    'customerName',
+    'customerPhoneNumber',
+    'orderType',
+    'visitCount',
+  ],
+  ORDER_LIVE_CYCLE: [
+    'restaurantName',
+    'restaurantNameAr',
+    'status',
+    'createdAt',
+    'updatedAt',
+    'orderId',
+    'timeToOrder',
+    'fromOrderToKitchen',
+    'fromKitchenToOrderReady',
+    'fromOrderReadyToClose',
+    'fromScanToClose',
+    'fromOrderToClose',
+  ],
 };
+
+export const ONE_MINUTE = 60000;
