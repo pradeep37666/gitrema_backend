@@ -21,6 +21,12 @@ import { Order, OrderDocument } from 'src/order/schemas/order.schema';
 import { ONE_MINUTE, REPORT_HEADER } from './constants/reports.constant';
 import { ReportOrderUserDto } from './dto/report-order-user.dto';
 import { ReportOrderLifeCycleDto } from './dto/report-order-live-cycle.dto';
+import { ReportReservationDto } from './dto/report-reservation.dto';
+import {
+  Reservation,
+  ReservationDocument,
+} from 'src/reservation/schemas/reservation.schema';
+import { ReportOrderKitchenDto } from './dto/report-order-kitchen.dto';
 
 @Injectable()
 export class ReportService {
@@ -29,6 +35,10 @@ export class ReportService {
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(Order.name)
     private readonly orderModelAggPag: AggregatePaginateModel<OrderDocument>,
+    @InjectModel(Reservation.name)
+    private readonly reservationModel: Model<ReservationDocument>,
+    @InjectModel(Reservation.name)
+    private readonly reservationModelAggPag: AggregatePaginateModel<ReservationDocument>,
   ) {}
 
   async populateOrderGeneralReport(
@@ -162,6 +172,11 @@ export class ReportService {
     if (!isExport) {
       summary = await this.orderModel.aggregate([
         {
+          $match: {
+            supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          },
+        },
+        {
           $group: {
             _id: null,
             totalOrders: { $sum: 1 },
@@ -259,6 +274,7 @@ export class ReportService {
             },
             orderType: { $addToSet: '$orderType' },
             visitCount: { $sum: 1 },
+            lastVisitDate: { $max: '$createdAt' },
           },
         },
         {
@@ -269,6 +285,7 @@ export class ReportService {
             customerPhoneNumber: '$_id.customerPhoneNumber',
             orderType: 1,
             visitCount: 1,
+            lastVisitDate: 1,
             _id: 0,
           },
         },
@@ -698,4 +715,343 @@ export class ReportService {
     const file = createReadStream(DefaultPath);
     return new StreamableFile(file);
   }
+
+  async populateReservationReport(
+    req: any,
+    query: ReportReservationDto,
+    paginateOptions: PaginationDto,
+    isExport: boolean = false,
+  ): Promise<[AggregatePaginateResult<ReservationDocument>, any]> {
+    if (query.restaurantId) {
+      query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
+    }
+
+    const reservations = await this.reservationModelAggPag.aggregatePaginate(
+      this.reservationModel.aggregate(
+        [
+          // {
+          //   $match: {
+          //     supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          //     ...query,
+          //   },
+          // },
+          {
+            $lookup: {
+              from: 'restaurants',
+              localField: 'restaurantId',
+              foreignField: '_id',
+              as: 'restaurants',
+            },
+          },
+          {
+            $addFields: {
+              restaurant: { $first: '$restaurants' },
+            },
+          },
+          {
+            $project: {
+              restaurantName: '$restaurant.name',
+              restaurantNameAr: '$restaurant.nameAr',
+              customerName: '$name',
+              customerPhoneNumber: '$contactNumber',
+              isCancelled: '$isCancelled',
+              totalMembers: '$totalMembers',
+              date: '$date',
+              _id: 0,
+            },
+          },
+        ],
+        { allowDiskUse: true },
+      ),
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+
+    let summary;
+    if (!isExport) {
+      summary = await this.reservationModel.aggregate([
+        // {
+        //   $match: {
+        //     supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+        //   },
+        // },
+        {
+          $group: {
+            _id: null,
+            totalReservations: { $sum: 1 },
+            totalReservationsMembers: { $sum: '$totalMembers' },
+          },
+        },
+      ]);
+    }
+
+    return [reservations, summary];
+  }
+
+  async exportReservationReport(
+    req: any,
+    query: ReportReservationDto,
+    paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    const reservations = await this.populateReservationReport(
+      req,
+      query,
+      paginateOptions,
+      true,
+    );
+    const reservationsData = reservations[0].docs;
+
+    if (
+      !(await createXlsxFileFromJson(
+        reservationsData,
+        REPORT_HEADER.RESERVATIONS,
+      ))
+    )
+      throw new NotFoundException();
+
+    const file = createReadStream(DefaultPath);
+    return new StreamableFile(file);
+  }
+
+  async populateOrderKitchenReport(
+    req: any,
+    query: ReportOrderKitchenDto,
+    paginateOptions: PaginationDto,
+    isExport: boolean = false,
+  ): Promise<[AggregatePaginateResult<OrderDocument>, any]> {
+    query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
+
+    if (query.startDate && query.endDate) {
+      const condition = {
+        $and: [
+          { createdAt: { $gte: query.startDate } },
+          { createdAt: { $lte: query.endDate } },
+        ],
+      };
+
+      delete query.startDate;
+      delete query.endDate;
+      query = { ...query, ...condition };
+    }
+
+    const orders = await this.orderModelAggPag.aggregatePaginate(
+      this.orderModel.aggregate(
+        [
+          {
+            $match: {
+              supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+              ...query,
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              chef: 'pending',
+              status: '$status',
+              createdAt: '$createdAt',
+              orderType: '$orderType',
+              orderId: '$_id',
+              timeToStartPrepare: {
+                $divide: [
+                  {
+                    $subtract: [
+                      '$preparationDetails.actualStartTime',
+                      '$sentToKitchenTime',
+                    ],
+                  },
+                  ONE_MINUTE,
+                ],
+              },
+              timeFromPrepareToReady: {
+                $divide: [
+                  {
+                    $subtract: [
+                      '$preparationDetails.actualEndTime',
+                      '$preparationDetails.actualStartTime',
+                    ],
+                  },
+                  ONE_MINUTE,
+                ],
+              },
+            },
+          },
+        ],
+        { allowDiskUse: true },
+      ),
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+
+    let summary;
+    if (!isExport) {
+      summary = await this.populateOrderKitchenSummary(req, query);
+    }
+
+    return [orders, summary];
+  }
+
+  async populateOrderKitchenSummary(
+    req: any,
+    query: ReportOrderKitchenDto,
+  ): Promise<any> {
+    return this.orderModel.aggregate(
+      [
+        {
+          $match: {
+            supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+            restaurantId: new mongoose.Types.ObjectId(query.restaurantId),
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            timeToStartPrepare: {
+              $subtract: [
+                '$preparationDetails.actualStartTime',
+                '$sentToKitchenTime',
+              ],
+            },
+            timeFromPrepareToReady: {
+              $subtract: [
+                '$preparationDetails.actualEndTime',
+                '$preparationDetails.actualStartTime',
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            avgTimeToStartPrepare: {
+              $avg: { $sum: '$timeToStartPrepare' },
+            },
+            avgTimeFromPrepareToReady: {
+              $avg: { $sum: '$timeFromPrepareToReady' },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            avgTimeToStartPrepare: {
+              $divide: ['$avgTimeToStartPrepare', ONE_MINUTE],
+            },
+            avgTimeFromPrepareToReady: {
+              $divide: ['$avgTimeFromPrepareToReady', ONE_MINUTE],
+            },
+          },
+        },
+      ],
+      { allowDiskUse: true },
+    );
+  }
+
+  async exportOrderKitchenReport(
+    req: any,
+    query: ReportOrderKitchenDto,
+    paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    const orders = await this.populateOrderKitchenReport(
+      req,
+      query,
+      paginateOptions,
+      true,
+    );
+    const orderData = orders[0].docs;
+
+    if (!(await createXlsxFileFromJson(orderData, REPORT_HEADER.ORDER_KITCHEN)))
+      throw new NotFoundException();
+
+    const file = createReadStream(DefaultPath);
+    return new StreamableFile(file);
+  }
+
+  // async populateOrderPaymentReport(
+  //   req: any,
+  //   query: ReportOrderKitchenDto,
+  //   paginateOptions: PaginationDto,
+  //   isExport: boolean = false,
+  // ): Promise<[AggregatePaginateResult<OrderDocument>, any]> {
+  //   query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
+
+  //   if (query.startDate && query.endDate) {
+  //     const condition = {
+  //       $and: [
+  //         { createdAt: { $gte: query.startDate } },
+  //         { createdAt: { $lte: query.endDate } },
+  //       ],
+  //     };
+
+  //     delete query.startDate;
+  //     delete query.endDate;
+  //     query = { ...query, ...condition };
+  //   }
+
+  //   const orders = await this.orderModelAggPag.aggregatePaginate(
+  //     this.orderModel.aggregate(
+  //       [
+  //         {
+  //           $match: {
+  //             supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+  //             ...query,
+  //           },
+  //         },
+  //         {
+  //           $project: {
+  //             _id: 0,
+  //             chef: 'pending',
+  //             status: '$status',
+  //             createdAt: '$createdAt',
+  //             orderType: '$orderType',
+  //             orderId: '$_id',
+  //             timeToStartPrepare: {
+  //               $divide: [
+  //                 {
+  //                   $subtract: [
+  //                     '$preparationDetails.actualStartTime',
+  //                     '$sentToKitchenTime',
+  //                   ],
+  //                 },
+  //                 ONE_MINUTE,
+  //               ],
+  //             },
+  //             timeFromPrepareToReady: {
+  //               $divide: [
+  //                 {
+  //                   $subtract: [
+  //                     '$preparationDetails.actualEndTime',
+  //                     '$preparationDetails.actualStartTime',
+  //                   ],
+  //                 },
+  //                 ONE_MINUTE,
+  //               ],
+  //             },
+  //           },
+  //         },
+  //       ],
+  //       { allowDiskUse: true },
+  //     ),
+  //     {
+  //       sort: DefaultSort,
+  //       lean: true,
+  //       ...paginateOptions,
+  //       ...pagination,
+  //     },
+  //   );
+
+  //   let summary;
+  //   if (!isExport) {
+  //     summary = await this.populateOrderKitchenSummary(req, query);
+  //   }
+
+  //   return [orders, summary];
+  // }
 }

@@ -18,6 +18,9 @@ import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator'
 import { OrderDocument } from 'src/order/schemas/order.schema';
 import { ReportOrderUserDto } from './dto/report-order-user.dto';
 import { ReportOrderLifeCycleDto } from './dto/report-order-live-cycle.dto';
+import { ReportReservationDto } from './dto/report-reservation.dto';
+import { ReservationDocument } from 'src/reservation/schemas/reservation.schema';
+import { ReportOrderKitchenDto } from './dto/report-order-kitchen.dto';
 
 @Controller('report')
 @ApiTags('Reports')
@@ -112,6 +115,68 @@ export class ReportController {
     @Query() paginateOptions: PaginationDto,
   ): Promise<StreamableFile> {
     return await this.reportService.exportOrderLifeCycleReport(
+      req,
+      query,
+      paginateOptions,
+    );
+  }
+
+  @Get('reservation')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async reservationReport(
+    @Req() req,
+    @Query() query: ReportReservationDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<[AggregatePaginateResult<ReservationDocument>, any]> {
+    return await this.reportService.populateReservationReport(
+      req,
+      query,
+      paginateOptions,
+    );
+  }
+
+  @Get('reservation/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="transactions.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async reservationReportExport(
+    @Req() req,
+    @Query() query: ReportReservationDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    return await this.reportService.exportReservationReport(
+      req,
+      query,
+      paginateOptions,
+    );
+  }
+
+  @Get('order/kitchen')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async orderKitchenReport(
+    @Req() req,
+    @Query() query: ReportOrderKitchenDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<[AggregatePaginateResult<OrderDocument>, any]> {
+    return await this.reportService.populateOrderKitchenReport(
+      req,
+      query,
+      paginateOptions,
+    );
+  }
+
+  @Get('order/kitchen/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="transactions.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async orderKitchenReportExport(
+    @Req() req,
+    @Query() query: ReportOrderKitchenDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    return await this.reportService.exportOrderKitchenReport(
       req,
       query,
       paginateOptions,

@@ -24,6 +24,7 @@ export const REPORT_HEADER = {
     'customerPhoneNumber',
     'orderType',
     'visitCount',
+    'lastVisitDate',
   ],
   ORDER_LIVE_CYCLE: [
     'restaurantName',
@@ -38,6 +39,24 @@ export const REPORT_HEADER = {
     'fromOrderReadyToClose',
     'fromScanToClose',
     'fromOrderToClose',
+  ],
+  RESERVATIONS: [
+    'restaurantName',
+    'restaurantNameAr',
+    'customerName',
+    'customerPhoneNumber',
+    'isCancelled',
+    'totalMembers',
+    'date',
+  ],
+  ORDER_KITCHEN: [
+    'chef',
+    'status',
+    'createdAt',
+    'orderType',
+    'orderId',
+    'timeToStartPrepare',
+    'timeFromPrepareToReady',
   ],
 };
 
