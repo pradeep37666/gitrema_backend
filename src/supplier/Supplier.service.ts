@@ -209,7 +209,7 @@ export class SupplierService {
   }
 
   async assignPackage(req: any, supplierId: string, dto: AssignPackageDto) {
-    let packageCriteria: any = { isDefault: true };
+    let packageCriteria: any = { isDefaultPackage: true };
     if (dto.packageId) {
       packageCriteria = { _id: dto.packageId };
     }
