@@ -76,7 +76,7 @@ export class AuthService {
           select: { name: 1 },
           populate: [{ path: 'screenDisplays' }],
         },
-        { path: 'supplierId', select: { active: 1 } },
+        { path: 'supplierId', select: { active: 1, alias: 1 } },
       ]);
       return user.toObject();
     }
@@ -84,6 +84,7 @@ export class AuthService {
   }
 
   async login(user: any, loginRequest: LoginRequestDto): Promise<any> {
+    console.log(user);
     if (loginRequest.alias != user.supplierId?.alias) {
       throw new BadRequestException(`Invalid alias`);
     }
