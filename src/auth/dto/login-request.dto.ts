@@ -3,6 +3,7 @@ import {
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateIf,
 } from 'class-validator';
@@ -20,9 +21,9 @@ export class LoginRequestDto {
   @ApiProperty()
   password: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ required: false })
   alias: string;
 }
 

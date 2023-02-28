@@ -85,7 +85,7 @@ export class AuthService {
 
   async login(user: any, loginRequest: LoginRequestDto): Promise<any> {
     console.log(user);
-    if (loginRequest.alias != user.supplierId?.alias) {
+    if (loginRequest.alias && loginRequest.alias != user.supplierId?.alias) {
       throw new BadRequestException(`Invalid alias`);
     }
     const payload = {
