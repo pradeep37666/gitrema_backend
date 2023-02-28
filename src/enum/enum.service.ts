@@ -1,4 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import * as ActivityEnEnum from 'src/activity/enum/activity.enum';
+import * as ImportEnEnum from 'src/import/enum/import.enum';
+import * as OfferEnEnum from 'src/offer/enum/en.enum';
+import * as OfferArEnum from 'src/offer/enum/ar.enum';
+import * as PaymentEnEnum from 'src/payment/enum/en.enum';
+import * as PaymentArEnum from 'src/payment/enum/ar.enum';
+import * as SocketEnEnum from 'src/socket-io/enum/events.enum';
 import * as CoreEngEnum from 'src/core/Constants/enum';
 import * as CoreArEnum from 'src/core/Constants/enum.ar';
 import * as ClientFeedbackEnEnum from 'src/client-feedback/enum/en.enum';
@@ -7,8 +14,8 @@ import * as MenuEnEnum from 'src/menu/enum/en.enum';
 import * as MenuArEnum from 'src/menu/enum/ar.enum';
 import * as OrderEnEnum from 'src/order/enum/en.enum';
 import * as OrderArEnum from 'src/order/enum/ar.enum';
-import * as PaymentEnEnum from 'src/payment-setup/enum/en.enum';
-import * as PaymentArEnum from 'src/payment-setup/enum/ar.enum';
+import * as PaymentSetupEnEnum from 'src/payment-setup/enum/en.enum';
+import * as PaymentSetupArEnum from 'src/payment-setup/enum/ar.enum';
 import * as QrCodeEnEnum from 'src/qr-code/enum/en.enum';
 import * as QrCodeArEnum from 'src/qr-code/enum/ar.enum';
 import * as TableEnEnum from 'src/table/enum/en.enum';
@@ -32,6 +39,11 @@ export class EnumService {
       ...PaymentEnEnum,
       ...QrCodeEnEnum,
       ...TableEnEnum,
+      ...ActivityEnEnum,
+      ...ImportEnEnum,
+      ...OfferEnEnum,
+      ...SocketEnEnum,
+      ...PaymentSetupEnEnum,
     };
     const arEnums = {
       ...CoreArEnum,
@@ -41,6 +53,8 @@ export class EnumService {
       ...PaymentArEnum,
       ...QrCodeArEnum,
       ...TableArEnum,
+      ...PaymentSetupArEnum,
+      ...OfferArEnum,
     };
     for (const item of items) {
       const doc: IEnum = { name: item };

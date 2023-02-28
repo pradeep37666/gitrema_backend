@@ -12,8 +12,10 @@ import { JwtService } from '@nestjs/jwt';
 
 import {
   LoggedInUserPayload,
+  LoginRequestDto,
   RequestOtpDto,
   StaffLoginDto,
+  UserVerificationOtpDto,
   VerificationOtpDto,
 } from '../dto/login-request.dto';
 
@@ -32,6 +34,10 @@ import {
   Customer,
   CustomerDocument,
 } from 'src/customer/schemas/customer.schema';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/schemas/suppliers.schema';
 
 @Injectable()
 export class AuthService {
@@ -39,6 +45,8 @@ export class AuthService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(Supplier.name)
+    private supplierModel: Model<SupplierDocument>,
     @InjectModel(Customer.name)
     private customerModel: Model<CustomerDocument>,
     @InjectModel(Role.name)
@@ -75,7 +83,10 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any): Promise<any> {
+  async login(user: any, loginRequest: LoginRequestDto): Promise<any> {
+    if (loginRequest.alias != user.supplierId?.alias) {
+      throw new BadRequestException(`Invalid alias`);
+    }
     const payload = {
       email: user.email,
       userId: user._id,
@@ -87,26 +98,35 @@ export class AuthService {
   }
 
   async staffLogin(loginRequest: StaffLoginDto): Promise<any> {
-    const user = await this.userModel.findOne({
-      phoneNumber: loginRequest.phoneNumber,
+    const supplier = await this.supplierModel.findOne({
+      alias: loginRequest.alias,
     });
-    if (user && (await bcrypt.compare(loginRequest.password, user.password))) {
-      delete user.password;
-      await user.populate([
-        {
-          path: 'role',
-          select: { name: 1 },
-          populate: [{ path: 'screenDisplays' }],
-        },
-      ]);
-      const payload = {
-        userId: user._id,
-        supplierId: user.supplierId,
-        restaurantId: user.restaurantId,
-        roleId: user.role._id,
-      };
+    if (supplier) {
+      const user = await this.userModel.findOne({
+        phoneNumber: loginRequest.phoneNumber,
+        supplierId: supplier._id,
+      });
+      if (
+        user &&
+        (await bcrypt.compare(loginRequest.password, user.password))
+      ) {
+        delete user.password;
+        await user.populate([
+          {
+            path: 'role',
+            select: { name: 1 },
+            populate: [{ path: 'screenDisplays' }],
+          },
+        ]);
+        const payload = {
+          userId: user._id,
+          supplierId: user.supplierId,
+          restaurantId: user.restaurantId,
+          roleId: user.role._id,
+        };
 
-      return { user, accessToken: await this.generateAuthToken(payload) };
+        return { user, accessToken: await this.generateAuthToken(payload) };
+      }
     }
     throw new UnauthorizedException();
   }
@@ -216,7 +236,7 @@ export class AuthService {
 
   async verifyUserOtp(
     req,
-    verificationOtpDetails: VerificationOtpDto,
+    verificationOtpDetails: UserVerificationOtpDto,
   ): Promise<any> {
     if (verificationOtpDetails.code !== 'FMJLAL2ZOC') {
       const response = await this.asmscService.verifyOtp(
@@ -226,9 +246,13 @@ export class AuthService {
         throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
       }
     }
-
+    const supplier = await this.supplierModel.findOne({
+      alias: verificationOtpDetails.alias,
+    });
+    if (!supplier) throw new BadRequestException(`Invalid alias`);
     const user = await this.userModel.findOne({
       phoneNumber: verificationOtpDetails.phoneNumber,
+      supplierId: supplier._id,
     });
 
     if (!user) {
@@ -238,7 +262,6 @@ export class AuthService {
       const payload = {
         userId: user._id,
         roleId: user.role,
-        supplierId: verificationOtpDetails.supplierId,
       };
 
       return {
