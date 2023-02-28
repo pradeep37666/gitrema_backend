@@ -360,11 +360,17 @@ export class OrderHelperService {
         {
           $push: { orders: order._id },
           paymentNeeded: true,
+          supplierId: order.supplierId,
         },
-        { upsert: true, setDefaultsOnInsert: true, sort: { _id: -1 } },
+        {
+          upsert: true,
+          setDefaultsOnInsert: true,
+          sort: { _id: -1 },
+          new: true,
+        },
       );
       this.socketGateway.emit(
-        tableLog.supplierId.toString(),
+        order.supplierId.toString(),
         SocketEvents.TableLog,
         tableLog.toObject(),
       );

@@ -178,12 +178,10 @@ export class TableService {
   }
 
   async findOne(tableId: string): Promise<TableDocument> {
-    const exists = await this.tableModel
-      .findById(tableId)
-      .populate([
-        { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
-        { path: 'currentTableLog' },
-      ]);
+    const exists = await this.tableModel.findById(tableId).populate([
+      { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
+      { path: 'currentTableLog', populate: [{ path: 'orders' }] },
+    ]);
 
     if (!exists) {
       throw new NotFoundException();
