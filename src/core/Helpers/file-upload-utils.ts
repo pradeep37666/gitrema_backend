@@ -32,6 +32,17 @@ export const imageFileFilter = (
   callback(null, true);
 };
 
+export const importFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  callback,
+) => {
+  if (!file.originalname.match(/\.(csv|xlsx|xls)$/)) {
+    callback(new BadRequestException(`Excel or Csv are only allowed`), false);
+  }
+  callback(null, true);
+};
+
 export const videoFileFilter = (
   req: Request,
   file: Express.Multer.File,

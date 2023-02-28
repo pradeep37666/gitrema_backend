@@ -6,7 +6,11 @@ export class MultipleFileDto {
   @ApiProperty({ type: Array, format: 'binary' })
   files: any[];
 
-  @ApiProperty({ type: String, enum: FileUploadType })
+  @ApiProperty({
+    type: String,
+    enum: FileUploadType,
+    enumName: 'FileUploadType',
+  })
   @IsNotEmpty()
   @IsString()
   type: FileUploadType;
