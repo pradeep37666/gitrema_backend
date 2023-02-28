@@ -12,6 +12,9 @@ export type SupplierDocument = Supplier & Document;
 @Schema({ timestamps: true })
 export class Supplier {
   @Prop({ required: true })
+  alias: string;
+
+  @Prop({ required: true })
   name: string;
 
   @Prop({ default: null })

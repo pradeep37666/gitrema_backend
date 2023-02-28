@@ -14,6 +14,7 @@ import {
   LoginRequestDto,
   RequestOtpDto,
   StaffLoginDto,
+  UserVerificationOtpDto,
   VerificationOtpDto,
 } from '../dto/login-request.dto';
 import { AuthService } from '../services/auth.service';
@@ -42,7 +43,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Req() req, @Body() loginRequest: LoginRequestDto): Promise<any> {
-    const accessToken = await this.authService.login(req.user);
+    const accessToken = await this.authService.login(req.user, loginRequest);
     return { ...req.user, accessToken };
   }
 
@@ -77,7 +78,7 @@ export class AuthController {
   @Post('verify-user-otp')
   async verifyUserOtp(
     @Req() req,
-    @Body() verificationOtpDetails: VerificationOtpDto,
+    @Body() verificationOtpDetails: UserVerificationOtpDto,
   ): Promise<any> {
     return await this.authService.verifyUserOtp(req, verificationOtpDetails);
   }

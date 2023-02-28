@@ -8,7 +8,12 @@ export class QueryInvoiceDto {
   @IsNotEmpty()
   orderId: string;
 
-  @ApiProperty({ required: false, type: String, enum: InvoiceType })
+  @ApiProperty({
+    required: false,
+    type: String,
+    enum: InvoiceType,
+    enumName: 'InvoiceType',
+  })
   @IsEnum(InvoiceType)
   @IsOptional()
   type: InvoiceType;

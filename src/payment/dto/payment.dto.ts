@@ -45,7 +45,7 @@ export class PaymentInitiateDto {
   @IsNumber()
   amount: number;
 
-  @ApiProperty({ type: String, enum: PaymentMethod })
+  @ApiProperty({ type: String, enum: PaymentMethod, enumName: 'PaymentMethod' })
   @IsEnum(PaymentMethod)
   @IsNotEmpty()
   paymentMethod: PaymentMethod;

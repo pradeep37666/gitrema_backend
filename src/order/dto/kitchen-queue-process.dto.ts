@@ -20,7 +20,11 @@ export class KitchenQueueProcessDto {
   @IsOptional()
   orderItemId: string;
 
-  @ApiProperty({ type: String, enum: PreparationStatus })
+  @ApiProperty({
+    type: String,
+    enum: PreparationStatus,
+    enumName: 'PreparationStatus',
+  })
   @IsEnum(PreparationStatus)
   @IsNotEmpty()
   preparationStatus: PreparationStatus;
