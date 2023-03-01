@@ -28,21 +28,26 @@ export class SocketIoGateway {
 
   handleConnection(client: Socket) {
     console.log('connected - ' + client.id);
-    if (client?.handshake?.query?.supplierId) {
-      client.join(client.handshake.query.supplierId);
-      client.data.supplierId = client.handshake.query.supplierId;
-    }
   }
 
   @SubscribeMessage(SocketEvents.ping)
   async ping(@ConnectedSocket() client: Socket, @MessageBody() dto: any) {
-    await this.emit(client.data.supplierId, SocketEvents.ping, 'Pong');
+    await this.emit(
+      client.data.supplierId,
+      SocketEvents.ping,
+      'Pong',
+      client.id,
+    );
   }
 
-  async emit(supplierId: string, event: SocketEvents, data: any) {
-    const roles = await this.roleModel.find({ events: event });
-    for (const i in roles) {
-      this.server.to(`${supplierId}_${roles[i]._id}`).emit(event, data);
+  async emit(supplierId: string, event: SocketEvents, data: any, room = null) {
+    if (room) {
+      this.server.to(room).emit(event, data);
+    } else {
+      const roles = await this.roleModel.find({ events: event });
+      for (const i in roles) {
+        this.server.to(`${supplierId}_${roles[i]._id}`).emit(event, data);
+      }
     }
   }
 }
