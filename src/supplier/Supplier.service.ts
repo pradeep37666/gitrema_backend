@@ -48,6 +48,16 @@ export class SupplierService {
   async createSupplier(
     supplierDetails: AddSupplierDto,
   ): Promise<SupplierDocument> {
+    if (supplierDetails.alias) {
+      const exist = await this.supplierModel.count({
+        alias: supplierDetails.alias,
+      });
+      if (exist > 0) {
+        throw new BadRequestException(
+          `A record already exists with same alias`,
+        );
+      }
+    }
     const supplier = new this.supplierModel(supplierDetails);
     if (supplier.taxEnabled) {
       await this.menuItemModel.updateMany(
@@ -180,12 +190,23 @@ export class SupplierService {
     supplierDetails: UpdateSupplierDto,
   ): Promise<Supplier> {
     if (supplierDetails.domain) {
-      const isExist = await this.supplierModel.findOne({
+      const isExist = await this.supplierModel.count({
         _id: { $ne: supplierId },
         domain: supplierDetails.domain,
       });
-      if (isExist)
+      if (isExist > 0)
         throw new BadRequestException(STATUS_MSG.ERROR.DOMAIN_NOT_ALLOWED);
+    }
+    if (supplierDetails.alias) {
+      const exist = await this.supplierModel.count({
+        alias: supplierDetails.alias,
+        _id: { $ne: supplierId },
+      });
+      if (exist > 0) {
+        throw new BadRequestException(
+          `A record already exists with same alias`,
+        );
+      }
     }
     const supplier = await this.supplierModel.findByIdAndUpdate(
       { _id: supplierId },
@@ -209,7 +230,7 @@ export class SupplierService {
   }
 
   async assignPackage(req: any, supplierId: string, dto: AssignPackageDto) {
-    let packageCriteria: any = { isDefault: true };
+    let packageCriteria: any = { isDefaultPackage: true };
     if (dto.packageId) {
       packageCriteria = { _id: dto.packageId };
     }

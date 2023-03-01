@@ -35,6 +35,7 @@ import {
 @Module({
   imports: [
     MongooseModule.forFeature([
+      { name: Supplier.name, schema: SupplierSchema },
       { name: User.name, schema: UserSchema },
       { name: Supplier.name, schema: SupplierSchema },
       { name: SupplierPackage.name, schema: SupplierPackageSchema },

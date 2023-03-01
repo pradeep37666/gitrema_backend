@@ -43,17 +43,25 @@ export class CreateOfferDto {
   @IsString()
   code: string;
 
-  @ApiProperty({ type: String, enum: OfferType })
+  @ApiProperty({ type: String, enum: OfferType, enumName: 'OfferType' })
   @IsNotEmpty()
   @IsEnum(OfferType)
   offerType: OfferType;
 
-  @ApiProperty({ type: String, enum: ApplicationType })
+  @ApiProperty({
+    type: String,
+    enum: ApplicationType,
+    enumName: 'ApplicationType',
+  })
   @IsNotEmpty()
   @IsEnum(ApplicationType)
   applicationType: ApplicationType;
 
-  @ApiProperty({ type: String, enum: CalculationType })
+  @ApiProperty({
+    type: String,
+    enum: CalculationType,
+    enumName: 'CalculationType',
+  })
   @IsNotEmpty()
   @IsEnum(CalculationType)
   discountType: CalculationType;

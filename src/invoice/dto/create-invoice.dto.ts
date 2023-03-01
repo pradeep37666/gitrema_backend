@@ -44,7 +44,7 @@ export class CreateInvoiceDto {
   @IsNotEmpty()
   orderId: string;
 
-  @ApiProperty({ type: String, enum: InvoiceType })
+  @ApiProperty({ type: String, enum: InvoiceType, enumName: 'InvoiceType' })
   @IsEnum(InvoiceType)
   @IsNotIn([InvoiceType.Receipt])
   @IsNotEmpty()

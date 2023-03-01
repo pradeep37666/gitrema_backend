@@ -3,6 +3,7 @@ import {
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateIf,
 } from 'class-validator';
@@ -19,6 +20,11 @@ export class LoginRequestDto {
   @IsString()
   @ApiProperty()
   password: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ required: false })
+  alias: string;
 }
 
 export class StaffLoginDto extends OmitType(LoginRequestDto, [
@@ -28,6 +34,11 @@ export class StaffLoginDto extends OmitType(LoginRequestDto, [
   @IsString()
   @ApiProperty()
   phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  alias: string;
 }
 
 export class RequestOtpDto {
@@ -65,6 +76,15 @@ export class VerificationOtpDto {
   @IsNotEmpty()
   @IsString()
   code?: string;
+}
+
+export class UserVerificationOtpDto extends OmitType(VerificationOtpDto, [
+  'supplierId',
+] as const) {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  alias: string;
 }
 
 export class LoggedInUserPayload {

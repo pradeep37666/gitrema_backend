@@ -51,6 +51,7 @@ import { FeatureModule } from './feature/feature.module';
 import { PackageModule } from './package/package.module';
 import { SocketIoModule } from './socket-io/socket-io.module';
 import { ReportModule } from './reports/report.module';
+import { ImportModule } from './import/import.module';
 
 @Module({
   imports: [
@@ -110,6 +111,7 @@ import { ReportModule } from './reports/report.module';
     PackageModule,
     ReportModule,
     SocketIoModule,
+    ImportModule,
   ],
   controllers: [AppController],
   providers: [

@@ -23,6 +23,11 @@ export class AddSupplierDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  alias: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   name: string;
 
   @ApiProperty({ required: false })
