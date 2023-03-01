@@ -21,6 +21,8 @@ import { ReportOrderLifeCycleDto } from './dto/report-order-live-cycle.dto';
 import { ReportReservationDto } from './dto/report-reservation.dto';
 import { ReservationDocument } from 'src/reservation/schemas/reservation.schema';
 import { ReportOrderKitchenDto } from './dto/report-order-kitchen.dto';
+import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
+import { ReportPaymentDto } from './dto/report-payment.dto';
 
 @Controller('report')
 @ApiTags('Reports')
@@ -177,6 +179,64 @@ export class ReportController {
     @Query() paginateOptions: PaginationDto,
   ): Promise<StreamableFile> {
     return await this.reportService.exportOrderKitchenReport(
+      req,
+      query,
+      paginateOptions,
+    );
+  }
+
+  @Get('payment/refund')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async paymentRefundReport(
+    @Req() req,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<AggregatePaginateResult<TransactionDocument>> {
+    return await this.reportService.populatePaymentRefundReport(
+      req,
+      paginateOptions,
+    );
+  }
+
+  @Get('payment/refund/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="transactions.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async paymentRefundReportExport(
+    @Req() req,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    return await this.reportService.exportPaymentRefundReport(
+      req,
+      paginateOptions,
+    );
+  }
+
+  @Get('payment')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async paymentReport(
+    @Req() req,
+    @Query() query: ReportPaymentDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<[AggregatePaginateResult<TransactionDocument>, any]> {
+    return await this.reportService.populatePaymentReport(
+      req,
+      query,
+      paginateOptions,
+    );
+  }
+
+  @Get('payment/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="transactions.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
+  async paymentReportExport(
+    @Req() req,
+    @Query() query: ReportPaymentDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    return await this.reportService.exportPaymentReport(
       req,
       query,
       paginateOptions,

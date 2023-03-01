@@ -27,6 +27,11 @@ import {
   ReservationDocument,
 } from 'src/reservation/schemas/reservation.schema';
 import { ReportOrderKitchenDto } from './dto/report-order-kitchen.dto';
+import {
+  Transaction,
+  TransactionDocument,
+} from 'src/transaction/schemas/transactions.schema';
+import { ReportPaymentDto } from './dto/report-payment.dto';
 
 @Injectable()
 export class ReportService {
@@ -39,6 +44,10 @@ export class ReportService {
     private readonly reservationModel: Model<ReservationDocument>,
     @InjectModel(Reservation.name)
     private readonly reservationModelAggPag: AggregatePaginateModel<ReservationDocument>,
+    @InjectModel(Transaction.name)
+    private readonly transactionModel: Model<TransactionDocument>,
+    @InjectModel(Transaction.name)
+    private readonly transactionModelAggPag: AggregatePaginateModel<TransactionDocument>,
   ) {}
 
   async populateOrderGeneralReport(
@@ -168,7 +177,7 @@ export class ReportService {
       },
     );
 
-    let summary;
+    let summary = [];
     if (!isExport) {
       summary = await this.orderModel.aggregate([
         {
@@ -379,94 +388,11 @@ export class ReportService {
             },
           },
           {
-            $lookup: {
-              from: 'activities',
-              let: {
-                id: '$_id',
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $eq: ['$dataId', '$$id'],
-                    },
-                  },
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    MenuScannedDateTime: {
-                      $cond: {
-                        if: { $eq: ['MenuScanned', '$data.activityType'] },
-                        then: '$data.date',
-                        else: '$$REMOVE',
-                      },
-                    },
-                    OrderPlacedDateTime: {
-                      $cond: {
-                        if: { $eq: ['OrderPlaced', '$data.activityType'] },
-                        then: '$data.date',
-                        else: '$$REMOVE',
-                      },
-                    },
-                    SentToKitchenDateTime: {
-                      $cond: {
-                        if: { $eq: ['SentToKitchen', '$data.activityType'] },
-                        then: '$data.date',
-                        else: '$$REMOVE',
-                      },
-                    },
-                    OrderReadyDateTime: {
-                      $cond: {
-                        if: { $eq: ['OrderReady', '$data.activityType'] },
-                        then: '$data.date',
-                        else: '$$REMOVE',
-                      },
-                    },
-                  },
-                },
-              ],
-              as: 'orderStatusChangeTimings',
-            },
-          },
-          {
-            $group: {
-              _id: {
-                restaurantName: '$restaurant.name',
-                restaurantNameAr: '$restaurant.nameAr',
-                status: '$status',
-                createdAt: '$createdAt',
-                updatedAt: '$updatedAt',
-                tableName: '$tables.name',
-                tableNameAr: '$tables.nameAr',
-                orderId: '$_id',
-                timings: { $mergeObjects: '$orderStatusChangeTimings' },
-              },
-            },
-          },
-          {
-            $project: {
-              restaurantName: '$_id.restaurantName',
-              restaurantNameAr: '$_id.restaurantNameAr',
-              status: '$_id.status',
-              createdAt: '$_id.createdAt',
-              updatedAt: '$_id.updatedAt',
-              tableName: '$_id.tableName',
-              tableNameAr: '$_id.tableNameAr',
-              orderId: '$_id.orderId',
-              timings: '$_id.timings',
-              _id: 0,
-            },
-          },
-          {
             $addFields: {
               timeToOrder: {
                 $divide: [
                   {
-                    $subtract: [
-                      '$timings.OrderPlacedDateTime',
-                      '$timings.MenuScannedDateTime',
-                    ],
+                    $subtract: ['$createdAt', '$menuQrCodeScannedTime'],
                   },
                   ONE_MINUTE,
                 ],
@@ -474,10 +400,7 @@ export class ReportService {
               fromOrderToKitchen: {
                 $divide: [
                   {
-                    $subtract: [
-                      '$timings.SentToKitchenDateTime',
-                      '$timings.OrderPlacedDateTime',
-                    ],
+                    $subtract: ['$sentToKitchenTime', '$createdAt'],
                   },
                   ONE_MINUTE,
                 ],
@@ -485,10 +408,7 @@ export class ReportService {
               fromKitchenToOrderReady: {
                 $divide: [
                   {
-                    $subtract: [
-                      '$timings.OrderReadyDateTime',
-                      '$timings.SentToKitchenDateTime',
-                    ],
+                    $subtract: ['$orderReadyTime', '$sentToKitchenTime'],
                   },
                   ONE_MINUTE,
                 ],
@@ -496,7 +416,7 @@ export class ReportService {
               fromOrderReadyToClose: {
                 $divide: [
                   {
-                    $subtract: ['$updatedAt', '$timings.OrderReadyDateTime'],
+                    $subtract: ['$paymentTime', '$orderReadyTime'],
                   },
                   ONE_MINUTE,
                 ],
@@ -504,7 +424,7 @@ export class ReportService {
               fromScanToClose: {
                 $divide: [
                   {
-                    $subtract: ['$updatedAt', '$timings.MenuScannedDateTime'],
+                    $subtract: ['$paymentTime', '$menuQrCodeScannedTime'],
                   },
                   ONE_MINUTE,
                 ],
@@ -512,11 +432,29 @@ export class ReportService {
               fromOrderToClose: {
                 $divide: [
                   {
-                    $subtract: ['$updatedAt', '$timings.OrderPlacedDateTime'],
+                    $subtract: ['$paymentTime', '$createdAt'],
                   },
                   ONE_MINUTE,
                 ],
               },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              restaurantName: '$restaurant.name',
+              restaurantNameAr: '$restaurant.nameAr',
+              status: 1,
+              createdAt: 1,
+              orderId: '$_id',
+              tableName: '$tables.name',
+              tableNameAr: '$tables.nameAr',
+              timeToOrder: 1,
+              fromOrderToKitchen: 1,
+              fromKitchenToOrderReady: 1,
+              fromOrderReadyToClose: 1,
+              fromScanToClose: 1,
+              fromOrderToClose: 1,
             },
           },
         ],
@@ -530,7 +468,7 @@ export class ReportService {
       },
     );
 
-    let summary;
+    let summary = [];
     if (!isExport) {
       summary = await this.populateOrderLifeCycleSummary(req);
     }
@@ -547,99 +485,54 @@ export class ReportService {
           },
         },
         {
-          $lookup: {
-            from: 'activities',
-            let: {
-              id: '$_id',
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$dataId', '$$id'],
-                  },
-                },
-              },
-              {
-                $project: {
-                  _id: 0,
-                  MenuScannedDateTime: {
-                    $cond: {
-                      if: { $eq: ['MenuScanned', '$data.activityType'] },
-                      then: '$data.date',
-                      else: '$$REMOVE',
-                    },
-                  },
-                  OrderPlacedDateTime: {
-                    $cond: {
-                      if: { $eq: ['OrderPlaced', '$data.activityType'] },
-                      then: '$data.date',
-                      else: '$$REMOVE',
-                    },
-                  },
-                  SentToKitchenDateTime: {
-                    $cond: {
-                      if: { $eq: ['SentToKitchen', '$data.activityType'] },
-                      then: '$data.date',
-                      else: '$$REMOVE',
-                    },
-                  },
-                  OrderReadyDateTime: {
-                    $cond: {
-                      if: { $eq: ['OrderReady', '$data.activityType'] },
-                      then: '$data.date',
-                      else: '$$REMOVE',
-                    },
-                  },
-                },
-              },
-            ],
-            as: 'orderStatusChangeTimings',
-          },
-        },
-        {
-          $group: {
-            _id: {
-              orderId: '$_id',
-              timings: { $mergeObjects: '$orderStatusChangeTimings' },
-            },
-          },
-        },
-        {
-          $project: {
-            orderId: '$_id.orderId',
-            timings: '$_id.timings',
-            _id: 0,
-          },
-        },
-        {
           $addFields: {
             timeToOrder: {
-              $subtract: [
-                '$timings.OrderPlacedDateTime',
-                '$timings.MenuScannedDateTime',
+              $divide: [
+                {
+                  $subtract: ['$createdAt', '$menuQrCodeScannedTime'],
+                },
+                ONE_MINUTE,
               ],
             },
             fromOrderToKitchen: {
-              $subtract: [
-                '$timings.SentToKitchenDateTime',
-                '$timings.OrderPlacedDateTime',
+              $divide: [
+                {
+                  $subtract: ['$sentToKitchenTime', '$createdAt'],
+                },
+                ONE_MINUTE,
               ],
             },
             fromKitchenToOrderReady: {
-              $subtract: [
-                '$timings.OrderReadyDateTime',
-                '$timings.SentToKitchenDateTime',
+              $divide: [
+                {
+                  $subtract: ['$orderReadyTime', '$sentToKitchenTime'],
+                },
+                ONE_MINUTE,
               ],
             },
             fromOrderReadyToClose: {
-              $subtract: ['$updatedAt', '$timings.OrderReadyDateTime'],
+              $divide: [
+                {
+                  $subtract: ['$paymentTime', '$orderReadyTime'],
+                },
+                ONE_MINUTE,
+              ],
             },
             fromScanToClose: {
-              $subtract: ['$updatedAt', '$timings.MenuScannedDateTime'],
+              $divide: [
+                {
+                  $subtract: ['$paymentTime', '$menuQrCodeScannedTime'],
+                },
+                ONE_MINUTE,
+              ],
             },
             fromOrderToClose: {
-              $subtract: ['$updatedAt', '$timings.OrderPlacedDateTime'],
+              $divide: [
+                {
+                  $subtract: ['$paymentTime', '$createdAt'],
+                },
+                ONE_MINUTE,
+              ],
             },
           },
         },
@@ -771,7 +664,7 @@ export class ReportService {
       },
     );
 
-    let summary;
+    let summary = [];
     if (!isExport) {
       summary = await this.reservationModel.aggregate([
         // {
@@ -848,9 +741,35 @@ export class ReportService {
             },
           },
           {
+            $lookup: {
+              from: 'kitchenqueues',
+              localField: 'kitchenQueueId',
+              foreignField: '_id',
+              as: 'kitchenqueue',
+            },
+          },
+          {
+            $addFields: {
+              kitchenqueue: { $first: '$kitchenqueue' },
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'kitchenqueue.userId',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+          {
+            $addFields: {
+              user: { $first: '$user' },
+            },
+          },
+          {
             $project: {
               _id: 0,
-              chef: 'pending',
+              chef: '$user.name',
               status: '$status',
               createdAt: '$createdAt',
               orderType: '$orderType',
@@ -890,7 +809,7 @@ export class ReportService {
       },
     );
 
-    let summary;
+    let summary = [];
     if (!isExport) {
       summary = await this.populateOrderKitchenSummary(req, query);
     }
@@ -974,84 +893,200 @@ export class ReportService {
     return new StreamableFile(file);
   }
 
-  // async populateOrderPaymentReport(
-  //   req: any,
-  //   query: ReportOrderKitchenDto,
-  //   paginateOptions: PaginationDto,
-  //   isExport: boolean = false,
-  // ): Promise<[AggregatePaginateResult<OrderDocument>, any]> {
-  //   query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
+  async populatePaymentRefundReport(
+    req: any,
+    paginateOptions: PaginationDto,
+  ): Promise<AggregatePaginateResult<TransactionDocument>> {
+    const transactions = await this.transactionModelAggPag.aggregatePaginate(
+      this.orderModel.aggregate(
+        [
+          {
+            $match: {
+              supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+              isRefund: true,
+            },
+          },
+          {
+            $lookup: {
+              from: 'orders',
+              localField: 'orderId',
+              foreignField: '_id',
+              as: 'order',
+            },
+          },
+          {
+            $addFields: {
+              order: { $first: '$order' },
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'addedBy',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+          {
+            $addFields: {
+              user: { $first: '$user' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              cashierName: '$user.name',
+              orderId: '$order._id',
+              amount: 1,
+              paymentMethod: {
+                $cond: {
+                  if: {
+                    $eq: ['$paymentMethod', PaymentType.Cash],
+                  },
+                  then: PaymentType.Cash,
+                  else: '$pgResponse.cardType',
+                },
+              },
+              status: 1,
+              createdAt: 1,
+            },
+          },
+        ],
+        { allowDiskUse: true },
+      ),
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+    return transactions;
+  }
 
-  //   if (query.startDate && query.endDate) {
-  //     const condition = {
-  //       $and: [
-  //         { createdAt: { $gte: query.startDate } },
-  //         { createdAt: { $lte: query.endDate } },
-  //       ],
-  //     };
+  async exportPaymentRefundReport(
+    req: any,
+    paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    const transactions = await this.populatePaymentRefundReport(
+      req,
+      paginateOptions,
+    );
+    const transactionData = transactions.docs;
 
-  //     delete query.startDate;
-  //     delete query.endDate;
-  //     query = { ...query, ...condition };
-  //   }
+    if (
+      !(await createXlsxFileFromJson(
+        transactionData,
+        REPORT_HEADER.PAYMENT_REFUND,
+      ))
+    )
+      throw new NotFoundException();
 
-  //   const orders = await this.orderModelAggPag.aggregatePaginate(
-  //     this.orderModel.aggregate(
-  //       [
-  //         {
-  //           $match: {
-  //             supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
-  //             ...query,
-  //           },
-  //         },
-  //         {
-  //           $project: {
-  //             _id: 0,
-  //             chef: 'pending',
-  //             status: '$status',
-  //             createdAt: '$createdAt',
-  //             orderType: '$orderType',
-  //             orderId: '$_id',
-  //             timeToStartPrepare: {
-  //               $divide: [
-  //                 {
-  //                   $subtract: [
-  //                     '$preparationDetails.actualStartTime',
-  //                     '$sentToKitchenTime',
-  //                   ],
-  //                 },
-  //                 ONE_MINUTE,
-  //               ],
-  //             },
-  //             timeFromPrepareToReady: {
-  //               $divide: [
-  //                 {
-  //                   $subtract: [
-  //                     '$preparationDetails.actualEndTime',
-  //                     '$preparationDetails.actualStartTime',
-  //                   ],
-  //                 },
-  //                 ONE_MINUTE,
-  //               ],
-  //             },
-  //           },
-  //         },
-  //       ],
-  //       { allowDiskUse: true },
-  //     ),
-  //     {
-  //       sort: DefaultSort,
-  //       lean: true,
-  //       ...paginateOptions,
-  //       ...pagination,
-  //     },
-  //   );
+    const file = createReadStream(DefaultPath);
+    return new StreamableFile(file);
+  }
 
-  //   let summary;
-  //   if (!isExport) {
-  //     summary = await this.populateOrderKitchenSummary(req, query);
-  //   }
+  async populatePaymentReport(
+    req: any,
+    query: ReportPaymentDto,
+    paginateOptions: PaginationDto,
+    isExport: boolean = false,
+  ): Promise<[AggregatePaginateResult<TransactionDocument>, any]> {
+    if (query.cashierId) {
+      query.cashierId = new mongoose.Types.ObjectId(query.cashierId);
+    }
 
-  //   return [orders, summary];
-  // }
+    if (query.startDate && query.endDate) {
+      const condition = {
+        $and: [
+          { createdAt: { $gte: query.startDate } },
+          { createdAt: { $lte: query.endDate } },
+        ],
+      };
+
+      delete query.startDate;
+      delete query.endDate;
+      query = { ...query, ...condition };
+    }
+
+    const transactions = await this.transactionModelAggPag.aggregatePaginate(
+      this.orderModel.aggregate(
+        [
+          {
+            $match: {
+              supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+              isRefund: false,
+              ...query,
+            },
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'addedBy',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+          {
+            $addFields: {
+              user: { $first: '$user' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              cashierName: '$user.name',
+              transferNumber: '$_id',
+              amount: 1,
+              paymentMethod: {
+                $cond: {
+                  if: {
+                    $eq: ['$paymentMethod', PaymentType.Cash],
+                  },
+                  then: PaymentType.Cash,
+                  else: '$pgResponse.cardType',
+                },
+              },
+              status: 1,
+              createdAt: 1,
+            },
+          },
+        ],
+        { allowDiskUse: true },
+      ),
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+
+    let summary = [];
+    if (!isExport) {
+      // summary = await this.populateOrderKitchenSummary(req, query);
+    }
+
+    return [transactions, summary];
+  }
+
+  async exportPaymentReport(
+    req: any,
+    query: ReportPaymentDto,
+    paginateOptions: PaginationDto,
+  ): Promise<StreamableFile> {
+    const transactions = await this.populatePaymentReport(
+      req,
+      query,
+      paginateOptions,
+      true,
+    );
+    const transactionData = transactions[0].docs;
+
+    if (!(await createXlsxFileFromJson(transactionData, REPORT_HEADER.PAYMENT)))
+      throw new NotFoundException();
+
+    const file = createReadStream(DefaultPath);
+    return new StreamableFile(file);
+  }
 }

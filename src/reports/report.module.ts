@@ -5,6 +5,10 @@ import {
   Reservation,
   ReservationSchema,
 } from 'src/reservation/schemas/reservation.schema';
+import {
+  Transaction,
+  TransactionSchema,
+} from 'src/transaction/schemas/transactions.schema';
 import { ReportController } from './report.controller';
 import { ReportService } from './report.service';
 
@@ -13,6 +17,7 @@ import { ReportService } from './report.service';
     MongooseModule.forFeature([
       { name: Order.name, schema: OrderSchema },
       { name: Reservation.name, schema: ReservationSchema },
+      { name: Transaction.name, schema: TransactionSchema },
     ]),
   ],
   controllers: [ReportController],

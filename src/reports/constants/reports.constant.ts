@@ -58,6 +58,22 @@ export const REPORT_HEADER = {
     'timeToStartPrepare',
     'timeFromPrepareToReady',
   ],
+  PAYMENT_REFUND: [
+    'cashierName',
+    'orderId',
+    'amount',
+    'paymentMethod',
+    'status',
+    'createdAt',
+  ],
+  PAYMENT: [
+    'cashierName',
+    'transferNumber',
+    'amount',
+    'paymentMethod',
+    'status',
+    'createdAt',
+  ],
 };
 
 export const ONE_MINUTE = 60000;
