@@ -22,7 +22,7 @@ export class WsJwtGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient<Socket>();
-    console.log(client);
+
     try {
       const authTokenArr = client.handshake?.headers?.authorization?.split(' ');
       console.log(authTokenArr);
