@@ -150,50 +150,50 @@ export class AddSupplierDto {
   @IsOptional()
   taxEnabledOnReservationFee: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isMenuBrowsingEnabled: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isAppOrderEnabled: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isDeliveryEnabled: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isPickupOrderEnabled: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isScheduledOrderEnabled: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isReservationEnabled: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isWaitingEnabled: boolean;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   isDeliveryToCarEnabled: boolean;
 
-  @ApiProperty({ type: DefaultWorkingHoursDTO })
+  @ApiProperty({ type: DefaultWorkingHoursDTO, required: false })
   @ValidateNested({ each: true })
   @Type(() => DefaultWorkingHoursDTO)
-  @IsNotEmpty()
+  @IsOptional()
   defaultWorkingHours: DefaultWorkingHoursDTO;
 
   @ApiProperty({ type: [IndividualWorkHoursDTO], required: false })

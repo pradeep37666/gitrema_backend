@@ -417,6 +417,9 @@ export enum RoleSlug {
   Customer = 'Customer',
   SupplierAdmin = 'Supplier Admin',
   SuperAdmin = 'Super Admin',
+  Cashier = 'Cashier',
+  Waiter = 'Waiter',
+  Chef = 'Chef',
 }
 
 export enum CustomEvent {
