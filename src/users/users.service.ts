@@ -37,9 +37,14 @@ export class UserService {
       if (!role) throw new NotFoundException(`Role not found`);
 
       if (
-        req.user.supplierId &&
-        (req.user.supplierId != role.supplierId ||
-          ![RoleSlug.SupplierAdmin].includes(role.slug))
+        req?.user?.supplierId &&
+        req?.user?.supplierId.toString() != role.supplierId.toString() &&
+        ![
+          RoleSlug.SupplierAdmin,
+          RoleSlug.Waiter,
+          RoleSlug.Cashier,
+          RoleSlug.Chef,
+        ].includes(role.slug)
       ) {
         throw new NotFoundException(`Invalid Role`);
       }

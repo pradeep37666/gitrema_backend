@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { Tax } from 'src/core/Constants/tax-rate.constant';
 import {
   IndividualWorkingHours,
   IndividualWorkingHoursSchema,
@@ -77,19 +78,19 @@ export class Supplier {
   @Prop({ default: null })
   idDoc: string;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   taxEnabled: boolean;
 
-  @Prop({ default: 0 })
+  @Prop({ default: Tax.rate })
   taxRate: number;
 
   @Prop({ default: 0 })
   reservationFee: number;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   taxEnabledOnReservationFee: boolean;
 
-  @Prop({ default: false })
+  @Prop({ default: true })
   taxEnabledOnTableFee: boolean;
 
   @Prop({ default: true })
@@ -116,7 +117,7 @@ export class Supplier {
   @Prop({ default: true })
   isWaitingEnabled: boolean;
 
-  @Prop({ required: true, type: Object })
+  @Prop({ default: { start: '08:00', end: '22:00' }, type: Object })
   defaultWorkingHours: {
     start: string;
     end: string;

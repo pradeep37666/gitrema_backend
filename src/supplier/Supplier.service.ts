@@ -283,7 +283,7 @@ export class SupplierService {
       packageId: packageObj._id,
       ...packageObjToApply,
       ...dates,
-      addedBy: req ? req.user.userId : null,
+      addedBy: req ? req?.user?.userId : null,
     });
     if (supplierPackage) {
       await this.supplierPackagemodel.findOneAndUpdate(
