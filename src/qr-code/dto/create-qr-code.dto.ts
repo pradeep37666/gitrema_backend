@@ -16,10 +16,11 @@ export class CreateQrCodeDto {
   @IsNotEmpty()
   type: QrCodeType;
 
-  @ApiProperty({ type: String })
-  @IsMongoId()
+  @ApiProperty({ type: Array<String> })
+  @IsMongoId({ each: true })
+  @IsArray()
   @IsOptional()
-  dataId: string;
+  dataIds: string[];
 
   @ApiProperty()
   @IsNotEmpty()

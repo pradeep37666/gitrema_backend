@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import mongoose, { Model, PaginateModel, PaginateResult } from 'mongoose';
 
 import {
   DefaultSort,
@@ -32,20 +32,28 @@ export class QrCodeService {
     private readonly s3Service: S3Service,
   ) {}
 
-  async create(req: any, dto: CreateQrCodeDto): Promise<QrCodeDocument> {
-    return await this.qrCodeModel.findOneAndUpdate(
-      {
-        supplierId: req.user.supplierId,
-        type: dto.type,
-        dataId: dto.dataId,
-      },
-      {
-        ...dto,
-        supplierId: req.user.supplierId,
-        addedBy: req.user.userId,
-        url: await this.generateAndStoreQrCode(dto.type, dto.dataId),
-      },
-      { upsert: true, setDefaultsOnInsert: true },
+  async create(req: any, dto: CreateQrCodeDto): Promise<any> {
+    if (dto.dataIds && dto.dataIds.length < 1) {
+      throw new BadRequestException(`dataIds should have atleast one id.`);
+    }
+
+    return await Promise.all(
+      dto.dataIds.map(async (dataId) => {
+        return await this.qrCodeModel.findOneAndUpdate(
+          {
+            supplierId: req.user.supplierId,
+            type: dto.type,
+            dataId: dataId,
+          },
+          {
+            ...dto,
+            supplierId: req.user.supplierId,
+            addedBy: req.user.userId,
+            url: await this.generateAndStoreQrCode(dto.type, dataId),
+          },
+          { upsert: true, setDefaultsOnInsert: true, new: true },
+        );
+      }),
     );
   }
 
@@ -80,6 +88,8 @@ export class QrCodeService {
     });
 
     const s3Url: any = await this.s3Service.uploadLocalFile(path, directory);
+
+    console.log(s3Url);
     if (s3Url.Location) return s3Url.Location;
 
     throw new BadRequestException(`Error Generating Qrcode`);
