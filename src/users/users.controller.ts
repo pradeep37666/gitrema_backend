@@ -15,7 +15,11 @@ import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { LeanDocument, PaginateResult } from 'mongoose';
 import { UserService } from './users.service';
-import { UserCreateDto, UserUpdateDto } from './users.dto';
+import {
+  ImpersonateSupplierDto,
+  UserCreateDto,
+  UserUpdateDto,
+} from './users.dto';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
@@ -70,5 +74,14 @@ export class UserController {
       return STATUS_MSG.SUCCESS.DELETED;
     }
     throw new InternalServerErrorException(STATUS_MSG.ERROR.SERVER_ERROR);
+  }
+
+  @Post('impersonate-supplier')
+  @PermissionGuard(PermissionSubject.User, Permission.User.ImpersonateSupplier)
+  impersonateSupplier(
+    @Request() req,
+    @Body() supplierDetails: ImpersonateSupplierDto,
+  ): Promise<any> {
+    return this.userService.impersonateSupplier(req, supplierDetails);
   }
 }

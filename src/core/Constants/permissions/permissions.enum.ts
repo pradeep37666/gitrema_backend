@@ -70,3 +70,7 @@ export enum OrderPermissions {
   SentToKitchen = 'Sent To Kitchen',
   OnTable = 'On Table',
 }
+
+export enum UserPermission {
+  ImpersonateSupplier = 'Impersonate Supplier',
+}
