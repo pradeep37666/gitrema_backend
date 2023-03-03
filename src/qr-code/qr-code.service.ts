@@ -50,7 +50,6 @@ export class QrCodeService {
   }
 
   async generateAndStoreQrCode(type, dataId) {
-    console.log(type, dataId);
     let url = '',
       directory = '';
     if (type == QrCodeType.Table) {
