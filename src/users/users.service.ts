@@ -6,7 +6,7 @@ import {
 
 import { InjectModel } from '@nestjs/mongoose';
 import { LeanDocument, Model, PaginateModel, PaginateResult } from 'mongoose';
-import { UserUpdateDto } from './users.dto';
+import { ImpersonateSupplierDto, UserUpdateDto } from './users.dto';
 
 import { User, UserDocument } from './schemas/users.schema';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
@@ -18,6 +18,7 @@ import {
 } from 'src/core/Constants/pagination';
 import { Role, RoleDocument } from 'src/role/schemas/roles.schema';
 import { RoleSlug } from 'src/core/Constants/enum';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
@@ -25,6 +26,7 @@ export class UserService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     @InjectModel(User.name) private userModelPag: PaginateModel<UserDocument>,
+    private jwtService: JwtService,
   ) {}
 
   async create(req: any, userRequest: any): Promise<UserDocument> {
@@ -166,5 +168,23 @@ export class UserService {
         $match: { 'role.slug': 'Admin' },
       },
     ]);
+  }
+
+  async impersonateSupplier(
+    req,
+    supplierDetails: ImpersonateSupplierDto,
+  ): Promise<any> {
+    const adminRole = await this.roleModel.findOne({
+      slug: RoleSlug.SupplierAdmin,
+    });
+    const payload = {
+      userId: req.user._id,
+
+      roleId: adminRole._id,
+
+      supplierId: supplierDetails.supplierId,
+    };
+
+    return await this.jwtService.sign(payload);
   }
 }

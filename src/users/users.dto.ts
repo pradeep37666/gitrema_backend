@@ -77,3 +77,10 @@ export class UserUpdateDto extends PartialType(
   @IsBoolean()
   paused?: boolean;
 }
+
+export class ImpersonateSupplierDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsMongoId()
+  supplierId: string;
+}

@@ -166,8 +166,8 @@ export class CalculationService {
       preparationTime: 0,
       expectedStartTime: moment.utc().toDate(),
       expectedEndTime: moment.utc().toDate(),
-      actualStartTime: moment.utc().toDate(),
-      actualEndTime: moment.utc().toDate(),
+      // actualStartTime: moment.utc().toDate(),
+      // actualEndTime: moment.utc().toDate(),
       kitchenSortingNumber: 1,
     };
 
@@ -182,10 +182,10 @@ export class CalculationService {
     }
     // commenting the  schedule activities
     // if (isScheduled) {
-    //   preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
+    //   preparationDetails.expectedEndTime =
     //     moment.utc(scheduledDateTime).toDate();
     //   preparationDetails.expectedStartTime =
-    //     preparationDetails.actualStartTime = moment
+    //      moment
     //       .utc(scheduledDateTime)
     //       .add(-1 * preparationDetails.preparationTime, 'm')
     //       .toDate();
@@ -300,28 +300,28 @@ export class CalculationService {
       }
       console.log(lastOrder);
       if (lastOrder) {
-        preparationDetails.expectedStartTime =
-          preparationDetails.actualStartTime = moment
-            .utc(lastOrder.preparationDetails.expectedEndTime)
-            .toDate();
-        preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
-          moment
-            .utc(lastOrder.preparationDetails.expectedEndTime)
-            .add(preparationDetails.preparationTime, 'm')
-            .toDate();
+        preparationDetails.expectedStartTime = moment
+          .utc(lastOrder.preparationDetails.expectedEndTime)
+          .toDate();
+        preparationDetails.expectedEndTime = moment
+          .utc(lastOrder.preparationDetails.expectedEndTime)
+          .add(preparationDetails.preparationTime, 'm')
+          .toDate();
         preparationDetails.kitchenSortingNumber =
           lastOrder.preparationDetails.kitchenSortingNumber + 1;
       } else {
-        preparationDetails.expectedStartTime =
-          preparationDetails.actualStartTime = moment.utc().toDate();
-        preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
-          moment.utc().add(preparationDetails.preparationTime, 'm').toDate();
+        preparationDetails.expectedStartTime = moment.utc().toDate();
+        preparationDetails.expectedEndTime = moment
+          .utc()
+          .add(preparationDetails.preparationTime, 'm')
+          .toDate();
       }
     } else {
-      preparationDetails.expectedStartTime =
-        preparationDetails.actualStartTime = moment.utc().toDate();
-      preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
-        moment.utc().add(preparationDetails.preparationTime, 'm').toDate();
+      preparationDetails.expectedStartTime = moment.utc().toDate();
+      preparationDetails.expectedEndTime = moment
+        .utc()
+        .add(preparationDetails.preparationTime, 'm')
+        .toDate();
     }
     //}
     console.log('Setting Order Preparation ', preparationDetails);
@@ -359,13 +359,11 @@ export class CalculationService {
           lastOrder.preparationDetails.kitchenSortingNumber;
       }
       preparationDetails.preparationTime = preparationTime;
-      preparationDetails.expectedStartTime =
-        preparationDetails.actualStartTime = startTime;
-      preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
-        moment
-          .utc(startTime)
-          .add(preparationDetails.preparationTime, 'm')
-          .toDate();
+      preparationDetails.expectedStartTime = startTime;
+      preparationDetails.expectedEndTime = moment
+        .utc(startTime)
+        .add(preparationDetails.preparationTime, 'm')
+        .toDate();
       order.preparationDetails = preparationDetails;
       await order.save();
     }
@@ -552,13 +550,11 @@ export class CalculationService {
     kitchenSortingNumber,
   ) {
     const preparationDetails = orderData.preparationDetails;
-    preparationDetails.expectedStartTime = preparationDetails.actualStartTime =
-      moment.utc(startTime).toDate();
-    preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
-      moment
-        .utc(startTime)
-        .add(orderData.preparationDetails.preparationTime, 'm')
-        .toDate();
+    preparationDetails.expectedStartTime = moment.utc(startTime).toDate();
+    preparationDetails.expectedEndTime = moment
+      .utc(startTime)
+      .add(orderData.preparationDetails.preparationTime, 'm')
+      .toDate();
     preparationDetails.kitchenSortingNumber = kitchenSortingNumber + 1;
     console.log('Before Recalculate ', preparationDetails);
     // preparationDetails = await this.validateSlotAndReCalculateIfNeeded(
@@ -605,15 +601,13 @@ export class CalculationService {
     }
 
     if (lastOrder) {
-      preparationDetails.expectedStartTime =
-        preparationDetails.actualStartTime = moment
-          .utc(lastOrder.preparationDetails.expectedEndTime)
-          .toDate();
-      preparationDetails.expectedEndTime = preparationDetails.actualEndTime =
-        moment
-          .utc(lastOrder.preparationDetails.expectedEndTime)
-          .add(preparationDetails.preparationTime, 'm')
-          .toDate();
+      preparationDetails.expectedStartTime = moment
+        .utc(lastOrder.preparationDetails.expectedEndTime)
+        .toDate();
+      preparationDetails.expectedEndTime = moment
+        .utc(lastOrder.preparationDetails.expectedEndTime)
+        .add(preparationDetails.preparationTime, 'm')
+        .toDate();
       preparationDetails.kitchenSortingNumber =
         lastOrder.preparationDetails.kitchenSortingNumber + 1;
     }

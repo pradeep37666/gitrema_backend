@@ -412,9 +412,11 @@ export class OrderService {
     let actualDateObj: any = {};
     if (dto.preparationStatus == PreparationStatus.StartedPreparing) {
       actualDateObj = {
-        'preparationDetails.actualStartTime': new Date(),
         status: PreparationStatus.StartedPreparing,
       };
+      if (!order.preparationDetails.actualStartTime) {
+        actualDateObj['preparationDetails.actualStartTime'] = new Date();
+      }
     }
     const dataToSet = {
       $set: {

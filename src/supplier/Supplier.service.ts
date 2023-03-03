@@ -125,6 +125,30 @@ export class SupplierService {
         },
         {
           $lookup: {
+            from: 'supplierpackages',
+            let: {
+              id: '$_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$supplierId', '$$id'],
+                  },
+                  active: true,
+                },
+              },
+            ],
+            as: 'package',
+          },
+        },
+        {
+          $addFields: {
+            package: { $first: '$package' },
+          },
+        },
+        {
+          $lookup: {
             from: 'restaurants',
             let: {
               id: '$_id',

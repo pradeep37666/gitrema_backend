@@ -226,8 +226,8 @@ export class Order {
     preparationTime: number;
     expectedStartTime: Date;
     expectedEndTime: Date;
-    actualStartTime: Date;
-    actualEndTime: Date;
+    actualStartTime?: Date;
+    actualEndTime?: Date;
     kitchenSortingNumber: number;
   };
 
