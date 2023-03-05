@@ -32,11 +32,20 @@ export class KitchenQueueService {
     req: any,
     dto: CreateKitchenQueueDto,
   ): Promise<KitchenQueueDocument> {
-    const kitchenQueue = await this.kitchenQueueModel.create({
-      ...dto,
-      addedBy: req.user.userId,
-      supplierId: req.user.supplierId,
-    });
+    const kitchenQueue = await this.kitchenQueueModel.findOneAndUpdate(
+      { restaurantId: dto.restaurantId },
+      {
+        ...dto,
+        addedBy: req.user.userId,
+        supplierId: req.user.supplierId,
+      },
+      {
+        upsert: true,
+        setDefaultsOnInsert: true,
+        sort: { _id: -1 },
+        new: true,
+      },
+    );
     if (kitchenQueue) {
       this.userModel.findByIdAndUpdate(
         { _id: dto.userId },
