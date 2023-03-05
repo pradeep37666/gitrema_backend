@@ -29,6 +29,10 @@ import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
+import {
+  KitchenQueue,
+  KitchenQueueDocument,
+} from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 
 @Injectable()
 export class OrderService {
@@ -41,6 +45,8 @@ export class OrderService {
     private readonly supplierModel: Model<SupplierDocument>,
     @InjectModel(Table.name)
     private readonly tableModel: Model<TableDocument>,
+    @InjectModel(KitchenQueue.name)
+    private readonly kitchenQueueModel: Model<KitchenQueueDocument>,
     @Inject(forwardRef(() => OrderHelperService))
     private readonly orderHelperService: OrderHelperService,
     @Inject(forwardRef(() => CalculationService))
@@ -94,6 +100,18 @@ export class OrderService {
     orderData.summary = await this.calculationService.calculateSummery(
       orderData,
     );
+
+    // check for kitchen queue
+    if (!orderData.kitchenQueueId) {
+      const kitchenQueue = await this.kitchenQueueModel.findOne(
+        {
+          restaurantId: orderData.restaurantId,
+        },
+        {},
+        { sort: { _id: -1 } },
+      );
+      if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
+    }
 
     if (orderData.scheduledDateTime == null) {
       delete orderData.scheduledDateTime;

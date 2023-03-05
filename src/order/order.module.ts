@@ -20,6 +20,10 @@ import { Activity, ActivitySchema } from 'src/activity/schemas/activity.schema';
 import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
 import { Cart, CartSchema } from './schemas/cart.schema';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
+import {
+  KitchenQueue,
+  KitchenQueueSchema,
+} from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 
 @Module({
   imports: [
@@ -33,6 +37,7 @@ import { SocketIoModule } from 'src/socket-io/socket-io.module';
       { name: Activity.name, schema: ActivitySchema },
       { name: TableLog.name, schema: TableLogSchema },
       { name: Cart.name, schema: CartSchema },
+      { name: KitchenQueue.name, schema: KitchenQueueSchema },
     ]),
     SocketIoModule,
   ],
