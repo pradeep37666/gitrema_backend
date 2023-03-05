@@ -137,6 +137,7 @@ export class TransactionService {
         }
         order.set(dataToUpdate);
         await order.save();
+        this.orderHelperService.postOrderUpdate(order, dataToUpdate);
 
         // update table log
         if (order.tableId) {
