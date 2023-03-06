@@ -1,5 +1,5 @@
 export const REPORT_HEADER = {
-  GENERAL: [
+  ORDER_GENERAL: [
     'id',
     'restaurantName',
     'restaurantNameAr',
@@ -17,4 +17,63 @@ export const REPORT_HEADER = {
     'customerEmail',
     'customerPhoneNumber',
   ],
+  ORDER_USER: [
+    'restaurantName',
+    'restaurantNameAr',
+    'customerName',
+    'customerPhoneNumber',
+    'orderType',
+    'visitCount',
+    'lastVisitDate',
+  ],
+  ORDER_LIVE_CYCLE: [
+    'restaurantName',
+    'restaurantNameAr',
+    'status',
+    'createdAt',
+    'updatedAt',
+    'orderId',
+    'timeToOrder',
+    'fromOrderToKitchen',
+    'fromKitchenToOrderReady',
+    'fromOrderReadyToClose',
+    'fromScanToClose',
+    'fromOrderToClose',
+  ],
+  RESERVATIONS: [
+    'restaurantName',
+    'restaurantNameAr',
+    'customerName',
+    'customerPhoneNumber',
+    'isCancelled',
+    'totalMembers',
+    'date',
+  ],
+  ORDER_KITCHEN: [
+    'chef',
+    'status',
+    'createdAt',
+    'orderType',
+    'orderId',
+    'timeToStartPrepare',
+    'timeFromPrepareToReady',
+  ],
+  PAYMENT_REFUND: [
+    'cashierName',
+    'orderId',
+    'amount',
+    'paymentMethod',
+    'status',
+    'createdAt',
+  ],
+  PAYMENT: [
+    'cashierName',
+    'transferNumber',
+    'amount',
+    'paymentMethod',
+    'status',
+    'createdAt',
+  ],
 };
+
+export const ONE_MINUTE = 60000;

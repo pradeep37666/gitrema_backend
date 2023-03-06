@@ -5,6 +5,7 @@ import { ListDocument } from 'src/list/schemas/list.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export type ReservationDocument = Reservation & Document;
 
@@ -64,3 +65,4 @@ export class Reservation {
 }
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);
 ReservationSchema.plugin(paginate);
+ReservationSchema.plugin(mongooseAggregatePaginate);
