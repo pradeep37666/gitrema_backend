@@ -4,6 +4,7 @@ import * as paginate from 'mongoose-paginate-v2';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+import { ImportDocument } from 'src/import/schemas/import.schema';
 
 export type RestaurantDocument = Restaurant & Document;
 
@@ -128,6 +129,13 @@ export class Restaurant {
     ref: 'User',
   })
   addedBy: UserDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Import',
+    default: null,
+  })
+  importId: ImportDocument;
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
