@@ -37,8 +37,8 @@ export const importFilter = (
   file: Express.Multer.File,
   callback,
 ) => {
-  if (!file.originalname.match(/\.(csv|xlsx|xls)$/)) {
-    callback(new BadRequestException(`Excel or Csv are only allowed`), false);
+  if (!file.originalname.match(/\.(xlsx|xls)$/)) {
+    callback(new BadRequestException(`Only xlsx and xls are allowed`), false);
   }
   callback(null, true);
 };

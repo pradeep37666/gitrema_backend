@@ -29,6 +29,7 @@ export enum PermissionSubject {
   ScreenDisplay = 'Screen Display',
   Feature = 'Feature',
   Package = 'Package',
+  Import = 'Import',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',

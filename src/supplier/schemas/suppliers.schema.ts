@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 import { Tax } from 'src/core/Constants/tax-rate.constant';
+import { ImportDocument } from 'src/import/schemas/import.schema';
 import {
   IndividualWorkingHours,
   IndividualWorkingHoursSchema,
@@ -137,6 +138,13 @@ export class Supplier {
 
   @Prop({ default: true })
   active: boolean;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Import',
+    default: null,
+  })
+  importId: ImportDocument;
 }
 
 export const SupplierSchema = SchemaFactory.createForClass(Supplier);
