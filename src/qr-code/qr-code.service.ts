@@ -72,7 +72,7 @@ export class QrCodeService {
       const domain = table.supplierId.domain.endsWith('/')
         ? table.supplierId.domain.slice(0, -1)
         : table.supplierId.domain;
-      url = domain + '/' + table.restaurantId + '/' + table._id;
+      url = domain + '/' + table._id + '/' + table.restaurantId;
       directory = table.supplierId._id + '/' + table.restaurantId + '/qrcodes/';
     }
     const pattern = /^((http|https):\/\/)/;
