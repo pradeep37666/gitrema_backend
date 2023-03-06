@@ -7,6 +7,7 @@ import { OrderDocument } from 'src/order/schemas/order.schema';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export type TransactionDocument = Transaction & Document;
 
@@ -133,3 +134,4 @@ export class Transaction {
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 TransactionSchema.plugin(paginate);
+TransactionSchema.plugin(mongooseAggregatePaginate);
