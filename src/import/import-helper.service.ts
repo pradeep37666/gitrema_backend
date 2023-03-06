@@ -72,11 +72,12 @@ export class ImportHelperService {
         });
 
         const userCreateReq: any = {
-          email: row[fields['email']],
+          email: row['email'],
           password: defaultPassword,
           supplierId: supplier._id,
           role: adminRole?._id,
         };
+        console.log(userCreateReq);
         await this.userService.create(null, userCreateReq);
         worksheet.getRow(i).getCell(supplierOutputTemplate.dataId).value =
           supplier._id.toString();
