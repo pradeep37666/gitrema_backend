@@ -184,13 +184,15 @@ export class CashierLogService {
     );
   }
 
-  async autoStartCashier(cashier: CashierDocument) {
-    await this.cashierLogModel.create({
+  async autoStartCashier(req, cashier: CashierDocument) {
+    const cashierLog = await this.cashierLogModel.create({
       cashierId: cashier._id,
       openingBalance: 0,
       currentBalance: 0,
       startedAt: new Date(),
       supplierId: cashier.supplierId,
+      userId: req ? req.user.userId : null,
     });
+    this.cashierService.update(cashier._id, { currentLog: cashierLog._id });
   }
 }
