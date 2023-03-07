@@ -27,6 +27,8 @@ import { capitalize } from 'src/core/Helpers/universal.helper';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
 
 import { CashierLogService } from 'src/cashier/cashier-log.service';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 
 @Injectable()
 export class TransactionService {
@@ -116,7 +118,7 @@ export class TransactionService {
       // log the transaction in cashier
       this.cashierLogService.storeCurrentBalance(
         transaction.cashierId,
-        transaction.isRefund ? -1 * transaction.amount : transaction.amount,
+        transaction,
       );
 
       const result = await this.transactionModel.aggregate([

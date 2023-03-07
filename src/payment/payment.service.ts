@@ -161,11 +161,7 @@ export class PaymentService {
     }
 
     this.transactionService.postTransactionProcess(req, transaction);
-    // this.socketGateway.emit(
-    //   transaction.supplierId.toString(),
-    //   SocketEvents.Cashier,
-    //   { cashierId: paymentRequestDetails.cashierId, refresh: true },
-    // );
+
     return true;
   }
 
