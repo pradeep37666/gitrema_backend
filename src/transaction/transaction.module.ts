@@ -7,6 +7,7 @@ import { Transaction, TransactionSchema } from './schemas/transactions.schema';
 import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 import { OrderModule } from 'src/order/order.module';
 import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
+import { CashierModule } from 'src/cashier/cashier.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
       { name: TableLog.name, schema: TableLogSchema },
     ]),
     OrderModule,
+    CashierModule,
   ],
   providers: [TransactionService],
   exports: [TransactionService],

@@ -32,7 +32,7 @@ export class CashierLog {
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',
     index: true,
-    required: true,
+    default: null,
   })
   userId: UserDocument;
 
@@ -44,6 +44,9 @@ export class CashierLog {
 
   @Prop({ required: true })
   openingBalance: number;
+
+  @Prop({ required: true })
+  currentBalance: number;
 
   @Prop({ default: null })
   closingBalance: number;
