@@ -93,6 +93,7 @@ export class AuthService {
       userId: user._id,
       supplierId: user.supplierId?._id,
       roleId: user.role._id,
+      cashierId: user.cashier,
     };
 
     return await this.generateAuthToken(payload);
@@ -124,6 +125,7 @@ export class AuthService {
           supplierId: user.supplierId,
           restaurantId: user.restaurantId,
           roleId: user.role._id,
+          cashierId: user.cashier,
         };
 
         return { user, accessToken: await this.generateAuthToken(payload) };
@@ -219,6 +221,7 @@ export class AuthService {
         userId: customer._id,
         roleId: customer.role,
         supplierId: verificationOtpDetails.supplierId,
+        isCustomer: true,
       };
       await customer.populate([
         {
