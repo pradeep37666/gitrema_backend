@@ -20,6 +20,8 @@ import {
   OverrideCloseCashierDto,
 } from './dto/cashier-log.dto';
 import { PauseDto } from './dto/pause.dto';
+import { CashierDocument } from './schemas/cashier.schema';
+import { CashierService } from './cashier.service';
 
 @Injectable()
 export class CashierLogService {
@@ -29,6 +31,8 @@ export class CashierLogService {
 
     @InjectModel(CashierLog.name)
     private readonly cashierLogModelPag: PaginateModel<CashierLogDocument>,
+
+    private readonly cashierService: CashierService,
   ) {}
 
   async current(cashierId: string): Promise<CashierLogDocument> {
@@ -65,8 +69,14 @@ export class CashierLogService {
   }
 
   async start(req: any, dto: OpenCashierDto): Promise<CashierLogDocument> {
-    const cashierLog = await this.cashierLogModel.findOne(
-      { cashierId: dto.cashierId },
+    let cashierId = null;
+    if (req.user.cashierId) cashierId = req.user.cashierId;
+    if (dto.cashierId) cashierId = dto.cashierId;
+
+    if (!cashierId) throw new BadRequestException(`Cashier is not available`);
+    console.log(cashierId);
+    let cashierLog = await this.cashierLogModel.findOne(
+      { cashierId },
       {},
       { sort: { _id: -1 } },
     );
@@ -74,19 +84,29 @@ export class CashierLogService {
     if (cashierLog && !cashierLog.closedAt) {
       throw new BadRequestException('Previous instance is not closed yet');
     }
-    return await this.cashierLogModel.create({
+    cashierLog = await this.cashierLogModel.create({
       ...dto,
+      cashierId,
+      currentBalance: dto.openingBalance,
       startedAt: new Date(),
       supplierId: req.user.supplierId,
+      userId: req.user.userId,
     });
+    this.cashierService.update(cashierId, { currentLog: cashierLog._id });
+    return cashierLog;
   }
 
   async close(
     req: any,
     dto: CloseCashierDto | OverrideCloseCashierDto,
   ): Promise<CashierLogDocument> {
+    let cashierId = null;
+    if (req.user.cashierId) cashierId = req.user.cashierId;
+    if (dto.cashierId) cashierId = dto.cashierId;
+
+    if (!cashierId) throw new BadRequestException(`Cashier is not available`);
     const cashierLog = await this.cashierLogModel.findOne(
-      { cashierId: dto.cashierId },
+      { cashierId },
       {},
       { sort: { _id: -1 } },
     );
@@ -94,9 +114,18 @@ export class CashierLogService {
     if (cashierLog && cashierLog.closedAt) {
       throw new BadRequestException('No instance open to close');
     }
+    const difference = dto.closingBalance - cashierLog.currentBalance;
     // validate balance
-    cashierLog.set({ ...dto, closedAt: new Date() });
+    if (!dto.overrideReason) {
+      if (cashierLog.currentBalance != dto.closingBalance)
+        throw new BadRequestException(
+          `Closing balance is not matching the current balance. Difference is ${difference}`,
+        );
+    }
+
+    cashierLog.set({ ...dto, closedAt: new Date(), difference });
     await cashierLog.save();
+    this.cashierService.update(cashierId, { currentLog: null });
     return cashierLog;
   }
 
@@ -134,5 +163,34 @@ export class CashierLogService {
     await cashierLog.save();
 
     return cashierLog;
+  }
+
+  async logTransactionAsync(
+    cashierId: string,
+    transactionId: string,
+  ): Promise<void> {
+    const activeShift = await this.current(cashierId);
+    await this.cashierLogModel.findOneAndUpdate(
+      { _id: activeShift._id },
+      { $push: { transactions: transactionId } },
+    );
+  }
+
+  async storeCurrentBalance(cashierId, amount: number) {
+    const activeShift = await this.current(cashierId);
+    await this.cashierLogModel.findOneAndUpdate(
+      { _id: activeShift._id },
+      { $inc: { currentBalance: amount } },
+    );
+  }
+
+  async autoStartCashier(cashier: CashierDocument) {
+    await this.cashierLogModel.create({
+      cashierId: cashier._id,
+      openingBalance: 0,
+      currentBalance: 0,
+      startedAt: new Date(),
+      supplierId: cashier.supplierId,
+    });
   }
 }

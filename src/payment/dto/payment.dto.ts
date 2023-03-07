@@ -41,6 +41,11 @@ export class PaymentInitiateDto {
   orderId: string;
 
   @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  cashierId: string;
+
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsNumber()
   amount: number;

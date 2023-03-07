@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Cashier, CashierSchema } from './schemas/cashier.schema';
 import { CashierLog, CashierLogSchema } from './schemas/cashier-log.schema';
 import { CashierLogService } from './cashier-log.service';
+import { CashierHelperService } from './cashier-helper.service';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CashierLogService } from './cashier-log.service';
     ]),
   ],
   controllers: [CashierController],
-  providers: [CashierService, CashierLogService],
+  providers: [CashierService, CashierLogService, CashierHelperService],
+  exports: [CashierService, CashierLogService, CashierHelperService],
 })
 export class CashierModule {}

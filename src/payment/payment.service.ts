@@ -30,6 +30,8 @@ import {
 } from 'src/order/enum/en.enum';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
+import { CashierLogService } from 'src/cashier/cashier-log.service';
 
 @Injectable()
 export class PaymentService {
@@ -37,10 +39,13 @@ export class PaymentService {
     private arbPgService: ArbPgService,
     private transactionService: TransactionService,
     private orderService: OrderService,
+    private cashierLogService: CashierLogService,
     @InjectModel(Order.name)
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
+    @InjectModel(Cashier.name)
+    private readonly cashierModel: Model<CashierDocument>,
     private socketGateway: SocketIoGateway,
   ) {}
 
@@ -76,7 +81,21 @@ export class PaymentService {
           order.summary.totalWithTax - order.summary.totalPaid
         }`,
       );
-
+    let cashierId = req.user.cashierId;
+    if (paymentRequestDetails.cashierId)
+      cashierId = paymentRequestDetails.cashierId;
+    else if (req.user.isCustomer) {
+      const cashier = await this.cashierModel.findOne({
+        supplierId: order.supplierId,
+        default: true,
+      });
+      if (!cashier.currentLog)
+        await this.cashierLogService.autoStartCashier(cashier);
+      cashierId = cashier._id;
+    }
+    if (!cashierId) {
+      throw new BadRequestException(`Cashier is not available`);
+    }
     if (!paymentRequestDetails.transactionId) {
       transaction = await this.transactionService.create(req, {
         supplierId: order.supplierId,
@@ -91,6 +110,7 @@ export class PaymentService {
           paymentRequestDetails.paymentMethod == PaymentMethod.Online
             ? PaymentStatus.Pending
             : PaymentStatus.Success,
+        cashierId,
       });
 
       this.orderService.generalUpdate(req, paymentRequestDetails.orderId, {
@@ -113,6 +133,8 @@ export class PaymentService {
 
       await transaction.save();
     }
+    // save transaction to cashier
+    this.cashierLogService.logTransactionAsync(cashierId, transaction._id);
 
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Online) {
       const options: PaymentTokenDto = {
@@ -199,6 +221,7 @@ export class PaymentService {
     transactions = await this.transactionModel.find({
       orderId: order._id,
     });
+    // store transaction to order
     this.orderService.generalUpdate(req, order._id, {
       $push: {
         transactions: transactions.map((t) => {
@@ -206,6 +229,7 @@ export class PaymentService {
         }),
       },
     });
+
     return transactions;
   }
 }

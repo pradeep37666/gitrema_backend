@@ -8,6 +8,7 @@ import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 
 export type TransactionDocument = Transaction & Document;
 
@@ -78,7 +79,14 @@ export class Transaction {
     ref: 'Order',
     required: true,
   })
-  orderId?: OrderDocument;
+  orderId: OrderDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'Cashier',
+  })
+  cashierId: CashierDocument;
 
   @Prop({ required: true })
   amount: number;

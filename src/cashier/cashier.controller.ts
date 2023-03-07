@@ -122,4 +122,10 @@ export class CashierController {
   async remove(@Param('cashierId') cashierId: string) {
     return await this.cashierService.remove(cashierId);
   }
+
+  @Get(':cashierId/dashboard')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async findDashboard(@Param('cashierId') cashierId: string) {
+    return await this.cashierService.findDashboard(cashierId);
+  }
 }

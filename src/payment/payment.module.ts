@@ -11,17 +11,21 @@ import {
 } from 'src/transaction/schemas/transactions.schema';
 import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
+import { Cashier, CashierSchema } from 'src/cashier/schemas/cashier.schema';
+import { CashierModule } from 'src/cashier/cashier.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
       { name: Order.name, schema: OrderSchema },
+      { name: Cashier.name, schema: CashierSchema },
     ]),
     PaymentGatewayModule,
     TransactionModule,
     OrderModule,
     SocketIoModule,
+    CashierModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],

@@ -26,6 +26,8 @@ import {
 import { capitalize } from 'src/core/Helpers/universal.helper';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
 
+import { CashierLogService } from 'src/cashier/cashier-log.service';
+
 @Injectable()
 export class TransactionService {
   constructor(
@@ -38,6 +40,7 @@ export class TransactionService {
     @InjectModel(TableLog.name)
     private readonly tableLogModel: Model<TableLogDocument>,
     private orderHelperService: OrderHelperService,
+    private cashierLogService: CashierLogService,
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
@@ -109,6 +112,13 @@ export class TransactionService {
         OrderActivityType.PaymentReceived,
         new Date(),
       );
+
+      // log the transaction in cashier
+      this.cashierLogService.storeCurrentBalance(
+        transaction.cashierId,
+        transaction.isRefund ? -1 * transaction.amount : transaction.amount,
+      );
+
       const result = await this.transactionModel.aggregate([
         {
           $match: {

@@ -7,6 +7,7 @@ import {
 } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
+import { CashierLogDocument } from './cashier-log.schema';
 
 export type CashierDocument = Cashier & Document;
 
@@ -38,7 +39,17 @@ export class Cashier {
   paused: boolean;
 
   @Prop({ default: true })
+  default: boolean;
+
+  @Prop({ default: true })
   active: boolean;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'CashierLog',
+    index: true,
+  })
+  currentLog: CashierLogDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

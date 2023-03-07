@@ -11,15 +11,10 @@ import {
 import * as moment from 'moment';
 
 export class OpenCashierDto {
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   cashierId: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  userId: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -29,8 +24,8 @@ export class OpenCashierDto {
 }
 
 export class CloseCashierDto {
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   cashierId: string;
 
@@ -39,6 +34,8 @@ export class CloseCashierDto {
   @IsNumber()
   @Min(0)
   closingBalance: number;
+
+  overrideReason?: string;
 }
 
 export class OverrideCloseCashierDto extends CloseCashierDto {
