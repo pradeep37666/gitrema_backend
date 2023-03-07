@@ -82,19 +82,26 @@ export class PaymentService {
         }`,
       );
     let cashierId = req.user.cashierId;
+    let cashier = null;
     if (paymentRequestDetails.cashierId)
       cashierId = paymentRequestDetails.cashierId;
     else if (req.user.isCustomer) {
-      const cashier = await this.cashierModel.findOne({
+      cashier = await this.cashierModel.findOne({
         supplierId: order.supplierId,
         default: true,
       });
       if (!cashier.currentLog)
-        await this.cashierLogService.autoStartCashier(cashier);
+        await this.cashierLogService.autoStartCashier(null, cashier); // auto start cashier for customer
       cashierId = cashier._id;
     }
     if (!cashierId) {
       throw new BadRequestException(`Cashier is not available`);
+    }
+    if (!cashier) {
+      cashier = await this.cashierModel.findById(cashierId);
+      if (!cashier) throw new BadRequestException(`Cashier is not available`);
+      if (!cashier.currentLog)
+        await this.cashierLogService.autoStartCashier(req, cashier); // auto start cashier for staff member
     }
     if (!paymentRequestDetails.transactionId) {
       transaction = await this.transactionService.create(req, {
