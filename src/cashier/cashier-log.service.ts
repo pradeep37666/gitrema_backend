@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import { LeanDocument, Model, PaginateModel, PaginateResult } from 'mongoose';
 
 import {
   DefaultSort,
@@ -22,6 +22,9 @@ import {
 import { PauseDto } from './dto/pause.dto';
 import { CashierDocument } from './schemas/cashier.schema';
 import { CashierService } from './cashier.service';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 @Injectable()
 export class CashierLogService {
@@ -33,6 +36,7 @@ export class CashierLogService {
     private readonly cashierLogModelPag: PaginateModel<CashierLogDocument>,
 
     private readonly cashierService: CashierService,
+    private socketGateway: SocketIoGateway,
   ) {}
 
   async current(cashierId: string): Promise<CashierLogDocument> {
@@ -176,11 +180,26 @@ export class CashierLogService {
     );
   }
 
-  async storeCurrentBalance(cashierId, amount: number) {
+  async storeCurrentBalance(
+    cashierId,
+    transaction: LeanDocument<TransactionDocument>,
+  ) {
     const activeShift = await this.current(cashierId);
     await this.cashierLogModel.findOneAndUpdate(
       { _id: activeShift._id },
-      { $inc: { currentBalance: amount } },
+      {
+        $inc: {
+          currentBalance: transaction.isRefund
+            ? -1 * transaction.amount
+            : transaction.amount,
+        },
+      },
+    );
+
+    this.socketGateway.emit(
+      transaction.supplierId.toString(),
+      SocketEvents.Cashier,
+      { cashierId: transaction.cashierId, refresh: true },
     );
   }
 

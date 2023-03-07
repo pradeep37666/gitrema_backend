@@ -6,6 +6,7 @@ import { Cashier, CashierSchema } from './schemas/cashier.schema';
 import { CashierLog, CashierLogSchema } from './schemas/cashier-log.schema';
 import { CashierLogService } from './cashier-log.service';
 import { CashierHelperService } from './cashier-helper.service';
+import { SocketIoModule } from 'src/socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CashierHelperService } from './cashier-helper.service';
       { name: Cashier.name, schema: CashierSchema },
       { name: CashierLog.name, schema: CashierLogSchema },
     ]),
+    SocketIoModule,
   ],
   controllers: [CashierController],
   providers: [CashierService, CashierLogService, CashierHelperService],
