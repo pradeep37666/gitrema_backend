@@ -21,6 +21,7 @@ import { CashierHelperService } from './cashier-helper.service';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { CashierLogService } from './cashier-log.service';
 import { CashierLogDocument } from './schemas/cashier-log.schema';
+import { PaymentStatus } from 'src/core/Constants/enum';
 
 @Injectable()
 export class CashierService {
@@ -122,6 +123,9 @@ export class CashierService {
         isRefund: 1,
         paymentMethod: 1,
       },
+      match: {
+        status: PaymentStatus.Success,
+      },
     });
     const transactions = activeShift.transactions;
     const refunds = transactions.filter((t) => t.isRefund);
@@ -136,7 +140,9 @@ export class CashierService {
       openingBalance: activeShift.openingBalance,
       totalRefunds: this.cashierHelperService.foldAmount(refunds),
       totalSales: this.cashierHelperService.foldAmount(sales),
-      totalInCash: this.cashierHelperService.foldAmount(cashSales),
+      totalInCash:
+        activeShift.openingBalance +
+        this.cashierHelperService.foldAmount(cashSales),
       totalInBank: this.cashierHelperService.foldAmount(bankSales),
     };
     return dashboard;

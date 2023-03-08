@@ -66,6 +66,10 @@ export class OrderService {
 
     orderData.taxRate = supplier.taxRate ?? 15;
 
+    if (orderData.isScheduled != true) {
+      delete orderData.scheduledDateTime;
+    }
+
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
       orderData,

@@ -7,12 +7,14 @@ import { CashierLog, CashierLogSchema } from './schemas/cashier-log.schema';
 import { CashierLogService } from './cashier-log.service';
 import { CashierHelperService } from './cashier-helper.service';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
+import { User, UserSchema } from 'src/users/schemas/users.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Cashier.name, schema: CashierSchema },
       { name: CashierLog.name, schema: CashierLogSchema },
+      { name: User.name, schema: UserSchema },
     ]),
     SocketIoModule,
   ],

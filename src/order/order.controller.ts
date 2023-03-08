@@ -111,11 +111,18 @@ export class OrderController {
     @Param('orderId') orderId: string,
     @Body() dto: ChefInquiryDto,
   ) {
+    let commentDto = {};
+    if (dto.comment) {
+      commentDto = {
+        $push: {
+          chefInquiry: { ...dto, userId: req.user.userId },
+        },
+      };
+    }
+
     return await this.orderService.generalUpdate(req, orderId, {
       ...dto,
-      $push: {
-        chefInquiry: { ...dto, userId: req.user.userId },
-      },
+      ...commentDto,
     });
   }
 

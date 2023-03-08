@@ -25,6 +25,7 @@ import { CashierService } from './cashier.service';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
+import { CashierHelperService } from './cashier-helper.service';
 
 @Injectable()
 export class CashierLogService {
@@ -36,6 +37,7 @@ export class CashierLogService {
     private readonly cashierLogModelPag: PaginateModel<CashierLogDocument>,
 
     private readonly cashierService: CashierService,
+    private readonly cashierHelperService: CashierHelperService,
     private socketGateway: SocketIoGateway,
   ) {}
 
@@ -74,10 +76,15 @@ export class CashierLogService {
 
   async start(req: any, dto: OpenCashierDto): Promise<CashierLogDocument> {
     let cashierId = null;
-    if (req.user.cashierId) cashierId = req.user.cashierId;
     if (dto.cashierId) cashierId = dto.cashierId;
 
-    if (!cashierId) throw new BadRequestException(`Cashier is not available`);
+    if (!cashierId) {
+      // identify cashierId
+      cashierId = await this.cashierHelperService.resolveCashierId(
+        req,
+        cashierId,
+      );
+    }
     console.log(cashierId);
     let cashierLog = await this.cashierLogModel.findOne(
       { cashierId },
@@ -88,8 +95,16 @@ export class CashierLogService {
     if (cashierLog && !cashierLog.closedAt) {
       throw new BadRequestException('Previous instance is not closed yet');
     }
+    const imageNoteDto: any = { $push: {} };
+    if (dto.image) {
+      imageNoteDto.$push.images = dto.image;
+    }
+    if (dto.note) {
+      imageNoteDto.$push.notes = dto.note;
+    }
     cashierLog = await this.cashierLogModel.create({
       ...dto,
+      ...imageNoteDto,
       cashierId,
       currentBalance: dto.openingBalance,
       startedAt: new Date(),
@@ -105,10 +120,16 @@ export class CashierLogService {
     dto: CloseCashierDto | OverrideCloseCashierDto,
   ): Promise<CashierLogDocument> {
     let cashierId = null;
-    if (req.user.cashierId) cashierId = req.user.cashierId;
+
     if (dto.cashierId) cashierId = dto.cashierId;
 
-    if (!cashierId) throw new BadRequestException(`Cashier is not available`);
+    if (!cashierId) {
+      // identify cashierId
+      cashierId = await this.cashierHelperService.resolveCashierId(
+        req,
+        cashierId,
+      );
+    }
     const cashierLog = await this.cashierLogModel.findOne(
       { cashierId },
       {},
@@ -126,8 +147,20 @@ export class CashierLogService {
           `Closing balance is not matching the current balance. Difference is ${difference}`,
         );
     }
+    const imageNoteDto: any = { $push: {} };
+    if (dto.image) {
+      imageNoteDto.$push.images = dto.image;
+    }
+    if (dto.note) {
+      imageNoteDto.$push.notes = dto.note;
+    }
 
-    cashierLog.set({ ...dto, closedAt: new Date(), difference });
+    cashierLog.set({
+      ...dto,
+      ...imageNoteDto,
+      closedAt: new Date(),
+      difference,
+    });
     await cashierLog.save();
     this.cashierService.update(cashierId, { currentLog: null });
     return cashierLog;

@@ -29,6 +29,7 @@ import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
 import { CashierLogService } from 'src/cashier/cashier-log.service';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { OrderService } from 'src/order/order.service';
 
 @Injectable()
 export class TransactionService {
@@ -42,6 +43,7 @@ export class TransactionService {
     @InjectModel(TableLog.name)
     private readonly tableLogModel: Model<TableLogDocument>,
     private orderHelperService: OrderHelperService,
+    private orderService: OrderService,
     private cashierLogService: CashierLogService,
   ) {}
 
@@ -111,7 +113,9 @@ export class TransactionService {
       // save activity
       this.orderHelperService.storeOrderStateActivity(
         order,
-        OrderActivityType.PaymentReceived,
+        transaction.isRefund
+          ? OrderActivityType.Refunded
+          : OrderActivityType.PaymentReceived,
         new Date(),
       );
 
@@ -121,48 +125,60 @@ export class TransactionService {
         transaction,
       );
 
-      const result = await this.transactionModel.aggregate([
-        {
-          $match: {
-            orderId: transaction.orderId,
-            status: PaymentStatus.Success,
+      if (transaction.isRefund) {
+        this.orderService.generalUpdate(req, order._id, {
+          $inc: { 'summary.totalRefunded': transaction.amount },
+          paymentStatus:
+            order.summary.totalRefunded + transaction.amount ==
+            order.summary.totalPaid
+              ? OrderPaymentStatus.Refunded
+              : OrderPaymentStatus.PartiallyRefunded,
+          $push: { transactions: transaction._id },
+        });
+      } else {
+        const result = await this.transactionModel.aggregate([
+          {
+            $match: {
+              orderId: transaction.orderId,
+              status: PaymentStatus.Success,
+            },
           },
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: '$amount' },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: '$amount' },
+            },
           },
-        },
-      ]);
-      if (result && result.length == 1) {
-        const total = result[0].total;
-        const dataToUpdate: any = {
-          'summary.totalPaid': total,
-        };
-        if (total >= order.summary.totalWithTax) {
-          dataToUpdate.status = OrderStatus.New
-            ? OrderStatus.SentToKitchen
-            : OrderStatus.Closed;
-          dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
-          dataToUpdate.paymentTime = new Date();
-        }
-        order.set(dataToUpdate);
-        await order.save();
-        this.orderHelperService.postOrderUpdate(order, dataToUpdate);
+        ]);
+        if (result && result.length == 1) {
+          const total = result[0].total;
+          const dataToUpdate: any = {
+            'summary.totalPaid': total,
+          };
+          if (total >= order.summary.totalWithTax) {
+            dataToUpdate.status = OrderStatus.New
+              ? OrderStatus.SentToKitchen
+              : OrderStatus.Closed;
+            dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
+            dataToUpdate.paymentTime = new Date();
+          }
+          order.set(dataToUpdate);
+          await order.save();
+          this.orderHelperService.postOrderUpdate(order, dataToUpdate);
 
-        // update table log
-        if (order.tableId) {
-          if (
-            (await this.orderModel.count({
-              status: OrderStatus.Closed,
-              tableId: order.tableId,
-            })) == 0
-          ) {
-            await this.tableLogModel.findOneAndUpdate(
-              { tableId: order.tableId },
-              { paymentNeeded: false },
-            );
+          // update table log
+          if (order.tableId) {
+            if (
+              (await this.orderModel.count({
+                status: OrderStatus.Closed,
+                tableId: order.tableId,
+              })) == 0
+            ) {
+              await this.tableLogModel.findOneAndUpdate(
+                { tableId: order.tableId },
+                { paymentNeeded: false },
+              );
+            }
           }
         }
       }
