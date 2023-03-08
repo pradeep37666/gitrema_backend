@@ -95,13 +95,14 @@ export class CashierLogService {
     if (cashierLog && !cashierLog.closedAt) {
       throw new BadRequestException('Previous instance is not closed yet');
     }
-    const imageNoteDto: any = { $push: {} };
+    const imageNoteDto: any = {};
     if (dto.image) {
-      imageNoteDto.$push.images = dto.image;
+      imageNoteDto.images = [dto.image];
     }
     if (dto.note) {
-      imageNoteDto.$push.notes = dto.note;
+      imageNoteDto.notes = [dto.note];
     }
+    console.log(imageNoteDto);
     cashierLog = await this.cashierLogModel.create({
       ...dto,
       ...imageNoteDto,
@@ -147,17 +148,16 @@ export class CashierLogService {
           `Closing balance is not matching the current balance. Difference is ${difference}`,
         );
     }
-    const imageNoteDto: any = { $push: {} };
+
     if (dto.image) {
-      imageNoteDto.$push.images = dto.image;
+      cashierLog.images.push(dto.image);
     }
     if (dto.note) {
-      imageNoteDto.$push.notes = dto.note;
+      cashierLog.notes.push(dto.note);
     }
 
     cashierLog.set({
       ...dto,
-      ...imageNoteDto,
       closedAt: new Date(),
       difference,
     });
