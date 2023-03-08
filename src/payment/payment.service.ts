@@ -32,6 +32,7 @@ import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { CashierLogService } from 'src/cashier/cashier-log.service';
+import { CashierHelperService } from 'src/cashier/cashier-helper.service';
 
 @Injectable()
 export class PaymentService {
@@ -40,6 +41,7 @@ export class PaymentService {
     private transactionService: TransactionService,
     private orderService: OrderService,
     private cashierLogService: CashierLogService,
+    private cashierHelpderService: CashierHelperService,
     @InjectModel(Order.name)
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(Transaction.name)
@@ -81,28 +83,12 @@ export class PaymentService {
           order.summary.totalWithTax - order.summary.totalPaid
         }`,
       );
-    let cashierId = req.user.cashierId;
-    let cashier = null;
-    if (paymentRequestDetails.cashierId)
-      cashierId = paymentRequestDetails.cashierId;
-    else if (req.user.isCustomer) {
-      cashier = await this.cashierModel.findOne({
-        supplierId: order.supplierId,
-        default: true,
-      });
-      if (!cashier.currentLog)
-        await this.cashierLogService.autoStartCashier(null, cashier); // auto start cashier for customer
-      cashierId = cashier._id;
-    }
-    if (!cashierId) {
-      throw new BadRequestException(`Cashier is not available`);
-    }
-    if (!cashier) {
-      cashier = await this.cashierModel.findById(cashierId);
-      if (!cashier) throw new BadRequestException(`Cashier is not available`);
-      if (!cashier.currentLog)
-        await this.cashierLogService.autoStartCashier(req, cashier); // auto start cashier for staff member
-    }
+    // identify cashierId
+    const cashierId = await this.cashierHelpderService.resolveCashierId(
+      req,
+      paymentRequestDetails.cashierId,
+      true,
+    );
     if (!paymentRequestDetails.transactionId) {
       transaction = await this.transactionService.create(req, {
         supplierId: order.supplierId,
@@ -140,7 +126,8 @@ export class PaymentService {
 
       await transaction.save();
     }
-    // save transaction to cashier
+
+    //save transaction to cashier
     this.cashierLogService.logTransactionAsync(cashierId, transaction._id);
 
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Online) {
@@ -175,6 +162,12 @@ export class PaymentService {
         }`,
       );
     }
+    // identify cashierId
+    const cashierId = await this.cashierHelpderService.resolveCashierId(
+      req,
+      dto.cashierId,
+      true,
+    );
     const transaction = await this.transactionModel.create({
       supplierId: order.supplierId,
       orderId: order._id,
@@ -182,15 +175,14 @@ export class PaymentService {
       paymentMethod: PaymentMethod.Cash,
       status: PaymentStatus.Success,
       isRefund: true,
+      cashierId,
     });
-    this.orderService.generalUpdate(req, order._id, {
-      $inc: { 'summary.totalRefunded': dto.amount },
-      paymentStatus:
-        order.summary.totalRefunded + dto.amount == order.summary.totalPaid
-          ? OrderPaymentStatus.Refunded
-          : OrderPaymentStatus.PartiallyRefunded,
-      $push: { transactions: transaction._id },
-    });
+
+    // save transaction to cashier
+    this.cashierLogService.logTransactionAsync(cashierId, transaction._id);
+
+    this.transactionService.postTransactionProcess(req, transaction);
+
     return transaction;
   }
 

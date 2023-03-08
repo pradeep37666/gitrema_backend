@@ -1,7 +1,9 @@
+import { OmitType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsDate,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -13,7 +15,7 @@ import * as moment from 'moment';
 export class OpenCashierDto {
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
+  @IsMongoId()
   cashierId: string;
 
   @ApiProperty()
@@ -21,14 +23,21 @@ export class OpenCashierDto {
   @IsNumber()
   @Min(0)
   openingBalance: number;
-}
 
-export class CloseCashierDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  cashierId: string;
+  note: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  image: string;
+}
+
+export class CloseCashierDto extends OmitType(OpenCashierDto, [
+  'openingBalance',
+] as const) {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()

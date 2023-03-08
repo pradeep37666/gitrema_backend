@@ -73,6 +73,12 @@ export class CashierLog {
   })
   overrideBy: UserDocument;
 
+  @Prop({ default: [], type: [String] })
+  images: string[];
+
+  @Prop({ default: [], type: [String] })
+  notes: string[];
+
   @Prop({ type: [PausedLogSchema] })
   pausedLogs: PausedLog[];
 }

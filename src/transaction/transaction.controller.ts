@@ -43,6 +43,12 @@ export class TransactionController {
     return await this.transactionService.all(req, query, paginateOptions);
   }
 
+  @Get(':transactionId')
+  @PermissionGuard(PermissionSubject.Transaction, Permission.Common.FETCH)
+  async findOne(@Param('transactionId') transactionId: string) {
+    return await this.transactionService.get(transactionId);
+  }
+
   // @Get('export')
   // @Header('Content-Type', 'application/xlsx')
   // @Header('Content-Disposition', 'attachment; filename="transactions.xlsx"')
