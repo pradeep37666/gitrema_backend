@@ -22,7 +22,7 @@ export const imageFileFilter = (
   file: Express.Multer.File,
   callback,
 ) => {
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+  if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp|tiff)$/)) {
     //throw new BadRequestException(STATUS_MSG.ERROR.ONLY_IMAGES_ALLOWED);
     callback(
       new BadRequestException(STATUS_MSG.ERROR.ONLY_IMAGES_ALLOWED),
