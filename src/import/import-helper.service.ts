@@ -7,6 +7,8 @@ import { ImportDto } from './dto/import.dto';
 import { ImportType } from './enum/import.enum';
 import Excel = require('exceljs');
 import {
+  MenuItemOutputTemplate,
+  MenuItemTemplate,
   restaurantOutputTemplate,
   restaurantTemplate,
   supplierOutputTemplate,
@@ -22,12 +24,16 @@ import { RoleSlug } from 'src/core/Constants/enum';
 import { UserService } from 'src/users/users.service';
 import { Role, RoleDocument } from 'src/role/schemas/roles.schema';
 import { RestaurantService } from 'src/restaurant/restaurant.service';
+import { MenuItemService } from 'src/menu/service/menu-item.service';
+import { MenuCategoryService } from 'src/menu/service/menu-category.service';
 
 @Injectable()
 export class ImportHelperService {
   constructor(
     private readonly supplierService: SupplierService,
     private readonly restaurantService: RestaurantService,
+    private readonly menuItemService: MenuItemService,
+    private readonly menuCategoryService: MenuCategoryService,
     private readonly s3Service: S3Service,
 
     private userService: UserService,
@@ -147,8 +153,9 @@ export class ImportHelperService {
           longitude: rowObj.getCell(restaurantTemplate.longitude).toString(),
           district: rowObj.getCell(restaurantTemplate.district).toString(),
         },
+        importId: importObj._id,
+        supplierId: rowObj.getCell(restaurantTemplate.supplierId).toString(),
       };
-      row.importId = importObj._id;
 
       try {
         const restaurant = await this.restaurantService.create(
@@ -165,6 +172,64 @@ export class ImportHelperService {
         worksheet.getRow(i).getCell(restaurantOutputTemplate.dataId).value =
           'NA';
         worksheet.getRow(i).getCell(restaurantOutputTemplate.error).value =
+          err.toString();
+        response.push({ rowNumber: i, success: false, error: err });
+      }
+    }
+    await workBook.xlsx.writeFile(file.path);
+    this.storeImportStatus(file, importObj, response);
+  }
+
+  async handleMenuImport(req, file, importObj) {
+    const workBook = new Excel.Workbook();
+
+    await workBook.xlsx.readFile(file.path);
+    const worksheet = await workBook.getWorksheet(1);
+
+    const response = [];
+    worksheet.getRow(1).getCell(MenuItemOutputTemplate.dataId).value =
+      'MenuItemId';
+    worksheet.getRow(1).getCell(MenuItemOutputTemplate.error).value = 'Error';
+    for (let i = 2; i <= worksheet.rowCount; i++) {
+      const rowObj = worksheet.getRow(i);
+      const supplierId = rowObj.getCell(MenuItemTemplate.supplierId).toString();
+      const categoryDto: any = {
+        name: rowObj.getCell(MenuItemTemplate.category).toString(),
+        nameAr: rowObj.getCell(MenuItemTemplate.categoryAr).toString(),
+        importId: importObj._id,
+      };
+      const menuCategory = await this.menuCategoryService.create(
+        {
+          ...req,
+          supplierId: supplierId,
+        },
+        categoryDto,
+      );
+      const row: any = {
+        name: rowObj.getCell(MenuItemTemplate.name).toString(),
+        nameAr: rowObj.getCell(MenuItemTemplate.nameAr).toString(),
+        description: rowObj.getCell(MenuItemTemplate.description).toString(),
+        descriptionAr: rowObj
+          .getCell(MenuItemTemplate.descriptionAr)
+          .toString(),
+        importId: importObj._id,
+        categoryId: menuCategory._id,
+        price: parseFloat(rowObj.getCell(MenuItemTemplate.price).toString()),
+      };
+      try {
+        const menuItem = await this.menuItemService.create(
+          { ...req, supplierId: supplierId },
+          {
+            ...row,
+          },
+        );
+
+        worksheet.getRow(i).getCell(MenuItemOutputTemplate.dataId).value =
+          menuItem._id.toString();
+        response.push({ rowNumber: i, success: true, dataId: menuItem._id });
+      } catch (err) {
+        worksheet.getRow(i).getCell(MenuItemOutputTemplate.dataId).value = 'NA';
+        worksheet.getRow(i).getCell(MenuItemOutputTemplate.error).value =
           err.toString();
         response.push({ rowNumber: i, success: false, error: err });
       }

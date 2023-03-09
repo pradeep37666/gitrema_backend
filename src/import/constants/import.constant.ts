@@ -47,3 +47,19 @@ export const restaurantOutputTemplate = {
   dataId: 'R',
   error: 'S',
 };
+
+export const MenuItemTemplate = {
+  supplierId: 'A',
+  category: 'B',
+  categoryAr: 'C',
+  name: 'D',
+  nameAr: 'E',
+  description: 'F',
+  descriptionAr: 'G',
+  price: 'H',
+};
+
+export const MenuItemOutputTemplate = {
+  dataId: 'I',
+  error: 'J',
+};

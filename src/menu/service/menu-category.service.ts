@@ -28,11 +28,19 @@ export class MenuCategoryService {
     req: any,
     dto: CreateMenuCategoryDTO,
   ): Promise<MenuCategoryDocument> {
-    return await this.menuCategoryModel.create({
-      ...dto,
-      supplierId: req.user.supplierId,
-      addedBy: req.user.userId,
-    });
+    return await this.menuCategoryModel.findOneAndUpdate(
+      { supplierId: req.user.supplierId, name: dto.name },
+      {
+        ...dto,
+        addedBy: req.user.userId,
+        supplierId: req.user.supplierId,
+      },
+      {
+        upsert: true,
+        setDefaultsOnInsert: true,
+        new: true,
+      },
+    );
   }
 
   async findAll(

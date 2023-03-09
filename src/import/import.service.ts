@@ -40,6 +40,9 @@ export class ImportService {
       case ImportType.Restaurant:
         this.importHelperService.handleRestaurantImport(req, file, importObj);
         break;
+      case ImportType.MenuItem:
+        this.importHelperService.handleMenuImport(req, file, importObj);
+        break;
     }
 
     return importObj;
