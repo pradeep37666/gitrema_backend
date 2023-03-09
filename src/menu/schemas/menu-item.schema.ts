@@ -8,6 +8,7 @@ import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuAdditionDocument } from './menu-addition.schema';
 import { CalculationType } from 'src/core/Constants/enum';
+import { ImportDocument } from 'src/import/schemas/import.schema';
 
 export type MenuItemDocument = MenuItem & Document;
 
@@ -151,6 +152,13 @@ export class MenuItem {
     ref: 'User',
   })
   addedBy: UserDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'Import',
+  })
+  importId: ImportDocument;
 }
 
 export const MenuItemSchema = SchemaFactory.createForClass(MenuItem);

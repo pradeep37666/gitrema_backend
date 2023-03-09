@@ -35,5 +35,6 @@ import {
     MenuItemController,
   ],
   providers: [MenuAdditionService, MenuCategoryService, MenuItemService],
+  exports: [MenuAdditionService, MenuCategoryService, MenuItemService],
 })
 export class MenuModule {}

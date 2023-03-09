@@ -9,6 +9,7 @@ import { Import, ImportSchema } from './schemas/import.schema';
 import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
 import { ImportHelperService } from './import-helper.service';
 import { RestaurantModule } from 'src/restaurant/restaurant.module';
+import { MenuModule } from 'src/menu/menu.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RestaurantModule } from 'src/restaurant/restaurant.module';
     SupplierModule,
     UserModule,
     RestaurantModule,
+    MenuModule,
     MongooseModule.forFeature([
       { name: Import.name, schema: ImportSchema },
       { name: Role.name, schema: RoleSchema },

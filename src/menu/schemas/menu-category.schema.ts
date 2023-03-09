@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { ImportDocument } from 'src/import/schemas/import.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
@@ -37,6 +38,13 @@ export class MenuCategory {
     ref: 'User',
   })
   addedBy: UserDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'Import',
+  })
+  importId: ImportDocument;
 }
 
 export const MenuCategorySchema = SchemaFactory.createForClass(MenuCategory);
