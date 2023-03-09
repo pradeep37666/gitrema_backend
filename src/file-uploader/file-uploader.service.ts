@@ -1,9 +1,13 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { S3Service } from 'src/core/Providers/Storage/S3.service';
+import { CompressService } from './compress.service';
 
 @Injectable()
 export class FileUploaderService {
-  constructor(private readonly s3Service: S3Service) {}
+  constructor(
+    private readonly s3Service: S3Service,
+    private readonly compressService: CompressService,
+  ) {}
 
   async upload(
     req: any,
@@ -13,7 +17,8 @@ export class FileUploaderService {
     const fileUrls = [];
     const directory = this.prepareDirectoryName(req, fileRequest);
     for (const i in files) {
-      const res = await this.s3Service.uploadFile(files[i], directory);
+      const path = await this.compressService.compressImage(files[i]);
+      const res = await this.s3Service.uploadLocalFile(path, directory);
       if (res) {
         fileUrls[i] = res.Location;
       }
