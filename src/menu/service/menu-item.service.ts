@@ -32,7 +32,21 @@ export class MenuItemService {
       const supplier = await this.supplierModel.findById(req.user.supplierId);
       dto.taxEnabled = supplier.taxEnabled ?? false;
     }
-
+    if (dto.importId) {
+      return await this.menuItemModel.findOneAndUpdate(
+        { supplierId: req.user.supplierId, name: dto.name },
+        {
+          ...dto,
+          addedBy: req.user.userId,
+          supplierId: req.user.supplierId,
+        },
+        {
+          upsert: true,
+          setDefaultsOnInsert: true,
+          new: true,
+        },
+      );
+    }
     return await this.menuItemModel.create({
       ...dto,
       supplierId: req.user.supplierId,
