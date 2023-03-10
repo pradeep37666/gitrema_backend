@@ -25,6 +25,7 @@ import { OrderStatus, PaymentStatus } from 'src/order/enum/en.enum';
 import { SocketIoService } from 'src/socket-io/socket-io.service';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
+import { Restaurant } from 'src/restaurant/schemas/restaurant.schema';
 
 @Injectable()
 export class TableLogService {
@@ -78,6 +79,7 @@ export class TableLogService {
       if (tableLog && tableLog.closingTime == null) {
         throw new BadRequestException('Table is already started');
       }
+
       const user = await this.userModel.findOne({
         isDefaultWaiter: true,
         supplierId: table.supplierId,
@@ -98,7 +100,6 @@ export class TableLogService {
       if (!tableLog) {
         throw new BadRequestException('Table has not started yet');
       }
-
       if (
         (await this.orderModel.count({
           paymentStatus: { $ne: PaymentStatus.Paid },
@@ -108,6 +109,19 @@ export class TableLogService {
       ) {
         throw new BadRequestException('Some of the orders are not closed yet');
       }
+
+      const user = await this.userModel.findOne({
+        isDefaultWaiter: true,
+        supplierId: table.supplierId,
+        isBlocked: false,
+      });
+      tableLog = new this.tableLogModel({
+        supplierId: table.supplierId,
+        restaurantId: table.restaurantId,
+        tableId,
+        startingTime: new Date(),
+        waiterId: user ? user._id : null,
+      });
 
       tableLog.closingTime = new Date();
       this.tableService.update(tableId, {
