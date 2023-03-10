@@ -58,9 +58,12 @@ export const MenuItemTemplate = {
   descriptionAr: 'G',
   price: 'H',
   image: 'I',
+  calories: 'J',
+  manageQuantity: 'K',
+  order: 'L',
 };
 
 export const MenuItemOutputTemplate = {
-  dataId: 'J',
-  error: 'K',
+  dataId: 'M',
+  error: 'N',
 };
