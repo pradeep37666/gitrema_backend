@@ -216,6 +216,17 @@ export class ImportHelperService {
         categoryId: menuCategory._id,
         price: parseFloat(rowObj.getCell(MenuItemTemplate.price).toString()),
         image: rowObj.getCell(MenuItemTemplate.image).toString(),
+        calories: parseFloat(
+          rowObj.getCell(MenuItemTemplate.calories).toString(),
+        ),
+        manageQuantity:
+          rowObj
+            .getCell(MenuItemTemplate.manageQuantity)
+            .toString()
+            .toLowerCase() == 'true'
+            ? true
+            : false,
+        order: parseInt(rowObj.getCell(MenuItemTemplate.order).toString()),
       };
       try {
         const menuItem = await this.menuItemService.create(
