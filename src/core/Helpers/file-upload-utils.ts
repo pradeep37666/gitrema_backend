@@ -43,6 +43,17 @@ export const importFilter = (
   callback(null, true);
 };
 
+export const zipFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  callback,
+) => {
+  if (!file.originalname.match(/\.(zip)$/)) {
+    callback(new BadRequestException(`Only zip file is allowed`), false);
+  }
+  callback(null, true);
+};
+
 export const videoFileFilter = (
   req: Request,
   file: Express.Multer.File,

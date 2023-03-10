@@ -191,6 +191,8 @@ export class CreateMenuItemDTO {
   @IsNotEmpty()
   @IsNumber()
   preparationTime: number;
+
+  importId?: string;
 }
 
 export class UpdateMenuItemDTO extends PartialType(CreateMenuItemDTO) {

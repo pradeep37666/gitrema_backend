@@ -215,6 +215,7 @@ export class ImportHelperService {
         importId: importObj._id,
         categoryId: menuCategory._id,
         price: parseFloat(rowObj.getCell(MenuItemTemplate.price).toString()),
+        image: rowObj.getCell(MenuItemTemplate.image).toString(),
       };
       try {
         const menuItem = await this.menuItemService.create(

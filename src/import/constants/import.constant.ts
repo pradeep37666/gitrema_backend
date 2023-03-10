@@ -57,9 +57,10 @@ export const MenuItemTemplate = {
   description: 'F',
   descriptionAr: 'G',
   price: 'H',
+  image: 'I',
 };
 
 export const MenuItemOutputTemplate = {
-  dataId: 'I',
-  error: 'J',
+  dataId: 'J',
+  error: 'K',
 };

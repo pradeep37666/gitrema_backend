@@ -5,6 +5,8 @@ import {
   UseInterceptors,
   Req,
   UploadedFiles,
+  Header,
+  StreamableFile,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
@@ -17,7 +19,9 @@ import {
   idFileFilter,
   imageFileFilter,
   videoFileFilter,
+  zipFilter,
 } from 'src/core/Helpers/file-upload-utils';
+import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
 
 @ApiTags('Common')
 @Controller('file-uploader')
@@ -49,6 +53,35 @@ export class FileUploaderController {
     );
 
     return fileUrls;
+  }
+
+  @ApiConsumes('multipart/form-data')
+  @Post('images/bulk')
+  @UseInterceptors(
+    FilesFastifyInterceptor('files', 1, {
+      storage: diskStorage({
+        destination: './upload/',
+        filename: editFileName,
+      }),
+      fileFilter: zipFilter,
+    }),
+  )
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="images.xlsx"')
+  @SkipInterceptor()
+  async bulkUpload(
+    @Req() req: any,
+    @UploadedFiles() files: Express.Multer.File,
+    @Body() body: MultipleFileDto,
+  ) {
+    const fileRequest = { ...body, type: 'images' };
+    const fileStream = await this.fileUploaderService.handleZip(
+      req,
+      fileRequest,
+      files,
+    );
+
+    return new StreamableFile(fileStream);
   }
 
   // @ApiConsumes('multipart/form-data')
