@@ -52,6 +52,12 @@ export class S3Service {
       fs.unlink(filePath, (err) => {
         console.log(err);
       });
+      if (s3Response && s3Response.Location) {
+        s3Response.Location = s3Response.Location.replace(
+          this.configService.get('aws.AWS_S3_URL'),
+          this.configService.get('aws.AWS_S3_CF_URL'),
+        );
+      }
       return s3Response;
     } catch (e) {
       console.log(e);

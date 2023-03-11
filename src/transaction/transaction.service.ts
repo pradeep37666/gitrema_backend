@@ -30,6 +30,7 @@ import { CashierLogService } from 'src/cashier/cashier-log.service';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { OrderService } from 'src/order/order.service';
+import { TableHelperService } from 'src/table/table-helper.service';
 
 @Injectable()
 export class TransactionService {
@@ -45,6 +46,7 @@ export class TransactionService {
     private orderHelperService: OrderHelperService,
     private orderService: OrderService,
     private cashierLogService: CashierLogService,
+    private tableHelperService: TableHelperService,
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
@@ -141,6 +143,7 @@ export class TransactionService {
             $match: {
               orderId: transaction.orderId,
               status: PaymentStatus.Success,
+              isRefund: false,
             },
           },
           {
@@ -168,17 +171,9 @@ export class TransactionService {
 
           // update table log
           if (order.tableId) {
-            if (
-              (await this.orderModel.count({
-                status: OrderStatus.Closed,
-                tableId: order.tableId,
-              })) == 0
-            ) {
-              await this.tableLogModel.findOneAndUpdate(
-                { tableId: order.tableId },
-                { paymentNeeded: false },
-              );
-            }
+            this.tableHelperService.handlePaymentNeeded(
+              order.tableId.toString(),
+            );
           }
         }
       }
