@@ -361,11 +361,11 @@ export class OrderHelperService {
           $push: { orders: order._id },
           paymentNeeded: true,
           supplierId: order.supplierId,
+          restaurantId: order.restaurantId,
         },
         {
           upsert: true,
           setDefaultsOnInsert: true,
-          sort: { _id: -1 },
           new: true,
         },
       );

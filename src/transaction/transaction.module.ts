@@ -8,6 +8,8 @@ import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 import { OrderModule } from 'src/order/order.module';
 import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
 import { CashierModule } from 'src/cashier/cashier.module';
+import { SocketIoModule } from 'src/socket-io/socket-io.module';
+import { TableModule } from 'src/table/table.module';
 
 @Module({
   imports: [
@@ -18,6 +20,7 @@ import { CashierModule } from 'src/cashier/cashier.module';
     ]),
     OrderModule,
     CashierModule,
+    TableModule,
   ],
   providers: [TransactionService],
   exports: [TransactionService],
