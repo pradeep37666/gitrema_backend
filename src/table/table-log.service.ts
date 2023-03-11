@@ -110,19 +110,6 @@ export class TableLogService {
         throw new BadRequestException('Some of the orders are not closed yet');
       }
 
-      const user = await this.userModel.findOne({
-        isDefaultWaiter: true,
-        supplierId: table.supplierId,
-        isBlocked: false,
-      });
-      tableLog = new this.tableLogModel({
-        supplierId: table.supplierId,
-        restaurantId: table.restaurantId,
-        tableId,
-        startingTime: new Date(),
-        waiterId: user ? user._id : null,
-      });
-
       tableLog.closingTime = new Date();
       this.tableService.update(tableId, {
         status: TableStatus.Empty,
