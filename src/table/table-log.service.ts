@@ -44,6 +44,20 @@ export class TableLogService {
     private socketGateway: SocketIoGateway,
   ) {}
 
+  async current(tableId: string): Promise<TableLogDocument> {
+    const exists = await this.tableLogModel.findOne(
+      { tableId },
+      {},
+      { sort: { _id: -1 } },
+    );
+
+    if (!exists) {
+      throw new NotFoundException();
+    }
+
+    return exists;
+  }
+
   async logs(
     req: any,
     tableId: string,
