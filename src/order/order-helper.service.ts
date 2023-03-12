@@ -42,6 +42,7 @@ import { Table } from 'src/table/schemas/table.schema';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
+import { TableHelperService } from 'src/table/table-helper.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -65,6 +66,7 @@ export class OrderHelperService {
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
     private socketGateway: SocketIoGateway,
+    private readonly tableHelperService: TableHelperService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -355,33 +357,16 @@ export class OrderHelperService {
     // }
     // update the table log
     if (order.tableId) {
-      const tableLog = await this.tableLogModel.findOneAndUpdate(
-        { tableId: order.tableId, closingTime: null },
-        {
-          $push: { orders: order._id },
-          paymentNeeded: true,
-          supplierId: order.supplierId,
-          restaurantId: order.restaurantId,
-        },
-        {
-          upsert: true,
-          setDefaultsOnInsert: true,
-          new: true,
-        },
-      );
-      this.socketGateway.emit(
-        order.supplierId.toString(),
-        SocketEvents.TableLog,
-        tableLog.toObject(),
-      );
-      await this.tableModel.findByIdAndUpdate(order.tableId, {
-        status: TableStatus.InUse,
-        currentTableLog: tableLog._id,
-      });
+      const tableLog =
+        await this.tableHelperService.addOrderToTableLogWithAutoStart(order);
     }
   }
 
-  async postOrderUpdate(order: OrderDocument, dto: UpdateOrderDto) {
+  async postOrderUpdate(
+    order: OrderDocument,
+    dto: UpdateOrderDto,
+    beforeUpdate: OrderDocument = null,
+  ) {
     // store activity
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
       this.storeOrderStateActivity(
@@ -423,6 +408,10 @@ export class OrderHelperService {
       // check if needs to recalculate the order timing
       if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
         this.calculationService.handleOrderPreparationAfterUpdate(order);
+    }
+
+    if (dto.tableId) {
+      this.tableHelperService.handleTableTransfer(order, beforeUpdate.tableId);
     }
   }
 

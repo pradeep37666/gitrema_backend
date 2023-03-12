@@ -279,7 +279,7 @@ export class OrderService {
     );
 
     //post order update
-    this.orderHelperService.postOrderUpdate(modified, dto);
+    this.orderHelperService.postOrderUpdate(modified, dto, order);
     return modified;
   }
 

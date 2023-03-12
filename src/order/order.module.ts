@@ -24,6 +24,7 @@ import {
   KitchenQueue,
   KitchenQueueSchema,
 } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
+import { TableModule } from 'src/table/table.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import {
       { name: KitchenQueue.name, schema: KitchenQueueSchema },
     ]),
     SocketIoModule,
+    TableModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderHelperService, CalculationService],
