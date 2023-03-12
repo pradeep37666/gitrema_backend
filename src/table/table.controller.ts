@@ -83,6 +83,12 @@ export class TableController {
     return await this.tableLogService.updateLog(tableId, dto);
   }
 
+  @Get(':tableId/current-log')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async currentLog(@Param('tableId') tableId: string) {
+    return await this.tableLogService.current(tableId);
+  }
+
   @Get(':tableId/logs')
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
   async logs(
