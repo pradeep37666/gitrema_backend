@@ -151,11 +151,16 @@ export class OrderService {
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     const queryToApply: any = { ...query };
+    if (query.notBelongingToTable) {
+      queryToApply.tableId = null;
+      delete queryToApply.notBelongingToTable;
+    }
+
     const orders = await this.orderModelPag.paginate(
       {
         supplierId: req.user.supplierId,
         groupId: null,
-        ...query,
+        ...queryToApply,
       },
       {
         sort: paginateOptions.sortBy

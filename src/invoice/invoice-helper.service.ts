@@ -13,7 +13,7 @@ import { InvoiceDocument } from './schemas/invoice.schema';
 import { InvoiceType } from './invoice.enum';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { Order, OrderDocument } from 'src/order/schemas/order.schema';
-import { InvoiceStatus, PaymentStatus } from 'src/order/enum/en.enum';
+import { InvoiceStatus } from 'src/order/enum/en.enum';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import * as uniqid from 'uniqid';

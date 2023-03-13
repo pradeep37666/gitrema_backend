@@ -31,7 +31,7 @@ export enum OrderActivityType {
   Refunded = 'Refunded',
 }
 
-export enum PaymentStatus {
+export enum OrderPaymentStatus {
   NotPaid = 'Not Paid',
   Paid = 'Paid',
   Refunded = 'Refunded',

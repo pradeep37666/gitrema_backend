@@ -58,6 +58,7 @@ export class TableService {
     if (query.tableRegionId) {
       query.tableRegionId = new mongoose.Types.ObjectId(query.tableRegionId);
     }
+
     return await this.tableModelPag.aggregatePaginate(
       this.tableModelPag.aggregate(
         [
@@ -70,81 +71,6 @@ export class TableService {
           },
           {
             $lookup: {
-              from: 'orders',
-              let: {
-                id: '$_id',
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      {
-                        $expr: {
-                          $eq: ['$tableId', '$$id'],
-                        },
-                      },
-                      {
-                        status: OrderStatus.New,
-                      },
-                    ],
-                  },
-                },
-              ],
-              as: 'newOrders',
-            },
-          },
-          {
-            $lookup: {
-              from: 'orders',
-              let: {
-                id: '$_id',
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      {
-                        $expr: {
-                          $eq: ['$tableId', '$$id'],
-                        },
-                      },
-                      {
-                        status: OrderStatus.SentToKitchen,
-                      },
-                    ],
-                  },
-                },
-              ],
-              as: 'processingOrders',
-            },
-          },
-          {
-            $lookup: {
-              from: 'orders',
-              let: {
-                id: '$_id',
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      {
-                        $expr: {
-                          $eq: ['$tableId', '$$id'],
-                        },
-                      },
-                      {
-                        status: OrderStatus.OnTable,
-                      },
-                    ],
-                  },
-                },
-              ],
-              as: 'onTableOrders',
-            },
-          },
-          {
-            $lookup: {
               from: 'tablelogs',
               localField: 'currentTableLog',
               foreignField: '_id',
@@ -153,9 +79,6 @@ export class TableService {
           },
           {
             $addFields: {
-              newOrders: { $size: '$newOrders' },
-              processingOrders: { $size: '$processingOrders' },
-              onTableOrders: { $size: '$onTableOrders' },
               currentTableLog: {
                 $cond: {
                   if: { $eq: [{ $size: '$currentTableLog' }, 1] },
@@ -163,6 +86,49 @@ export class TableService {
                   else: null,
                 },
               },
+            },
+          },
+          {
+            $lookup: {
+              from: 'orders',
+              localField: 'currentTableLog.orders',
+              foreignField: '_id',
+              as: 'orders',
+            },
+          },
+          {
+            $addFields: {
+              newOrders: {
+                $size: {
+                  $filter: {
+                    input: '$orders',
+                    cond: { $eq: ['$$this.status', OrderStatus.New] },
+                  },
+                },
+              },
+              processingOrders: {
+                $size: {
+                  $filter: {
+                    input: '$orders',
+                    cond: { $eq: ['$$this.status', OrderStatus.SentToKitchen] },
+                  },
+                },
+              },
+              onTableOrders: {
+                $size: {
+                  $filter: {
+                    input: '$orders',
+                    cond: { $eq: ['$$this.status', OrderStatus.OnTable] },
+                  },
+                },
+              },
+              totalPaid: { $sum: '$orders.summary.totalPaid' },
+              total: { $sum: '$orders.summary.totalWithTax' },
+            },
+          },
+          {
+            $project: {
+              orders: 0,
             },
           },
         ],

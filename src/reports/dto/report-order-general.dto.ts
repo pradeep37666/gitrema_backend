@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDate, IsEnum, IsMongoId, IsOptional } from 'class-validator';
 import {
   OrderStatus,
-  PaymentStatus as OrderPaymentStatus,
+  OrderPaymentStatus,
   OrderType,
 } from 'src/order/enum/en.enum';
 import { Transform, Type } from 'class-transformer';

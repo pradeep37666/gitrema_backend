@@ -24,10 +24,7 @@ import {
 import { PaymentStatus } from 'src/core/Constants/enum';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { RefundDto } from './dto/refund.dto';
-import {
-  PaymentStatus as OrderPaymentStatus,
-  OrderStatus,
-} from 'src/order/enum/en.enum';
+import { OrderPaymentStatus, OrderStatus } from 'src/order/enum/en.enum';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';

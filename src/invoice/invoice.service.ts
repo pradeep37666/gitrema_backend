@@ -12,7 +12,7 @@ import { InvoiceDocument } from './schemas/invoice.schema';
 import { InvoiceType } from './invoice.enum';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { Order, OrderDocument } from 'src/order/schemas/order.schema';
-import { PaymentStatus } from 'src/order/enum/en.enum';
+import { OrderPaymentStatus } from 'src/order/enum/en.enum';
 import { InvoiceHelperService } from './invoice-helper.service';
 import {
   DefaultSort,

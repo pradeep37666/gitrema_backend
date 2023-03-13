@@ -21,7 +21,7 @@ import { OrderHelperService } from 'src/order/order-helper.service';
 import {
   OrderActivityType,
   OrderStatus,
-  PaymentStatus as OrderPaymentStatus,
+  OrderPaymentStatus,
 } from 'src/order/enum/en.enum';
 import { capitalize } from 'src/core/Helpers/universal.helper';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
