@@ -13,7 +13,7 @@ import {
   InvoiceStatus,
   OrderStatus,
   OrderType,
-  PaymentStatus,
+  OrderPaymentStatus,
   Source,
 } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
@@ -128,8 +128,12 @@ export class Order {
   @Prop({ type: [OrderItemSchema], required: true })
   items: OrderItemDocument[];
 
-  @Prop({ type: String, enum: PaymentStatus, default: PaymentStatus.NotPaid })
-  paymentStatus: PaymentStatus;
+  @Prop({
+    type: String,
+    enum: OrderPaymentStatus,
+    default: OrderPaymentStatus.NotPaid,
+  })
+  paymentStatus: OrderPaymentStatus;
 
   @Prop({ type: String, enum: InvoiceStatus })
   invoiceStatus: InvoiceStatus;

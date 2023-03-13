@@ -1,10 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDate, IsEnum, IsMongoId, IsOptional } from 'class-validator';
-import {
-  OrderStatus,
-  PaymentStatus as OrderPaymentStatus,
-  OrderType,
-} from 'src/order/enum/en.enum';
+import { OrderType } from 'src/order/enum/en.enum';
 import { Transform, Type } from 'class-transformer';
 import * as moment from 'moment';
 import { ShouldBeBeforeNow } from 'src/core/Validators/ShouldBeBeforeNow.validator';

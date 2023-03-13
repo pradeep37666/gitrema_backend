@@ -21,7 +21,7 @@ import { TableStatus } from './enum/en.enum';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { TableService } from './table.service';
 import { Order, OrderDocument } from 'src/order/schemas/order.schema';
-import { OrderStatus, PaymentStatus } from 'src/order/enum/en.enum';
+import { OrderStatus, OrderPaymentStatus } from 'src/order/enum/en.enum';
 import { SocketIoService } from 'src/socket-io/socket-io.service';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
@@ -116,7 +116,7 @@ export class TableLogService {
       }
       if (
         (await this.orderModel.count({
-          paymentStatus: { $ne: PaymentStatus.Paid },
+          paymentStatus: { $ne: OrderPaymentStatus.Paid },
           status: { $nin: [OrderStatus.Cancelled, OrderStatus.Closed] },
           tableId: tableLog.tableId,
         })) > 0
