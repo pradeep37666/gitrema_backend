@@ -43,6 +43,11 @@ import { TableDocument } from 'src/table/schemas/table.schema';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { TableHelperService } from 'src/table/table-helper.service';
+import {
+  Customer,
+  CustomerDocument,
+} from 'src/customer/schemas/customer.schema';
+import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -63,10 +68,13 @@ export class OrderHelperService {
     private readonly cartModel: Model<CartDocument>,
     @InjectModel(Table.name)
     private readonly tableModel: Model<TableDocument>,
+    @InjectModel(Customer.name)
+    private readonly customerModel: Model<CustomerDocument>,
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
     private socketGateway: SocketIoGateway,
     private readonly tableHelperService: TableHelperService,
+    private readonly whatsappService: WhatsappService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -350,6 +358,9 @@ export class OrderHelperService {
     // manage inventory
     this.manageInventory(order);
 
+    // notify customer
+    this.notifyCustomer(order);
+
     // increment coupon usage
     if (order.couponCode) this.postCouponUsage(order.couponCode);
     //auto assign waiter and kitchen queue
@@ -359,6 +370,27 @@ export class OrderHelperService {
     if (order.tableId) {
       const tableLog =
         await this.tableHelperService.addOrderToTableLogWithAutoStart(order);
+    }
+  }
+
+  async notifyCustomer(order: OrderDocument) {
+    let phoneNumber = order.contactNumber;
+    if (!phoneNumber && order.customerId) {
+      const customer = await this.customerModel.findById(order.customerId);
+      if (customer) {
+        phoneNumber = customer.phoneNumber;
+      }
+    }
+    if (phoneNumber) {
+      const message = `Thank you for your order.
+      Your Order # ${order.orderNumber}
+      we will notify you when your order is ready.`;
+      const response = await this.whatsappService.sendMessage(
+        order.supplierId.toString(),
+        phoneNumber,
+        message,
+      );
+      console.log(`Whats app message status --- ${response}`);
     }
   }
 
