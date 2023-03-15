@@ -25,6 +25,8 @@ import {
   KitchenQueueSchema,
 } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { TableModule } from 'src/table/table.module';
+import { HttpCallerModule } from 'src/core/Providers/http-caller/http-caller.module';
+import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
 
 @Module({
   imports: [
@@ -39,9 +41,11 @@ import { TableModule } from 'src/table/table.module';
       { name: TableLog.name, schema: TableLogSchema },
       { name: Cart.name, schema: CartSchema },
       { name: KitchenQueue.name, schema: KitchenQueueSchema },
+      { name: Customer.name, schema: CustomerSchema },
     ]),
     SocketIoModule,
     TableModule,
+    HttpCallerModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderHelperService, CalculationService],
