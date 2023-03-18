@@ -27,6 +27,7 @@ import {
 import { TableModule } from 'src/table/table.module';
 import { HttpCallerModule } from 'src/core/Providers/http-caller/http-caller.module';
 import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
+import { OrderNotificationService } from './order-notification.service';
 
 @Module({
   imports: [
@@ -48,7 +49,17 @@ import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
     HttpCallerModule,
   ],
   controllers: [OrderController],
-  providers: [OrderService, OrderHelperService, CalculationService],
-  exports: [OrderService, OrderHelperService, CalculationService],
+  providers: [
+    OrderService,
+    OrderHelperService,
+    CalculationService,
+    OrderNotificationService,
+  ],
+  exports: [
+    OrderService,
+    OrderHelperService,
+    CalculationService,
+    OrderNotificationService,
+  ],
 })
 export class OrderModule {}

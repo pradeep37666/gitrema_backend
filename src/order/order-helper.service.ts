@@ -48,6 +48,7 @@ import {
   CustomerDocument,
 } from 'src/customer/schemas/customer.schema';
 import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service';
+import { OrderNotificationService } from './order-notification.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -74,7 +75,7 @@ export class OrderHelperService {
     private readonly calculationService: CalculationService,
     private socketGateway: SocketIoGateway,
     private readonly tableHelperService: TableHelperService,
-    private readonly whatsappService: WhatsappService,
+    private readonly orderNotificationService: OrderNotificationService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -359,7 +360,7 @@ export class OrderHelperService {
     this.manageInventory(order);
 
     // notify customer
-    this.notifyCustomer(order);
+    this.orderNotificationService.triggerOrderNotification(order);
 
     // increment coupon usage
     if (order.couponCode) this.postCouponUsage(order.couponCode);
@@ -373,73 +374,58 @@ export class OrderHelperService {
     }
   }
 
-  async notifyCustomer(order: OrderDocument) {
-    let phoneNumber = order.contactNumber;
-    if (!phoneNumber && order.customerId) {
-      const customer = await this.customerModel.findById(order.customerId);
-      if (customer) {
-        phoneNumber = customer.phoneNumber;
-      }
-    }
-    if (phoneNumber) {
-      const message = `Thank you for your order.
-      Your Order # ${order.orderNumber}
-      we will notify you when your order is ready.`;
-      const response = await this.whatsappService.sendMessage(
-        order.supplierId.toString(),
-        phoneNumber,
-        message,
-      );
-      console.log(`Whats app message status --- ${response}`);
-    }
-  }
-
   async postOrderUpdate(
     order: OrderDocument,
     dto: UpdateOrderDto,
     beforeUpdate: OrderDocument = null,
   ) {
     // store activity
-    if (dto.status && dto.status == OrderStatus.SentToKitchen) {
-      this.storeOrderStateActivity(
-        order,
-        OrderActivityType.SentToKitchen,
-        order.sentToKitchenTime,
-      );
-      if (!order.isScheduled) {
-        order.preparationDetails =
-          await this.calculationService.calculateOrderPreparationTiming(
+    if (dto.status) {
+      if (dto.status == OrderStatus.SentToKitchen) {
+        this.storeOrderStateActivity(
+          order,
+          OrderActivityType.SentToKitchen,
+          order.sentToKitchenTime,
+        );
+        if (!order.isScheduled) {
+          order.preparationDetails =
+            await this.calculationService.calculateOrderPreparationTiming(
+              order,
+              OrderStatus.SentToKitchen,
+            );
+          await order.save();
+          this.calculationService.identifyOrdersToRecalculateAfterSentToKitchen(
             order,
-            OrderStatus.SentToKitchen,
           );
-        await order.save();
-        this.calculationService.identifyOrdersToRecalculateAfterSentToKitchen(
+        } else {
+          // commenting the  schedule activities
+          // this.calculationService.identifyOrdersToRecalculateForScheduled(
+          //   order,
+          //   OrderStatus.SentToKitchen,
+          // );
+        }
+      } else if (dto.status == OrderStatus.OnTable) {
+        this.storeOrderStateActivity(
+          order,
+          OrderActivityType.OrderReady,
+          order.orderReadyTime,
+        );
+      } else if (dto.status == OrderStatus.Cancelled) {
+        // this.storeOrderStateActivity(
+        //   order,
+        //   OrderActivityType.OrderReady,
+        //   order.orderReadyTime,
+        // );
+        this.calculationService.identifyOrdersToRecalculateAfterCompleted(
           order,
         );
       } else {
-        // commenting the  schedule activities
-        // this.calculationService.identifyOrdersToRecalculateForScheduled(
-        //   order,
-        //   OrderStatus.SentToKitchen,
-        // );
+        // check if needs to recalculate the order timing
+        if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
+          this.calculationService.handleOrderPreparationAfterUpdate(order);
       }
-    } else if (dto.status && dto.status == OrderStatus.OnTable) {
-      this.storeOrderStateActivity(
-        order,
-        OrderActivityType.OrderReady,
-        order.orderReadyTime,
-      );
-    } else if (dto.status && dto.status == OrderStatus.Cancelled) {
-      // this.storeOrderStateActivity(
-      //   order,
-      //   OrderActivityType.OrderReady,
-      //   order.orderReadyTime,
-      // );
-      this.calculationService.identifyOrdersToRecalculateAfterCompleted(order);
-    } else {
-      // check if needs to recalculate the order timing
-      if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
-        this.calculationService.handleOrderPreparationAfterUpdate(order);
+
+      this.orderNotificationService.triggerOrderNotification(order);
     }
 
     if (dto.tableId) {
@@ -543,7 +529,13 @@ export class OrderHelperService {
       ) {
         modifiedOrder.status = OrderStatus.DonePreparing;
         modifiedOrder.preparationDetails.actualEndTime = new Date();
+        const orderBeforeModified = modifiedOrder;
         await modifiedOrder.save();
+        this.postOrderUpdate(
+          order,
+          { status: OrderStatus.DonePreparing },
+          orderBeforeModified,
+        );
         this.calculationService.identifyOrdersToRecalculateAfterCompleted(
           modifiedOrder,
         );
