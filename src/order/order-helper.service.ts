@@ -529,7 +529,13 @@ export class OrderHelperService {
       ) {
         modifiedOrder.status = OrderStatus.DonePreparing;
         modifiedOrder.preparationDetails.actualEndTime = new Date();
+        const orderBeforeModified = modifiedOrder;
         await modifiedOrder.save();
+        this.postOrderUpdate(
+          order,
+          { status: OrderStatus.DonePreparing },
+          orderBeforeModified,
+        );
         this.calculationService.identifyOrdersToRecalculateAfterCompleted(
           modifiedOrder,
         );
