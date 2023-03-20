@@ -10,6 +10,7 @@ import { ReservationModule } from '../reservation/reservation.module';
 import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 import { InvoiceHelperService } from './invoice-helper.service';
 import { OrderModule } from 'src/order/order.module';
+import { PrinterModule } from 'src/printer/printer.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OrderModule } from 'src/order/order.module';
       { name: Order.name, schema: OrderSchema },
     ]),
     OrderModule,
+    PrinterModule,
   ],
   controllers: [InvoiceController],
   providers: [InvoiceService, FatooraService, InvoiceHelperService],

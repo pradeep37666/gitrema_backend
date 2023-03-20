@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { InvoiceType } from '../invoice.enum';
 import {
   IsArray,
+  IsBoolean,
   IsEnum,
   IsMongoId,
   IsNotEmpty,
@@ -11,6 +12,7 @@ import {
   IsString,
   ValidateIf,
   ValidateNested,
+  isBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -59,4 +61,9 @@ export class CreateInvoiceDto {
   items?: any[];
 
   invoiceNumber?: string;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  print?: boolean;
 }

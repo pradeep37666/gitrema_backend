@@ -19,6 +19,7 @@ import { InvoiceDocument } from './schemas/invoice.schema';
 import { QueryInvoiceDto } from './dto/query-invoice.dto';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
+import { EscCommandsDto } from './dto/esc-commands.dto';
 
 @ApiTags('Invoice')
 @ApiBearerAuth('access-token')
@@ -33,6 +34,15 @@ export class InvoiceController {
     @Body() dto: CreateInvoiceDto,
   ): Promise<InvoiceDocument> {
     return await this.invoiceService.create(req, dto);
+  }
+
+  @Get('commands')
+  @PermissionGuard(PermissionSubject.Invoice, Permission.Common.CREATE)
+  async generateCommands(
+    @Request() req,
+    @Query() query: EscCommandsDto,
+  ): Promise<InvoiceDocument> {
+    return await this.invoiceService.generateCommands(req, query);
   }
 
   @Patch(':invoiceId/cancel')
