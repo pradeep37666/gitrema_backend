@@ -51,6 +51,9 @@ Thumbs.db
 *.mov
 *.wmv
 
+.wwebjs_auth/
+
+database/
 
 # Elastic Beanstalk Files
 # .elasticbeanstalk/*

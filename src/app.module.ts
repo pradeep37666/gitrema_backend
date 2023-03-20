@@ -52,6 +52,7 @@ import { PackageModule } from './package/package.module';
 import { SocketIoModule } from './socket-io/socket-io.module';
 import { ReportModule } from './reports/report.module';
 import { ImportModule } from './import/import.module';
+import { PrinterModule } from './printer/printer.module';
 
 @Module({
   imports: [
@@ -112,6 +113,7 @@ import { ImportModule } from './import/import.module';
     ReportModule,
     SocketIoModule,
     ImportModule,
+    PrinterModule,
   ],
   controllers: [AppController],
   providers: [

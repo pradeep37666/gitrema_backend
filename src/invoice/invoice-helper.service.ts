@@ -18,6 +18,8 @@ import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import * as uniqid from 'uniqid';
 import { CalculationService } from 'src/order/calculation.service';
+import * as EscPosEncoder from 'esc-pos-encoder-latest';
+import { Image } from 'canvas';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -48,7 +50,7 @@ export class InvoiceHelperService {
     order: LeanDocument<OrderDocument>,
     dto: CreateInvoiceDto,
     cancelledInvoice: InvoiceDocument = null,
-  ): Promise<{ url: string; items: any[] }> {
+  ): Promise<{ url: string; items: any[]; html: string }> {
     const multiplier = cancelledInvoice ? -1 : 1;
     console.log(order.supplierId, {
       sellerName: order.supplierId.nameAr ?? order.supplierId.name,
@@ -88,7 +90,7 @@ export class InvoiceHelperService {
       order.supplierId._id + '/' + order.restaurantId._id + '/invoice/',
     );
 
-    if (s3Url) return { url: s3Url.Location, items };
+    if (s3Url) return { url: s3Url.Location, items, html };
     throw new BadRequestException(`Error generating invoice`);
   }
 
@@ -97,7 +99,7 @@ export class InvoiceHelperService {
     dto: CreateInvoiceDto,
     refInvoice: InvoiceDocument,
     cancelledInvoice: InvoiceDocument = null,
-  ): Promise<{ url: string; items: any[] }> {
+  ): Promise<{ url: string; items: any[]; html: string }> {
     const multiplier = cancelledInvoice ? -1 : 1;
 
     const summary = this.prepareCreditMemoItems(dto, order);
@@ -130,7 +132,7 @@ export class InvoiceHelperService {
       html,
       order.supplierId._id + '/' + order.restaurantId._id + '/invoice/',
     );
-    if (s3Url) return { url: s3Url.Location, items: summary.items };
+    if (s3Url) return { url: s3Url.Location, items: summary.items, html };
     throw new BadRequestException(`Error generating invoice`);
   }
 
@@ -238,5 +240,63 @@ export class InvoiceHelperService {
         invoiceStatus: InvoiceStatus.Invoiced,
       });
     }
+  }
+
+  async generateEscCommandsForInvoice(
+    order: OrderDocument,
+    invoice: InvoiceDocument,
+  ) {
+    const escEncoder = new EscPosEncoder();
+    const items = [];
+    order.items.forEach((oi) => {
+      items.push([oi.menuItem.nameAr, oi.quantity, oi.amountAfterDiscount]);
+    });
+    const qrCode = await this.fatooraService.generateInvoiceQrImage({
+      sellerName: order.supplierId.nameAr ?? order.supplierId.name,
+      vatRegistrationNumber: order?.supplierId?.vatNumber,
+      invoiceTimestamp: moment().format(),
+      invoiceTotal: order.summary.totalWithTax.toString(),
+      invoiceVatTotal: order.summary.totalTax.toString(),
+    });
+    const invoiceQr = new Image();
+    invoiceQr.src = qrCode;
+    escEncoder
+      .initialize()
+      //.codepage('auto')
+      .align('center')
+      .line(order?.restaurantId?.nameAr)
+
+      .line(order?.restaurantId?.name)
+
+      .line(order.orderNumber)
+
+      .line(invoice.invoiceNumber)
+      .newline()
+      .box(
+        { width: 30, align: 'center', style: 'double' },
+        order?.supplierId?.vatNumber,
+      )
+      .newline()
+      .table(
+        [
+          { width: 36, marginRight: 2, align: 'left' },
+          { width: 10, marginRight: 2, align: 'center' },
+          { width: 10, align: 'right' },
+        ],
+        items,
+      )
+      .newline()
+      .image(invoiceQr, 320, 320, 'atkinson')
+      .newline()
+      .line('If you have any Questions call')
+
+      .line(order.supplierId?.phoneNumber)
+      .newline()
+      .newline()
+      .newline()
+      .newline()
+      .cut();
+    console.log(escEncoder);
+    return escEncoder.encode();
   }
 }

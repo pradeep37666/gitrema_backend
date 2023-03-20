@@ -20,6 +20,8 @@ import {
   pagination,
 } from 'src/core/Constants/pagination';
 import { QueryInvoiceDto } from './dto/query-invoice.dto';
+import { PrinterService } from 'src/printer/printer.service';
+import { EscCommandsDto } from './dto/esc-commands.dto';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -43,6 +45,7 @@ export class InvoiceService {
     @InjectModel(Invoice.name)
     private invoiceModelPag: PaginateModel<InvoiceDocument>,
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    private readonly printerService: PrinterService,
   ) {}
 
   async checkIfInvoiceExist(orderId: string): Promise<number> {
@@ -83,7 +86,7 @@ export class InvoiceService {
     dto.invoiceNumber = await this.invoiceHelperService.generateInvoiceNumber(
       order.supplierId._id,
     );
-    let invoiceData = { url: '', items: null },
+    let invoiceData = { url: '', items: null, html: '' },
       refInvoice = null;
     // generate invoice
     if (dto.type == InvoiceType.Invoice)
@@ -120,7 +123,8 @@ export class InvoiceService {
     });
 
     this.invoiceHelperService.postInvoiceCreate(invoice, order);
-
+    if (dto.print && invoiceData.html)
+      this.printerService.print(invoiceData.html);
     return invoice;
   }
 
@@ -174,5 +178,30 @@ export class InvoiceService {
       ...pagination,
     });
     return invoices;
+  }
+
+  async generateCommands(req, query: EscCommandsDto) {
+    let commands = null;
+    const order = await this.orderModel.findById(query.orderId).populate([
+      {
+        path: 'supplierId',
+      },
+      {
+        path: 'restaurantId',
+      },
+    ]);
+    if (query.type == InvoiceType.Invoice) {
+      const invoice = await this.invoiceModel.findOne({
+        _id: query.invoiceId,
+      });
+      commands = await this.invoiceHelperService.generateEscCommandsForInvoice(
+        order,
+        invoice,
+      );
+      commands = Object.values(commands);
+    } else if (query.type == InvoiceType.KitchenReceipt) {
+      commands = '';
+    }
+    return commands;
   }
 }
