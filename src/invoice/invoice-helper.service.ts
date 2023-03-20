@@ -262,7 +262,7 @@ export class InvoiceHelperService {
     invoiceQr.src = qrCode;
     escEncoder
       .initialize()
-      //.codepage('auto')
+      .codepage('windows1256')
       .align('center')
       .line(order?.restaurantId?.nameAr)
 
