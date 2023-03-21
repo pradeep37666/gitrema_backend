@@ -4,6 +4,8 @@ import {
   BadRequestException,
   Logger,
   UnauthorizedException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { SignupRequestDto } from '../dto/signup-request.dto';
@@ -38,6 +40,7 @@ import {
   Supplier,
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
+import { TaqnyatService } from 'src/core/Providers/Sms/taqnyat.service';
 
 @Injectable()
 export class AuthService {
@@ -57,6 +60,7 @@ export class AuthService {
     private supplierService: SupplierService,
     private jwtService: JwtService,
     private readonly asmscService: AsmscService,
+    private readonly tanqyatService: TaqnyatService,
     private readonly mailService: MailService,
   ) {}
 
@@ -175,12 +179,23 @@ export class AuthService {
   }
 
   async requestOtp(req, requestOtpDetails: RequestOtpDto): Promise<any> {
-    const response = await this.asmscService.sendOtp(
-      requestOtpDetails.phoneNumber,
+    const code = Math.floor(1000 + Math.random() * 9000);
+    await this.otpModel.updateMany(
+      { phoneNumber: requestOtpDetails.phoneNumber },
+      { status: OtpStatus.Used },
     );
-    if (response.status == 'S') {
-      return { verificationId: response.verfication_id };
-    }
+    this.otpModel.create({ phoneNumber: requestOtpDetails.phoneNumber, code });
+
+    const response = await this.tanqyatService.send(
+      requestOtpDetails.phoneNumber,
+      code,
+    );
+    console.log(response);
+    if (response.statusCode == HttpStatus.CREATED)
+      return { verificationId: response.messageId };
+    // if (response.status == 'S') {
+    //   return { verificationId: response.verfication_id };
+    // }
     throw new BadRequestException(STATUS_MSG.ERROR.ERROR_SMS);
   }
 
@@ -189,12 +204,24 @@ export class AuthService {
     verificationOtpDetails: VerificationOtpDto,
   ): Promise<any> {
     if (verificationOtpDetails.code !== 'FMJLAL2ZOC') {
-      const response = await this.asmscService.verifyOtp(
-        verificationOtpDetails,
-      );
-      if (response.status != 'V') {
+      // const response = await this.asmscService.verifyOtp(
+      //   verificationOtpDetails,
+      // );
+      // if (response.status != 'V') {
+      //   throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
+      // }
+      const otp = await this.otpModel.findOne({
+        status: OtpStatus.Pending,
+        phoneNumber: verificationOtpDetails.phoneNumber,
+        code: verificationOtpDetails.verificationCode,
+      });
+      if (!otp) {
         throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
       }
+      this.otpModel.updateMany(
+        { phoneNumber: verificationOtpDetails.phoneNumber },
+        { status: OtpStatus.Used },
+      );
     }
 
     let customer = await this.customerModel.findOne({
@@ -241,12 +268,24 @@ export class AuthService {
     verificationOtpDetails: UserVerificationOtpDto,
   ): Promise<any> {
     if (verificationOtpDetails.code !== 'FMJLAL2ZOC') {
-      const response = await this.asmscService.verifyOtp(
-        verificationOtpDetails,
-      );
-      if (response.status != 'V') {
+      // const response = await this.asmscService.verifyOtp(
+      //   verificationOtpDetails,
+      // );
+      // if (response.status != 'V') {
+      //   throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
+      // }
+      const otp = await this.otpModel.findOne({
+        status: OtpStatus.Pending,
+        phoneNumber: verificationOtpDetails.phoneNumber,
+        code: verificationOtpDetails.verificationCode,
+      });
+      if (!otp) {
         throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
       }
+      this.otpModel.updateMany(
+        { phoneNumber: verificationOtpDetails.phoneNumber },
+        { status: OtpStatus.Used },
+      );
     }
     const supplier = await this.supplierModel.findOne({
       alias: verificationOtpDetails.alias,

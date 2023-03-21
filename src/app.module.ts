@@ -53,6 +53,7 @@ import { SocketIoModule } from './socket-io/socket-io.module';
 import { ReportModule } from './reports/report.module';
 import { ImportModule } from './import/import.module';
 import { PrinterModule } from './printer/printer.module';
+import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
 
 @Module({
   imports: [
@@ -64,7 +65,8 @@ import { PrinterModule } from './printer/printer.module';
         awsConfiguration,
         arbPgConfiguration,
         mailConfiguration,
-        asmscSmsConfiguration,
+        //asmscSmsConfiguration,
+        taqnyatSmsConfiguration,
       ],
     }),
     MongooseModule.forRootAsync({
