@@ -20,6 +20,7 @@ import { QueryInvoiceDto } from './dto/query-invoice.dto';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 import { EscCommandsDto } from './dto/esc-commands.dto';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @ApiTags('Invoice')
 @ApiBearerAuth('access-token')
@@ -37,7 +38,7 @@ export class InvoiceController {
   }
 
   @Get('commands')
-  @PermissionGuard(PermissionSubject.Invoice, Permission.Common.CREATE)
+  @Public()
   async generateCommands(
     @Request() req,
     @Query() query: EscCommandsDto,
