@@ -6,8 +6,11 @@ export type OtpDocument = Otp & Document;
 
 @Schema({ timestamps: true })
 export class Otp {
-  @Prop({ required: true })
+  @Prop({ default: null })
   email: string;
+
+  @Prop({ default: null })
+  phoneNumber: string;
 
   @Prop({ required: true })
   code: number;
