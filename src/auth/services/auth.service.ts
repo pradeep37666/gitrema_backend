@@ -180,6 +180,7 @@ export class AuthService {
 
   async requestOtp(req, requestOtpDetails: RequestOtpDto): Promise<any> {
     const code = Math.floor(1000 + Math.random() * 9000);
+    const template = `Your verification code: ${code} for login Talabatmenu portal.`;
     await this.otpModel.updateMany(
       { phoneNumber: requestOtpDetails.phoneNumber },
       { status: OtpStatus.Used },
@@ -188,7 +189,7 @@ export class AuthService {
 
     const response = await this.tanqyatService.send(
       requestOtpDetails.phoneNumber,
-      code,
+      template,
     );
     console.log(response);
     if (response.statusCode == HttpStatus.CREATED)
