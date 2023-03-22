@@ -277,6 +277,7 @@ export class InvoiceHelperService {
         order?.supplierId?.vatNumber,
       )
       .newline()
+      .codepage('cp864')
       .table(
         [
           { width: 40, marginRight: 2, align: 'left' },
