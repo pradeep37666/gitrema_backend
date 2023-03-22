@@ -262,7 +262,7 @@ export class InvoiceHelperService {
     invoiceQr.src = qrCode;
     escEncoder
       .initialize()
-      .codepage('windows1256')
+      .codepage('auto')
       .align('center')
       .line(order?.restaurantId?.nameAr)
 
@@ -279,9 +279,9 @@ export class InvoiceHelperService {
       .newline()
       .table(
         [
-          { width: 36, marginRight: 2, align: 'left' },
-          { width: 10, marginRight: 2, align: 'center' },
-          { width: 10, align: 'right' },
+          { width: 40, marginRight: 2, align: 'left' },
+          { width: 15, align: 'center' },
+          { width: 15, align: 'right' },
         ],
         items,
       )
