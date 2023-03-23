@@ -48,4 +48,9 @@ export class QueryOrderDto {
   @Type(() => String)
   @Transform(({ value }) => value.toString().split(','))
   status: OrderStatus[];
+
+  @ApiProperty({ required: false, example: false })
+  @ToBoolean()
+  @IsOptional()
+  chefRequestedClarification: boolean;
 }
