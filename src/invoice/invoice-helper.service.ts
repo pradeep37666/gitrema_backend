@@ -20,6 +20,7 @@ import * as uniqid from 'uniqid';
 import { CalculationService } from 'src/order/calculation.service';
 import * as EscPosEncoder from 'esc-pos-encoder-latest';
 import { Image } from 'canvas';
+import * as CodepageEncoder from 'codepage-encoder';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -246,7 +247,38 @@ export class InvoiceHelperService {
     order: OrderDocument,
     invoice: InvoiceDocument,
   ) {
-    const escEncoder = new EscPosEncoder();
+    return [
+      '0x1B',
+      '0x40',
+      //'0x1B' + '\x40', // ESC @ - init command, necessary for proper byte interpretation
+      '0x1B',
+      '0x74',
+      '0x25', // Setup "codepage 37", which is Epson's IBM864
+      'لكن لا بد أن أوضح لك أن كل هذه الأفكار',
+      '\n', // UTF-8 RTL text
+      '0x1B',
+      '0x69', // cut paper
+    ];
+    console.log(CodepageEncoder.getTestStrings('cp720'));
+    console.log(CodepageEncoder.getTestStrings('cp864'));
+    console.log(CodepageEncoder.getTestStrings('windows1256'));
+    const escEncoder = new EscPosEncoder({
+      codepageCandidates: [
+        'cp437',
+        'cp858',
+        'cp860',
+        'cp861',
+        'cp863',
+        'cp865',
+        'cp852',
+        'cp857',
+        'cp855',
+        'cp866',
+        'cp869',
+        'cp720',
+        'cp864',
+      ],
+    });
     const items = [];
     order.items.forEach((oi) => {
       items.push([oi.menuItem.nameAr, oi.quantity, oi.amountAfterDiscount]);
