@@ -247,18 +247,18 @@ export class InvoiceHelperService {
     order: OrderDocument,
     invoice: InvoiceDocument,
   ) {
-    return [
-      '0x1B',
-      '0x40',
-      //'0x1B' + '\x40', // ESC @ - init command, necessary for proper byte interpretation
-      '0x1B',
-      '0x74',
-      '0x25', // Setup "codepage 37", which is Epson's IBM864
-      'لكن لا بد أن أوضح لك أن كل هذه الأفكار',
-      '\n', // UTF-8 RTL text
-      '0x1B',
-      '0x69', // cut paper
-    ];
+    // return [
+    //   0x1b,
+    //   0x40,
+    //   //'0x1B' + '\x40', // ESC @ - init command, necessary for proper byte interpretation
+    //   0x1b,
+    //   0x74,
+    //   0x25, // Setup "codepage 37", which is Epson's IBM864
+    //   'لكن لا بد أن أوضح لك أن كل هذه الأفكار',
+    //   '\n', // UTF-8 RTL text
+    //   0x1b,
+    //   0x69, // cut paper
+    // ];
     console.log(CodepageEncoder.getTestStrings('cp720'));
     console.log(CodepageEncoder.getTestStrings('cp864'));
     console.log(CodepageEncoder.getTestStrings('windows1256'));
@@ -294,8 +294,9 @@ export class InvoiceHelperService {
     invoiceQr.src = qrCode;
     escEncoder
       .initialize()
-      .codepage('cp720')
+      .raw([0x1b, 0x74, 0x25])
       .align('center')
+      .line('لكن لا بد أن أوضح لك أن كل هذه الأفكار')
       .line(order?.restaurantId?.nameAr)
 
       .line(order?.restaurantId?.name)
@@ -309,7 +310,7 @@ export class InvoiceHelperService {
         order?.supplierId?.vatNumber,
       )
       .newline()
-      .codepage('cp864')
+      //.codepage('cp864')
       .table(
         [
           { width: 40, marginRight: 2, align: 'left' },
