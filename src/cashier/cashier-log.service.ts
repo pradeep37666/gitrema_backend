@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -36,7 +38,9 @@ export class CashierLogService {
     @InjectModel(CashierLog.name)
     private readonly cashierLogModelPag: PaginateModel<CashierLogDocument>,
 
+    @Inject(forwardRef(() => CashierService))
     private readonly cashierService: CashierService,
+    @Inject(forwardRef(() => CashierHelperService))
     private readonly cashierHelperService: CashierHelperService,
     private socketGateway: SocketIoGateway,
   ) {}

@@ -70,4 +70,9 @@ export class CreatePaymentSetupDto {
   @IsString()
   @IsOptional()
   iban: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  bankIdCode: string;
 }

@@ -49,7 +49,7 @@ export class OrderItemDto {
   @ValidateNested({ each: true })
   @Type(() => MenuAdditionDto)
   @IsOptional()
-  additions: MenuAdditionDto[];
+  additions?: MenuAdditionDto[];
 
   @ApiProperty()
   @IsNumber()
@@ -59,5 +59,5 @@ export class OrderItemDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  notes: string;
+  notes?: string;
 }

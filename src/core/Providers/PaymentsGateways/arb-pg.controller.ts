@@ -4,9 +4,11 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Inject,
   Post,
   Req,
   Request,
+  forwardRef,
 } from '@nestjs/common';
 import { ArbPgService } from './arb-pg.service';
 import { SupplierService } from 'src/supplier/Supplier.service';
@@ -22,6 +24,7 @@ export class ArbPgController {
   constructor(
     private readonly arbPgService: ArbPgService,
     private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => SupplierService))
     private readonly supplierService: SupplierService,
   ) {}
 

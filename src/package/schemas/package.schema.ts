@@ -37,6 +37,9 @@ export class Package {
   })
   features: FeatureDocument[];
 
+  @Prop({ default: null })
+  deliveryMargin: number;
+
   @Prop({ default: false })
   isDefaultPackage: boolean;
 

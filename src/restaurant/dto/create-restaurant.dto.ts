@@ -156,7 +156,7 @@ export class CreateRestaurantDto {
   @ValidateNested({ each: true })
   @Type(() => IndividualWorkHoursDTO)
   @IsOptional()
-  overrideWorkingHours: IndividualWorkHoursDTO[];
+  overrideWorkingHours?: IndividualWorkHoursDTO[];
 
   @ApiProperty()
   @IsBoolean()
@@ -207,11 +207,11 @@ export class CreateRestaurantDto {
   @ValidateNested({ each: true })
   @Type(() => TermsAndConditionDTO)
   @IsOptional()
-  terms: TermsAndConditionDTO[];
+  terms?: TermsAndConditionDTO[];
 
   @ValidateNested()
   @Type(() => LocationDto)
   @ApiProperty({ type: LocationDto, required: false })
   @IsOptional()
-  location: LocationDto;
+  location?: LocationDto;
 }

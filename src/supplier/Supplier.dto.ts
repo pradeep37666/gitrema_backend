@@ -202,6 +202,11 @@ export class AddSupplierDto {
   @Type(() => IndividualWorkHoursDTO)
   @IsOptional()
   overrideWorkingHours: IndividualWorkHoursDTO[];
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  createTestData?: boolean;
 }
 
 export class UpdateSupplierDto extends PartialType(AddSupplierDto) {
@@ -231,6 +236,11 @@ export class AssignPackageDto {
       'minimal allowed date for startDate is ' + new Date().toDateString(),
   })
   startDate?: Date;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  deliveryMargin?: number;
 }
 
 export class ModifyPackageFeaturesDto {

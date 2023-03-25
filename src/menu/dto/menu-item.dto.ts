@@ -43,7 +43,7 @@ export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsMongoId()
   @IsOptional()
-  restaurantId: string;
+  restaurantId?: string;
 
   @ApiProperty()
   @IsMongoId()
@@ -63,12 +63,12 @@ export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  description: string;
+  description?: string;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  descriptionAr: string;
+  descriptionAr?: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -78,17 +78,17 @@ export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  taxEnabled: boolean;
+  taxEnabled?: boolean;
 
   @ApiProperty({ required: false })
   @IsNumber()
   @IsOptional()
-  priceInStar: number;
+  priceInStar?: number;
 
   @ApiProperty({ required: false })
   @IsNumber()
   @IsOptional()
-  starGain: number;
+  starGain?: number;
 
   @ApiProperty()
   @IsNumber()
@@ -98,7 +98,7 @@ export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  waiterCode: string;
+  waiterCode?: string;
 
   @ApiProperty({
     type: [String],
@@ -109,26 +109,26 @@ export class CreateMenuItemDTO {
   @IsEnum(Alergies, { each: true })
   @IsOptional()
   @IsArray()
-  alergies: Alergies[];
+  alergies?: Alergies[];
 
   @ApiProperty({ required: false, type: [QuantityDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => QuantityDto)
   @IsOptional()
-  quantities: QuantityDto[];
+  quantities?: QuantityDto[];
 
   @ApiProperty({ required: false, type: [String] })
   @IsArray()
   @IsMongoId({ each: true })
   @IsOptional()
-  suggestedItems: string[];
+  suggestedItems?: string[];
 
   @ApiProperty({ required: false, type: [String] })
   @IsArray()
   @IsMongoId({ each: true })
   @IsOptional()
-  additions: string[];
+  additions?: string[];
 
   @ApiProperty({
     type: String,
@@ -138,7 +138,7 @@ export class CreateMenuItemDTO {
   })
   @IsEnum(MenuSticker)
   @IsOptional()
-  sticker: MenuSticker;
+  sticker?: MenuSticker;
 
   @ApiProperty({
     type: [String],
@@ -149,28 +149,28 @@ export class CreateMenuItemDTO {
   @IsArray()
   @IsEnum(MenuStickerStyle, { each: true })
   @IsOptional()
-  stickerStyle: MenuStickerStyle[];
+  stickerStyle?: MenuStickerStyle[];
 
   @ApiProperty({ required: false })
   @IsUrl()
   @IsOptional()
-  image: string;
+  image?: string;
 
   @ApiProperty({ required: false, type: [String] })
   @IsArray()
   @IsMongoId({ each: true })
   @IsOptional()
-  hideFromMenu: string[];
+  hideFromMenu?: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  canBuyWithStars: boolean;
+  canBuyWithStars?: boolean;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  soldOut: boolean;
+  soldOut?: boolean;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -180,12 +180,12 @@ export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsNumber()
-  cost: number;
+  cost?: number;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  manageQuantity: boolean;
+  manageQuantity?: boolean;
 
   @ApiProperty()
   @IsNotEmpty()

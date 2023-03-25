@@ -37,9 +37,10 @@ export class SupplierController {
   @Post()
   @PermissionGuard(PermissionSubject.Supplier, Permission.Common.CREATE)
   addSupplier(
+    @Req() req,
     @Body() supplierDetails: AddSupplierDto,
   ): Promise<SupplierDocument> {
-    return this.supplierService.createSupplier(supplierDetails);
+    return this.supplierService.createSupplier(req, supplierDetails);
   }
 
   @Get()

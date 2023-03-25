@@ -65,6 +65,9 @@ export class PaymentSetup {
   @Prop({ default: null })
   iban: string;
 
+  @Prop({ default: null })
+  bankIdCode: string;
+
   @Prop({ default: true })
   active: boolean;
 

@@ -102,7 +102,7 @@ export class Restaurant {
   @Prop({ default: null })
   minimumDeliveryOrderValue: number;
 
-  @Prop({ type: Object, required: true })
+  @Prop({ type: Object })
   location: {
     address: string;
     city: string;

@@ -145,17 +145,10 @@ export class AuthService {
       ...signupRequest.supplier,
     };
     const supplierDocument = await this.supplierService.createSupplier(
+      null,
       addSupplierReq,
     );
 
-    const supplierPackage = await this.supplierService.assignPackage(
-      null,
-      supplierDocument._id,
-      {
-        packageId: null,
-        startTrial: true,
-      },
-    );
     // const { supplier, ...result } = signupRequest;
     const { ...result } = signupRequest;
     const adminRole = await this.roleModel.findOne({

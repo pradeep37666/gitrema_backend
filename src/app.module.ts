@@ -53,6 +53,8 @@ import { SocketIoModule } from './socket-io/socket-io.module';
 import { ReportModule } from './reports/report.module';
 import { ImportModule } from './import/import.module';
 import { PrinterModule } from './printer/printer.module';
+import { GlobalConfigModule } from './global-config/global-config.module';
+import { TestDataModule } from './test-data/test-data.module';
 import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
 
 @Module({
@@ -116,6 +118,8 @@ import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
     SocketIoModule,
     ImportModule,
     PrinterModule,
+    GlobalConfigModule,
+    TestDataModule,
   ],
   controllers: [AppController],
   providers: [

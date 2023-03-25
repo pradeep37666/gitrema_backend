@@ -48,6 +48,9 @@ export class SupplierPackage {
   })
   features: FeatureDocument[];
 
+  @Prop({ default: null })
+  deliveryMargin: number;
+
   @Prop({})
   subscriptionStartingDate: Date;
 
