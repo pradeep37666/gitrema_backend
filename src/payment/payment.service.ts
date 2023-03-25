@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 
 import { ReservationService } from '../reservation/reservation.service';
@@ -30,6 +32,10 @@ import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { CashierLogService } from 'src/cashier/cashier-log.service';
 import { CashierHelperService } from 'src/cashier/cashier-helper.service';
+import { PaymentSetupService } from 'src/payment-setup/payment-setup.service';
+import { SupplierService } from 'src/supplier/Supplier.service';
+import { GlobalConfigService } from 'src/global-config/global-config.service';
+import * as moment from 'moment';
 
 @Injectable()
 export class PaymentService {
@@ -39,12 +45,17 @@ export class PaymentService {
     private orderService: OrderService,
     private cashierLogService: CashierLogService,
     private cashierHelpderService: CashierHelperService,
+    private paymentSetupService: PaymentSetupService,
+    @Inject(forwardRef(() => SupplierService))
+    private supplierService: SupplierService,
+    private globalConfigService: GlobalConfigService,
     @InjectModel(Order.name)
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
     @InjectModel(Cashier.name)
     private readonly cashierModel: Model<CashierDocument>,
+
     private socketGateway: SocketIoGateway,
   ) {}
 
@@ -135,7 +146,12 @@ export class PaymentService {
         action: 1,
         metaId: paymentRequestDetails.metaId,
         redirectUrl: paymentRequestDetails.redirectUrl,
+        // accountDetails: await this.preparePayout(
+        //   order.supplierId.toString(),
+        //   transaction.amount,
+        // ),
       };
+
       const res = await this.arbPgService.requestPaymentToken(options);
 
       this.transactionService.update(transaction._id, {
@@ -223,5 +239,51 @@ export class PaymentService {
     });
 
     return transactions;
+  }
+  async preparePayout(
+    supplierId: string,
+    amount: number,
+  ): Promise<
+    [
+      {
+        bankIdCode: string;
+        iBanNum: string;
+        benificiaryName: string;
+        serviceAmount: number;
+        valueDate: string;
+      },
+    ]
+  > {
+    let accountDetails = null;
+    const paymentSetup = await this.paymentSetupService.findOneBySupplier(
+      supplierId,
+    );
+    if (paymentSetup) {
+      const supplierPackage =
+        await this.supplierService.getSupplierActivePackage(supplierId);
+      let deliveryMargin = 0;
+      if (supplierPackage && supplierPackage.deliveryMargin) {
+        deliveryMargin = supplierPackage.deliveryMargin;
+      } else {
+        const globalConfig = await this.globalConfigService.fetch();
+        if (globalConfig) {
+          deliveryMargin = globalConfig?.deliveryMargin ?? 0;
+        }
+      }
+
+      const deliveryMarginAmount = roundOffNumber(
+        (amount * deliveryMargin) / 100,
+      );
+      accountDetails = [
+        {
+          bankIdCode: paymentSetup.bankIdCode,
+          iBanNum: paymentSetup.iban,
+          benificiaryName: paymentSetup.bankAccountHolder,
+          serviceAmount: amount - deliveryMarginAmount,
+          valueDate: moment.utc().format('YYYY-MM-DD'),
+        },
+      ];
+    }
+    return accountDetails;
   }
 }

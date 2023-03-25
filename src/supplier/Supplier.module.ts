@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { SupplierController } from './Supplier.controller';
@@ -14,6 +14,7 @@ import {
   SupplierPackage,
   SupplierPackageSchema,
 } from './schemas/supplier-package.schema';
+import { TestDataModule } from 'src/test-data/test-data.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import {
       { name: Package.name, schema: PackageSchema },
       { name: SupplierPackage.name, schema: SupplierPackageSchema },
     ]),
+    forwardRef(() => TestDataModule),
   ],
   controllers: [SupplierController],
   providers: [SupplierService],

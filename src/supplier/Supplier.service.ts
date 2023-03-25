@@ -1,5 +1,10 @@
 import mongoose, { Model, PaginateModel, PaginateResult } from 'mongoose';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import {
@@ -27,6 +32,7 @@ import {
 } from './schemas/supplier-package.schema';
 import * as moment from 'moment';
 import { SupplierAggregated } from './interfaces/suppliers.interface';
+import { TestDataService } from 'src/test-data/test-data.service';
 
 @Injectable()
 export class SupplierService {
@@ -43,9 +49,12 @@ export class SupplierService {
     private packageModel: Model<PackageDocument>,
     @InjectModel(SupplierPackage.name)
     private supplierPackagemodel: Model<SupplierPackageDocument>,
+    @Inject(forwardRef(() => TestDataService))
+    private readonly testDataService: TestDataService,
   ) {}
 
   async createSupplier(
+    req: any,
     supplierDetails: AddSupplierDto,
   ): Promise<SupplierDocument> {
     if (supplierDetails.alias) {
@@ -69,7 +78,24 @@ export class SupplierService {
         { taxEnabled: true },
       );
     }
-    return await supplier.save();
+
+    await supplier.save();
+    this.postSupplierCreate(req, supplier, supplierDetails);
+    return supplier;
+  }
+
+  async postSupplierCreate(
+    req,
+    supplier: SupplierDocument,
+    dto: AddSupplierDto,
+  ) {
+    this.assignPackage(req, supplier._id, {
+      packageId: null,
+      startTrial: true,
+    });
+    if (req && dto.createTestData) {
+      this.testDataService.run(req, supplier);
+    }
   }
 
   async getAll(
@@ -301,12 +327,14 @@ export class SupplierService {
     delete packageObjToApply._id;
     delete packageObjToApply.createdAt;
     delete packageObjToApply.updatedAt;
-
+    const requestDto = dto;
+    delete requestDto.packageId;
     const supplierPackage = await this.supplierPackagemodel.create({
       supplierId,
       packageId: packageObj._id,
       ...packageObjToApply,
       ...dates,
+      ...requestDto,
       addedBy: req ? req?.user?.userId : null,
     });
     if (supplierPackage) {
@@ -327,5 +355,13 @@ export class SupplierService {
       { _id: supplierId },
       { deletedAt: new Date() },
     );
+  }
+
+  async getSupplierActivePackage(supplierId: string) {
+    return await this.supplierPackagemodel.findOne({
+      supplierId,
+
+      active: true,
+    });
   }
 }

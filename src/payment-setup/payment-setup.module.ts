@@ -15,5 +15,6 @@ import {
   ],
   controllers: [PaymentSetupController],
   providers: [PaymentSetupService],
+  exports: [PaymentSetupService],
 })
 export class PaymentSetupModule {}

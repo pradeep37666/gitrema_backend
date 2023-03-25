@@ -23,5 +23,6 @@ import { KitchenQueueLogService } from './kitchen-queue-log.service';
   ],
   controllers: [KitchenQueueController],
   providers: [KitchenQueueService, KitchenQueueLogService],
+  exports: [KitchenQueueService, KitchenQueueLogService],
 })
 export class KitchenQueueModule {}

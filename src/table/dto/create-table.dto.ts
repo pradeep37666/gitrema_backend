@@ -31,10 +31,10 @@ export class CreateTableDto {
   @IsString()
   nameAr: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
+  @ApiProperty()
+  @IsNotEmpty()
   @IsNumber()
-  totalChairs?: number;
+  totalChairs: number;
 
   @ApiProperty({
     type: String,

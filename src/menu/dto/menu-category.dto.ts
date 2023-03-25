@@ -22,7 +22,7 @@ export class CreateMenuCategoryDTO {
   @ApiProperty({ required: false })
   @IsUrl()
   @IsOptional()
-  image: string;
+  image?: string;
 }
 
 export class UpdateMenuCategoryDTO extends PartialType(CreateMenuCategoryDTO) {

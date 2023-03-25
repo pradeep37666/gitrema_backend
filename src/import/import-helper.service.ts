@@ -72,7 +72,7 @@ export class ImportHelperService {
         end: row['defaultWorkingHoursEnd'],
       };
       try {
-        const supplier = await this.supplierService.createSupplier({
+        const supplier = await this.supplierService.createSupplier(req, {
           ...row,
           importId: importObj._id,
         });

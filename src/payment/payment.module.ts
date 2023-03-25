@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { PaymentGatewayModule } from 'src/core/Providers/PaymentsGateways/payment-gateway.module';
@@ -13,6 +13,9 @@ import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
 import { Cashier, CashierSchema } from 'src/cashier/schemas/cashier.schema';
 import { CashierModule } from 'src/cashier/cashier.module';
+import { PaymentSetupModule } from 'src/payment-setup/payment-setup.module';
+import { SupplierModule } from 'src/supplier/Supplier.module';
+import { GlobalConfigModule } from 'src/global-config/global-config.module';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { CashierModule } from 'src/cashier/cashier.module';
     OrderModule,
     SocketIoModule,
     CashierModule,
+    PaymentSetupModule,
+    forwardRef(() => SupplierModule),
+    GlobalConfigModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],

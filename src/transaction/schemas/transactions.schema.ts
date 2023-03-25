@@ -126,6 +126,9 @@ export class Transaction {
   ragSettlement: RagSettlement;
 
   @Prop({ default: false })
+  isRemitScheduled: boolean;
+
+  @Prop({ default: false })
   isRemitted: boolean;
 
   @Prop({ default: false })

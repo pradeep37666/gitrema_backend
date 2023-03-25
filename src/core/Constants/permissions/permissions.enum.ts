@@ -30,6 +30,7 @@ export enum PermissionSubject {
   Feature = 'Feature',
   Package = 'Package',
   Import = 'Import',
+  GlobalConfig = 'Global Config',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',

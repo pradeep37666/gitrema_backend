@@ -48,7 +48,7 @@ export class PaymentInitiateDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsNumber()
-  amount: number;
+  amount?: number;
 
   @ApiProperty({ type: String, enum: PaymentMethod, enumName: 'PaymentMethod' })
   @IsEnum(PaymentMethod)
@@ -68,7 +68,7 @@ export class PaymentInitiateDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  redirectUrl: string;
+  redirectUrl?: string;
 }
 
 export class PaymentSplitDto {

@@ -73,6 +73,12 @@ export class PaymentSetupService {
     return exists;
   }
 
+  async findOneBySupplier(supplierId: string): Promise<PaymentSetupDocument> {
+    const exists = await this.paymentSetupModel.findOne({ supplierId });
+
+    return exists;
+  }
+
   async update(
     paymentSetupId: string,
     dto: UpdatePaymentSetupDto,
