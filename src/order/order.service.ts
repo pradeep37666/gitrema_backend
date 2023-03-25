@@ -156,6 +156,13 @@ export class OrderService {
       delete queryToApply.notBelongingToTable;
     }
 
+    if (paginateOptions.pagination == false) {
+      paginateOptions = {
+        pagination: true,
+        limit: 10,
+        page: 1,
+      };
+    }
     const orders = await this.orderModelPag.paginate(
       {
         supplierId: req.user.supplierId,
