@@ -110,7 +110,16 @@ export class TableService {
                 $size: {
                   $filter: {
                     input: '$orders',
-                    cond: { $eq: ['$$this.status', OrderStatus.SentToKitchen] },
+                    cond: {
+                      $in: [
+                        '$$this.status',
+                        [
+                          OrderStatus.SentToKitchen,
+                          OrderStatus.StartedPreparing,
+                          OrderStatus.DonePreparing,
+                        ],
+                      ],
+                    },
                   },
                 },
               },

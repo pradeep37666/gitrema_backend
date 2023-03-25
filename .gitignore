@@ -55,6 +55,8 @@ Thumbs.db
 
 database/
 
+build/
+
 # Elastic Beanstalk Files
 # .elasticbeanstalk/*
 # !.elasticbeanstalk/*.cfg.yml
