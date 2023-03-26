@@ -83,6 +83,9 @@ export class Invoice {
   @Prop({ required: true })
   url: string;
 
+  @Prop({ required: true })
+  imageUrl: string;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Invoice',

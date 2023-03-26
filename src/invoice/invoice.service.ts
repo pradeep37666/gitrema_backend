@@ -86,7 +86,7 @@ export class InvoiceService {
     dto.invoiceNumber = await this.invoiceHelperService.generateInvoiceNumber(
       order.supplierId._id,
     );
-    let invoiceData = { url: '', items: null, html: '' },
+    let invoiceData = { url: '', items: null, html: '', imageUrl: '' },
       refInvoice = null;
     // generate invoice
     if (dto.type == InvoiceType.Invoice)
@@ -118,6 +118,7 @@ export class InvoiceService {
       supplierId: order.supplierId._id,
       restaurantId: order.restaurantId._id,
       url: invoiceData.url,
+      imageUrl: invoiceData.imageUrl,
       items: invoiceData.items,
       refInvoiceId: refInvoice ? refInvoice._id : null,
     });
@@ -182,20 +183,15 @@ export class InvoiceService {
 
   async generateCommands(req, query: EscCommandsDto) {
     let commands = null;
-    const order = await this.orderModel.findById(query.orderId).populate([
-      {
-        path: 'supplierId',
-      },
-      {
-        path: 'restaurantId',
-      },
-    ]);
+
     if (query.type == InvoiceType.Invoice) {
       const invoice = await this.invoiceModel.findOne({
-        _id: query.invoiceId,
+        orderId: query.orderId,
       });
+      if (!invoice) {
+        throw new BadRequestException(`Invoice not found`);
+      }
       commands = await this.invoiceHelperService.generateEscCommandsForInvoice(
-        order,
         invoice,
       );
       commands = Object.values(commands);
