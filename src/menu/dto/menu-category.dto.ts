@@ -23,6 +23,11 @@ export class CreateMenuCategoryDTO {
   @IsUrl()
   @IsOptional()
   image?: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
 }
 
 export class UpdateMenuCategoryDTO extends PartialType(CreateMenuCategoryDTO) {

@@ -53,7 +53,13 @@ export class MenuCategoryService {
         deletedAt: null,
       },
       {
-        sort: DefaultSort,
+        sort: paginateOptions.sortBy
+          ? {
+              [paginateOptions.sortBy]: paginateOptions.sortDirection
+                ? paginateOptions.sortDirection
+                : -1,
+            }
+          : DefaultSort,
         lean: true,
         ...paginateOptions,
         ...pagination,
