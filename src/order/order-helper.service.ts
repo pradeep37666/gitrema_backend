@@ -492,7 +492,8 @@ export class OrderHelperService {
       n = parseInt(order.orderNumber) + 1;
     }
 
-    return String(n).padStart(5, '0');
+    //return String(n).padStart(7, '0');
+    return n.toString();
   }
 
   async storeCart(orderData) {

@@ -11,6 +11,7 @@ import { Order, OrderSchema } from 'src/order/schemas/order.schema';
 import { InvoiceHelperService } from './invoice-helper.service';
 import { OrderModule } from 'src/order/order.module';
 import { PrinterModule } from 'src/printer/printer.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PrinterModule } from 'src/printer/printer.module';
     ]),
     OrderModule,
     PrinterModule,
+    HttpModule,
   ],
   controllers: [InvoiceController],
   providers: [InvoiceService, FatooraService, InvoiceHelperService],

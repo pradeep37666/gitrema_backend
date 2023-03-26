@@ -1,5 +1,5 @@
 import { Invoice } from '@axenda/zatca';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import Handlebars from 'handlebars';
@@ -21,6 +21,8 @@ import { CalculationService } from 'src/order/calculation.service';
 import * as EscPosEncoder from 'esc-pos-encoder-latest';
 import { Image } from 'canvas';
 import * as CodepageEncoder from 'codepage-encoder';
+import { HttpService } from '@nestjs/axios';
+import { catchError, lastValueFrom, map } from 'rxjs';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -45,13 +47,14 @@ export class InvoiceHelperService {
 
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     private readonly calculationService: CalculationService,
+    private readonly httpService: HttpService,
   ) {}
 
   async generateInvoice(
     order: LeanDocument<OrderDocument>,
     dto: CreateInvoiceDto,
     cancelledInvoice: InvoiceDocument = null,
-  ): Promise<{ url: string; items: any[]; html: string }> {
+  ): Promise<{ url: string; items: any[]; html: string; imageUrl: string }> {
     const multiplier = cancelledInvoice ? -1 : 1;
     console.log(order.supplierId, {
       sellerName: order.supplierId.nameAr ?? order.supplierId.name,
@@ -70,7 +73,7 @@ export class InvoiceHelperService {
     });
 
     const templateHtml = fs.readFileSync(
-      'src/invoice/templates/invoice.html',
+      'src/invoice/templates/invoice.v1.html',
       'utf8',
     );
 
@@ -86,12 +89,18 @@ export class InvoiceHelperService {
     order.items.forEach((oi) => {
       items.push({ itemId: oi._id, quantity: oi.quantity });
     });
-    const s3Url = await this.uploadDocument(
+    const document = await this.uploadDocument(
       html,
       order.supplierId._id + '/' + order.restaurantId._id + '/invoice/',
     );
 
-    if (s3Url) return { url: s3Url.Location, items, html };
+    if (document.s3Url && document.imageUrl)
+      return {
+        url: document.s3Url.Location,
+        items,
+        html,
+        imageUrl: document.imageUrl.Location,
+      };
     throw new BadRequestException(`Error generating invoice`);
   }
 
@@ -100,7 +109,7 @@ export class InvoiceHelperService {
     dto: CreateInvoiceDto,
     refInvoice: InvoiceDocument,
     cancelledInvoice: InvoiceDocument = null,
-  ): Promise<{ url: string; items: any[]; html: string }> {
+  ): Promise<{ url: string; items: any[]; html: string; imageUrl: string }> {
     const multiplier = cancelledInvoice ? -1 : 1;
 
     const summary = this.prepareCreditMemoItems(dto, order);
@@ -129,11 +138,17 @@ export class InvoiceHelperService {
       refInvoiceNumber: refInvoice.invoiceNumber,
     });
 
-    const s3Url = await this.uploadDocument(
+    const document = await this.uploadDocument(
       html,
       order.supplierId._id + '/' + order.restaurantId._id + '/invoice/',
     );
-    if (s3Url) return { url: s3Url.Location, items: summary.items, html };
+    if (document.s3Url && document.imageUrl)
+      return {
+        url: document.s3Url.Location,
+        items: summary.items,
+        html,
+        imageUrl: document.imageUrl.Location,
+      };
     throw new BadRequestException(`Error generating invoice`);
   }
 
@@ -210,16 +225,34 @@ export class InvoiceHelperService {
       ],
     });
     const page = await browser.newPage();
-    await page.setContent(html);
+
+    //await page.goto(`data:text/html,${html}`, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'load' });
+    const [height, width] = await page.evaluate(() => {
+      return [
+        document.getElementsByTagName('html')[0].offsetHeight,
+        document.getElementsByTagName('html')[0].offsetWidth,
+      ];
+    });
     const pdfPath =
       './upload/' + (await uniqid.process().toUpperCase()) + '.pdf';
+    const imagePath =
+      './upload/' + (await uniqid.process().toUpperCase()) + '.png';
     await page.pdf({
       format: 'A4',
       path: pdfPath,
     });
+    await page.screenshot({
+      path: imagePath,
+      clip: { x: 0, y: 0, width, height },
+    });
     browser.close();
     const s3Url: any = await this.s3Service.uploadLocalFile(pdfPath, directory);
-    return s3Url;
+    const imageUrl: any = await this.s3Service.uploadLocalFile(
+      imagePath,
+      directory,
+    );
+    return { s3Url, imageUrl };
   }
 
   async generateInvoiceNumber(supplierId: string): Promise<string> {
@@ -229,7 +262,8 @@ export class InvoiceHelperService {
       { sort: { _id: -1 } },
     );
     const n = parseInt(invoice ? invoice.invoiceNumber : '0') + 1;
-    return String(n).padStart(7, '0');
+    //return String(n).padStart(7, '0');
+    return n.toString();
   }
 
   async postInvoiceCreate(
@@ -243,94 +277,47 @@ export class InvoiceHelperService {
     }
   }
 
-  async generateEscCommandsForInvoice(
-    order: OrderDocument,
-    invoice: InvoiceDocument,
-  ) {
-    // return [
-    //   0x1b,
-    //   0x40,
-    //   //'0x1B' + '\x40', // ESC @ - init command, necessary for proper byte interpretation
-    //   0x1b,
-    //   0x74,
-    //   0x25, // Setup "codepage 37", which is Epson's IBM864
-    //   'لكن لا بد أن أوضح لك أن كل هذه الأفكار',
-    //   '\n', // UTF-8 RTL text
-    //   0x1b,
-    //   0x69, // cut paper
-    // ];
-    console.log(CodepageEncoder.getTestStrings('cp720'));
-    console.log(CodepageEncoder.getTestStrings('cp864'));
-    console.log(CodepageEncoder.getTestStrings('windows1256'));
+  async generateEscCommandsForInvoice(invoice: InvoiceDocument) {
+    const imageResponse = await lastValueFrom(
+      this.httpService
+        .get(invoice.imageUrl, {
+          responseType: 'arraybuffer',
+        })
+        .pipe(
+          catchError((e) => {
+            throw new BadRequestException(e);
+          }),
+        ),
+    );
+
+    console.log(imageResponse);
+    if (imageResponse.status != HttpStatus.OK)
+      throw new BadRequestException(`Error generating resource for print`);
+    const raw = Buffer.from(imageResponse.data).toString('base64');
+
+    const img = new Image();
+    img.src =
+      'data:' + imageResponse.headers['content-type'] + ';base64,' + raw;
+    const width = 640;
+    const scaledHeight = img.height * (640 / img.width);
+    const height = Number.isInteger(scaledHeight / 8)
+      ? scaledHeight
+      : 8 * Math.ceil(scaledHeight / 8);
+
     const escEncoder = new EscPosEncoder({
-      codepageCandidates: [
-        'cp437',
-        'cp858',
-        'cp860',
-        'cp861',
-        'cp863',
-        'cp865',
-        'cp852',
-        'cp857',
-        'cp855',
-        'cp866',
-        'cp869',
-        'cp720',
-        'cp864',
-      ],
+      imageMode: 'raster',
     });
-    const items = [];
-    order.items.forEach((oi) => {
-      items.push([oi.menuItem.nameAr, oi.quantity, oi.amountAfterDiscount]);
-    });
-    const qrCode = await this.fatooraService.generateInvoiceQrImage({
-      sellerName: order.supplierId.nameAr ?? order.supplierId.name,
-      vatRegistrationNumber: order?.supplierId?.vatNumber,
-      invoiceTimestamp: moment().format(),
-      invoiceTotal: order.summary.totalWithTax.toString(),
-      invoiceVatTotal: order.summary.totalTax.toString(),
-    });
-    const invoiceQr = new Image();
-    invoiceQr.src = qrCode;
-    escEncoder
+    const commands = escEncoder
       .initialize()
-      .raw([0x1b, 0x74, 0x25])
       .align('center')
-      .line('لكن لا بد أن أوضح لك أن كل هذه الأفكار')
-      .line(order?.restaurantId?.nameAr)
-
-      .line(order?.restaurantId?.name)
-
-      .line(order.orderNumber)
-
-      .line(invoice.invoiceNumber)
-      .newline()
-      .box(
-        { width: 30, align: 'center', style: 'double' },
-        order?.supplierId?.vatNumber,
-      )
-      .newline()
-      //.codepage('cp864')
-      .table(
-        [
-          { width: 40, marginRight: 2, align: 'left' },
-          { width: 15, align: 'center' },
-          { width: 15, align: 'right' },
-        ],
-        items,
-      )
-      .newline()
-      .image(invoiceQr, 320, 320, 'atkinson')
-      .newline()
-      .line('If you have any Questions call')
-
-      .line(order.supplierId?.phoneNumber)
+      .image(img, width, height, 'floydsteinberg')
       .newline()
       .newline()
       .newline()
       .newline()
-      .cut();
-    console.log(escEncoder);
-    return escEncoder.encode();
+      .cut()
+      .encode();
+    console.log(commands);
+    return commands;
   }
 }
