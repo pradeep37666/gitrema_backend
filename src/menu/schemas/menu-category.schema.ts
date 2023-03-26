@@ -26,6 +26,9 @@ export class MenuCategory {
   @Prop({ default: null })
   image: string;
 
+  @Prop({ required: true })
+  order: number;
+
   @Prop({ default: true })
   active: boolean;
 
