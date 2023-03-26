@@ -138,6 +138,7 @@ export class TestDataService {
     const menuCategoryDto: CreateMenuCategoryDTO = {
       name: 'Default Category',
       nameAr: 'Default Category',
+      order: 1,
     };
     const menuCategory = await this.menuCategoryService.create(
       req,
