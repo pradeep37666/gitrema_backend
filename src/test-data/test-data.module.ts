@@ -11,6 +11,7 @@ import { MenuModule } from 'src/menu/menu.module';
 import { InvoiceModule } from 'src/invoice/invoice.module';
 import { PaymentModule } from 'src/payment/payment.module';
 import { ListModule } from 'src/list/list.module';
+import { PaymentSetupModule } from 'src/payment-setup/payment-setup.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ListModule } from 'src/list/list.module';
     MenuModule,
     InvoiceModule,
     PaymentModule,
+    PaymentSetupModule,
     ListModule,
   ],
   controllers: [TestDataController],

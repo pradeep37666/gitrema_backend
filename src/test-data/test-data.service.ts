@@ -20,6 +20,8 @@ import { CreateOrderDto } from 'src/order/dto/create-order.dto';
 import { OrderType, Source } from 'src/order/enum/en.enum';
 import { OrderService } from 'src/order/order.service';
 import { OrderDocument } from 'src/order/schemas/order.schema';
+import { CreatePaymentSetupDto } from 'src/payment-setup/dto/create-payment-setup.dto';
+import { PaymentSetupService } from 'src/payment-setup/payment-setup.service';
 import { PaymentInitiateDto } from 'src/payment/dto/payment.dto';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { PaymentService } from 'src/payment/payment.service';
@@ -43,10 +45,13 @@ export class TestDataService {
     private readonly menuItemService: MenuItemService,
     private readonly orderService: OrderService,
     private readonly paymentService: PaymentService,
+    private readonly paymentSetupService: PaymentSetupService,
     private readonly invoiceService: InvoiceService,
   ) {}
   async run(req: any, supplier: SupplierDocument) {
     req.user.supplierId = supplier._id;
+    await this.paymentSetup(req, supplier);
+
     const restaurant = await this.createRestaurant(req, supplier);
 
     const table = await this.createTable(req, restaurant);
@@ -79,7 +84,8 @@ export class TestDataService {
       whatsappNumber: '',
       enableWhatsappCommunication: true,
       beforeConfirmOrderMessage: { en: 'Thank you', ar: 'Thank you' },
-      defaultWorkingHours: { start: '09 AM', end: '09 PM' },
+      defaultWorkingHours: supplier.defaultWorkingHours,
+      overrideWorkingHours: supplier.overrideWorkingHours,
       isMenuBrowsingEnabled: true,
       isAppOrderEnabled: true,
       isDeliveryEnabled: true,
@@ -92,6 +98,27 @@ export class TestDataService {
     };
     const restaurant = await this.restaurantService.create(req, dto);
     return restaurant;
+  }
+
+  async paymentSetup(req, supplier: SupplierDocument) {
+    const dto: CreatePaymentSetupDto = {
+      inStore: {
+        ePayment: true,
+        cashPayment: true,
+        rewardsClaim: true,
+      },
+      delivery: {
+        ePayment: true,
+        cashPayment: true,
+        rewardsClaim: true,
+      },
+      pickup: {
+        ePayment: true,
+        cashPayment: true,
+        rewardsClaim: true,
+      },
+    };
+    await this.paymentSetupService.create(req, dto);
   }
 
   async createTable(req, restaurant: RestaurantDocument) {

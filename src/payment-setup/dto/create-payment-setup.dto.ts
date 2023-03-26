@@ -49,30 +49,30 @@ export class CreatePaymentSetupDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  bankAccountHolder: string;
+  bankAccountHolder?: string;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  bankAccountHolderEmail: string;
+  bankAccountHolderEmail?: string;
 
   @ApiProperty({ required: false, type: String, enum: Bank, enumName: 'Bank' })
   @IsEnum(Bank)
   @IsOptional()
-  bankName: Bank;
+  bankName?: Bank;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  otherBank: string;
+  otherBank?: string;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  iban: string;
+  iban?: string;
 
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  bankIdCode: string;
+  bankIdCode?: string;
 }
