@@ -38,9 +38,10 @@ export class UserService {
       const role = await this.roleModel.findById(userRequest.role);
       if (!role) throw new NotFoundException(`Role not found`);
 
+      console.log(role);
       if (
         req?.user?.supplierId &&
-        req?.user?.supplierId.toString() != role.supplierId.toString() &&
+        req?.user?.supplierId.toString() != role?.supplierId?.toString() &&
         ![
           RoleSlug.SupplierAdmin,
           RoleSlug.Waiter,

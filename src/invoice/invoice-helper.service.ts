@@ -310,7 +310,7 @@ export class InvoiceHelperService {
     const commands = escEncoder
       .initialize()
       .align('center')
-      .image(img, width, height, 'threshold', 128)
+      .image(img, width, height, 'threshold', 150)
       .newline()
       .newline()
       .newline()

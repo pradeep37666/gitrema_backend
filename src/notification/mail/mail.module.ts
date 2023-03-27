@@ -28,7 +28,7 @@ import { MailService } from './mail.service';
           from: config.get('mail.MAIL_FROM'),
         },
         template: {
-          dir: join('src/Core/notification/mail/templates'),
+          dir: join('src/notification/mail/templates'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,

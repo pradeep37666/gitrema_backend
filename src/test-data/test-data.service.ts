@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CashierService } from 'src/cashier/cashier.service';
 import { CreateCashierDto } from 'src/cashier/dto/create-cashier.dto';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
-import { ListType } from 'src/core/Constants/enum';
+import { ListType, RoleSlug } from 'src/core/Constants/enum';
+import { generateRandomPassword } from 'src/core/Helpers/universal.helper';
 import { CreateInvoiceDto } from 'src/invoice/dto/create-invoice.dto';
 import { InvoiceType } from 'src/invoice/invoice.enum';
 import { InvoiceService } from 'src/invoice/invoice.service';
@@ -16,6 +19,7 @@ import { CreateMenuItemDTO } from 'src/menu/dto/menu-item.dto';
 import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { MenuCategoryService } from 'src/menu/service/menu-category.service';
 import { MenuItemService } from 'src/menu/service/menu-item.service';
+import { MailService } from 'src/notification/mail/mail.service';
 import { CreateOrderDto } from 'src/order/dto/create-order.dto';
 import { OrderType, Source } from 'src/order/enum/en.enum';
 import { OrderService } from 'src/order/order.service';
@@ -28,10 +32,14 @@ import { PaymentService } from 'src/payment/payment.service';
 import { CreateRestaurantDto } from 'src/restaurant/dto/create-restaurant.dto';
 import { RestaurantService } from 'src/restaurant/restaurant.service';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
+import { Role, RoleDocument } from 'src/role/schemas/roles.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { CreateTableDto } from 'src/table/dto/create-table.dto';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { TableService } from 'src/table/table.service';
+import { UserDocument } from 'src/users/schemas/users.schema';
+import { UserCreateDto } from 'src/users/users.dto';
+import { UserService } from 'src/users/users.service';
 
 @Injectable()
 export class TestDataService {
@@ -47,18 +55,25 @@ export class TestDataService {
     private readonly paymentService: PaymentService,
     private readonly paymentSetupService: PaymentSetupService,
     private readonly invoiceService: InvoiceService,
+    private readonly userService: UserService,
+    private readonly mailService: MailService,
+    @InjectModel(Role.name)
+    private roleModel: Model<RoleDocument>,
   ) {}
   async run(req: any, supplier: SupplierDocument) {
     req.user.supplierId = supplier._id;
+
+    const user = await this.createSupplierAdmin(req, supplier);
+
     await this.paymentSetup(req, supplier);
 
     const restaurant = await this.createRestaurant(req, supplier);
 
     const table = await this.createTable(req, restaurant);
 
-    const cashier = await this.createCashier(req, restaurant);
+    const cashier = await this.createCashier(req, restaurant, user);
 
-    const kitchenQueue = await this.createKitchenQueue(req, restaurant);
+    const kitchenQueue = await this.createKitchenQueue(req, restaurant, user);
 
     const menuItem = await this.createMenu(req);
 
@@ -98,6 +113,32 @@ export class TestDataService {
     };
     const restaurant = await this.restaurantService.create(req, dto);
     return restaurant;
+  }
+
+  async createSupplierAdmin(req, supplier: SupplierDocument) {
+    const adminRole = await this.roleModel.findOne({
+      slug: RoleSlug.SupplierAdmin,
+    });
+    const password = generateRandomPassword();
+    const dto = {
+      name: 'Supplier Admin',
+      email: supplier.email,
+      password,
+      role: adminRole ? adminRole._id : null,
+    };
+    console.log(dto);
+    const user = await this.userService.create(req, dto);
+    if (user) {
+      this.mailService.send({
+        to: supplier.email,
+        subject: 'Account Setup',
+        body: `Your account is setup following are the crednetials to access your account:
+        Username: <b>${user.email}</b> 
+        Password: <b>${password}</b>
+        Alias: <b>${supplier.alias}</b>`,
+      });
+    }
+    return user;
   }
 
   async paymentSetup(req, supplier: SupplierDocument) {
@@ -140,24 +181,32 @@ export class TestDataService {
     return table;
   }
 
-  async createCashier(req, restaurant: RestaurantDocument) {
+  async createCashier(req, restaurant: RestaurantDocument, user: UserDocument) {
     const dto: CreateCashierDto = {
       restaurantId: restaurant._id,
       name: 'Default Cashier',
       nameAr: 'Default Cashier',
     };
     const cashier = await this.cashierService.create(req, dto);
+    this.userService.update(user._id.toString(), { cashier: cashier._id });
     return cashier;
   }
 
-  async createKitchenQueue(req, restaurant: RestaurantDocument) {
+  async createKitchenQueue(
+    req,
+    restaurant: RestaurantDocument,
+    user: UserDocument,
+  ) {
     const dto: CreateKitchenQueueDto = {
       restaurantId: restaurant._id,
       name: 'Default Cashier',
       nameAr: 'Default Cashier',
-      userId: req.user.userId,
+      userId: user._id,
     };
     const kitchenQueue = await this.kitchenQueueService.create(req, dto);
+    this.userService.update(user._id.toString(), {
+      kitchenQueue: kitchenQueue._id,
+    });
     return kitchenQueue;
   }
 
