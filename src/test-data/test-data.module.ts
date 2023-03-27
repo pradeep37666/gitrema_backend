@@ -12,6 +12,11 @@ import { InvoiceModule } from 'src/invoice/invoice.module';
 import { PaymentModule } from 'src/payment/payment.module';
 import { ListModule } from 'src/list/list.module';
 import { PaymentSetupModule } from 'src/payment-setup/payment-setup.module';
+import { UserModule } from 'src/users/users.module';
+import { NotificationModule } from 'src/notification/notification.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
+import { MailModule } from 'src/notification/mail/mail.module';
 
 @Module({
   imports: [
@@ -25,6 +30,9 @@ import { PaymentSetupModule } from 'src/payment-setup/payment-setup.module';
     PaymentModule,
     PaymentSetupModule,
     ListModule,
+    UserModule,
+    MailModule,
+    MongooseModule.forFeature([{ name: Role.name, schema: RoleSchema }]),
   ],
   controllers: [TestDataController],
   providers: [TestDataService],
