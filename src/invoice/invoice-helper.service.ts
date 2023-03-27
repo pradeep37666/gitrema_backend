@@ -228,11 +228,14 @@ export class InvoiceHelperService {
 
     //await page.goto(`data:text/html,${html}`, { waitUntil: 'networkidle0' });
     await page.setContent(html, { waitUntil: 'load' });
-    const [height, width] = await page.evaluate(() => {
-      return [
-        document.getElementsByTagName('html')[0].offsetHeight,
-        document.getElementsByTagName('html')[0].offsetWidth,
-      ];
+    const [x, y, width, height] = await page.evaluate(() => {
+      const element = document.getElementById('container');
+      const { x, y, width, height } = element.getBoundingClientRect();
+      return [x, y, width, height];
+      // return [
+      //   document.getElementById('container').offsetHeight,
+      //   document.getElementById('container').offsetWidth,
+      // ];
     });
     const pdfPath =
       './upload/' + (await uniqid.process().toUpperCase()) + '.pdf';
@@ -244,7 +247,7 @@ export class InvoiceHelperService {
     });
     await page.screenshot({
       path: imagePath,
-      clip: { x: 0, y: 0, width, height },
+      clip: { x, y, width, height },
     });
     browser.close();
     const s3Url: any = await this.s3Service.uploadLocalFile(pdfPath, directory);
@@ -298,8 +301,8 @@ export class InvoiceHelperService {
     const img = new Image();
     img.src =
       'data:' + imageResponse.headers['content-type'] + ';base64,' + raw;
-    const width = 640;
-    const scaledHeight = img.height * (640 / img.width);
+    const width = 592;
+    const scaledHeight = img.height * (592 / img.width);
     const height = Number.isInteger(scaledHeight / 8)
       ? scaledHeight
       : 8 * Math.ceil(scaledHeight / 8);
@@ -309,8 +312,10 @@ export class InvoiceHelperService {
     });
     const commands = escEncoder
       .initialize()
-      .align('center')
-      .image(img, width, height, 'threshold', 150)
+      .align('left')
+      .image(img, width, height, 'threshold', 200)
+      .newline()
+      .newline()
       .newline()
       .newline()
       .newline()
