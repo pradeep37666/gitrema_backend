@@ -37,7 +37,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { CreateTableDto } from 'src/table/dto/create-table.dto';
 import { TableDocument } from 'src/table/schemas/table.schema';
 import { TableService } from 'src/table/table.service';
-import { UserDocument } from 'src/users/schemas/users.schema';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { UserCreateDto } from 'src/users/users.dto';
 import { UserService } from 'src/users/users.service';
 
@@ -59,13 +59,22 @@ export class TestDataService {
     private readonly mailService: MailService,
     @InjectModel(Role.name)
     private roleModel: Model<RoleDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
   ) {}
   async run(req: any, supplier: SupplierDocument) {
-    req.user.supplierId = supplier._id;
+    if (!req) {
+      req = {
+        user: {
+          supplierId: supplier._id,
+        },
+      };
+    } else req.user.supplierId = supplier._id;
 
-    const user = await this.createSupplierAdmin(req, supplier);
-
-    await this.paymentSetup(req, supplier);
+    let user: UserDocument = await this.userModel.findOne({
+      supplierId: supplier._id,
+    });
+    if (!user) user = await this.createSupplierAdmin(req, supplier);
 
     const restaurant = await this.createRestaurant(req, supplier);
 

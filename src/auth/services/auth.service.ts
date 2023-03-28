@@ -41,6 +41,7 @@ import {
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
 import { TaqnyatService } from 'src/core/Providers/Sms/taqnyat.service';
+import { TestDataService } from 'src/test-data/test-data.service';
 
 @Injectable()
 export class AuthService {
@@ -62,6 +63,7 @@ export class AuthService {
     private readonly asmscService: AsmscService,
     private readonly tanqyatService: TaqnyatService,
     private readonly mailService: MailService,
+    private readonly testDataService: TestDataService,
   ) {}
 
   async validateUser(
@@ -161,6 +163,12 @@ export class AuthService {
     };
 
     const user = await this.userService.create(null, userCreateReq);
+    if (user && signupRequest.supplier.createTestData) {
+      this.testDataService.run(
+        { user: { userId: user._id, supplierId: supplierDocument._id } },
+        supplierDocument,
+      );
+    }
     await user.populate([
       {
         path: 'role',
