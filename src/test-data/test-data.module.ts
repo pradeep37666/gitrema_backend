@@ -17,6 +17,7 @@ import { NotificationModule } from 'src/notification/notification.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
 import { MailModule } from 'src/notification/mail/mail.module';
+import { User, UserSchema } from 'src/users/schemas/users.schema';
 
 @Module({
   imports: [
@@ -32,7 +33,10 @@ import { MailModule } from 'src/notification/mail/mail.module';
     ListModule,
     UserModule,
     MailModule,
-    MongooseModule.forFeature([{ name: Role.name, schema: RoleSchema }]),
+    MongooseModule.forFeature([
+      { name: Role.name, schema: RoleSchema },
+      { name: User.name, schema: UserSchema },
+    ]),
   ],
   controllers: [TestDataController],
   providers: [TestDataService],

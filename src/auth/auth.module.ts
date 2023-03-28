@@ -31,6 +31,7 @@ import {
   SupplierPackage,
   SupplierPackageSchema,
 } from 'src/supplier/schemas/supplier-package.schema';
+import { TestDataModule } from 'src/test-data/test-data.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import {
     SmsModule,
 
     MailModule,
+    TestDataModule,
   ],
   controllers: [AuthController, ProfileController, ChangePasswordController],
   providers: [AuthService, LocalStrategy, JwtStrategy, RecoverPasswordService],
