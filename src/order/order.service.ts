@@ -133,6 +133,9 @@ export class OrderService {
       supplier._id,
     );
 
+    if (req.user.isCustomer) {
+      orderData.customerId = req.user.userId;
+    }
     // create order
     const order = await this.orderModel.create({
       ...orderData,

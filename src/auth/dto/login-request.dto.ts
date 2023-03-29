@@ -21,9 +21,9 @@ export class LoginRequestDto {
   @ApiProperty()
   password: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
-  @ApiProperty({ required: false })
+  @ApiProperty()
   alias: string;
 }
 
@@ -40,6 +40,10 @@ export class StaffLoginDto extends OmitType(LoginRequestDto, [
   @ApiProperty()
   alias: string;
 }
+
+export class AdminLoginDto extends OmitType(LoginRequestDto, [
+  'alias',
+] as const) {}
 
 export class RequestOtpDto {
   @ApiProperty()

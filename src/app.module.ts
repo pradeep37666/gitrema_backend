@@ -55,6 +55,7 @@ import { ImportModule } from './import/import.module';
 import { PrinterModule } from './printer/printer.module';
 import { GlobalConfigModule } from './global-config/global-config.module';
 import { TestDataModule } from './test-data/test-data.module';
+import { AdminModule } from './admin/admin.module';
 import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
 
 @Module({
@@ -120,6 +121,7 @@ import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
     PrinterModule,
     GlobalConfigModule,
     TestDataModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

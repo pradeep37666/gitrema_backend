@@ -1,5 +1,6 @@
 export enum PermissionSubject {
   ALL = 'ALL',
+  Admin = 'Admin',
   Supplier = 'Supplier',
   Role = 'Role',
   Transaction = 'Transaction',

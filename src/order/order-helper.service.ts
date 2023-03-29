@@ -49,6 +49,7 @@ import {
 } from 'src/customer/schemas/customer.schema';
 import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service';
 import { OrderNotificationService } from './order-notification.service';
+import { CustomerService } from 'src/customer/customer.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -76,6 +77,7 @@ export class OrderHelperService {
     private socketGateway: SocketIoGateway,
     private readonly tableHelperService: TableHelperService,
     private readonly orderNotificationService: OrderNotificationService,
+    private readonly customerService: CustomerService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -430,6 +432,20 @@ export class OrderHelperService {
 
     if (dto.tableId) {
       this.tableHelperService.handleTableTransfer(order, beforeUpdate.tableId);
+    }
+
+    if (!order.customerId && order.contactNumber) {
+      this.setCustomer(order);
+    }
+  }
+
+  async setCustomer(order: OrderDocument) {
+    const customer = await this.customerService.findByPhoneNumber(
+      order.contactNumber,
+    );
+    if (customer) {
+      order.customerId = customer._id;
+      order.save();
     }
   }
 
