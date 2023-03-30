@@ -28,6 +28,7 @@ import { TableModule } from 'src/table/table.module';
 import { HttpCallerModule } from 'src/core/Providers/http-caller/http-caller.module';
 import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
 import { OrderNotificationService } from './order-notification.service';
+import { CustomerModule } from 'src/customer/customer.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { OrderNotificationService } from './order-notification.service';
     SocketIoModule,
     TableModule,
     HttpCallerModule,
+    CustomerModule,
   ],
   controllers: [OrderController],
   providers: [

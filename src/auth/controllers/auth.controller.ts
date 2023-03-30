@@ -11,6 +11,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { SignupRequestDto } from '../dto/signup-request.dto';
 import {
+  AdminLoginDto,
   LoginRequestDto,
   RequestOtpDto,
   StaffLoginDto,
@@ -53,6 +54,12 @@ export class AuthController {
     @Body() loginRequest: StaffLoginDto,
   ): Promise<any> {
     const response = await this.authService.staffLogin(loginRequest);
+    return response;
+  }
+
+  @Post('admin-login')
+  async adminLogin(@Req() req, @Body() dto: AdminLoginDto): Promise<any> {
+    const response = await this.authService.adminLogin(dto);
     return response;
   }
 

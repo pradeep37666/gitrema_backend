@@ -13,6 +13,7 @@ import { SignupRequestDto } from '../dto/signup-request.dto';
 import { JwtService } from '@nestjs/jwt';
 
 import {
+  AdminLoginDto,
   LoggedInUserPayload,
   LoginRequestDto,
   RequestOtpDto,
@@ -42,6 +43,7 @@ import {
 } from 'src/supplier/schemas/suppliers.schema';
 import { TaqnyatService } from 'src/core/Providers/Sms/taqnyat.service';
 import { TestDataService } from 'src/test-data/test-data.service';
+import { Admin, AdminDocument } from 'src/admin/schemas/admin.schema';
 
 @Injectable()
 export class AuthService {
@@ -49,6 +51,8 @@ export class AuthService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(Admin.name)
+    private adminModel: Model<AdminDocument>,
     @InjectModel(Supplier.name)
     private supplierModel: Model<SupplierDocument>,
     @InjectModel(Customer.name)
@@ -134,6 +138,30 @@ export class AuthService {
 
         return { user, accessToken: await this.generateAuthToken(payload) };
       }
+    }
+    throw new UnauthorizedException();
+  }
+
+  async adminLogin(dto: AdminLoginDto): Promise<any> {
+    const admin = await this.adminModel.findOne({
+      email: dto.email,
+    });
+    if (admin && (await bcrypt.compare(dto.password, admin.password))) {
+      delete admin.password;
+      await admin.populate([
+        {
+          path: 'role',
+          select: { name: 1 },
+          populate: [{ path: 'screenDisplays' }],
+        },
+      ]);
+      const payload = {
+        userId: admin._id,
+
+        roleId: admin.role._id,
+      };
+
+      return { admin, accessToken: await this.generateAuthToken(payload) };
     }
     throw new UnauthorizedException();
   }

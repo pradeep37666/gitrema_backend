@@ -14,5 +14,6 @@ import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
   ],
   controllers: [CustomerController],
   providers: [CustomerService],
+  exports: [CustomerService],
 })
 export class CustomerModule {}

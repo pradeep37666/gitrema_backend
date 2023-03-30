@@ -32,6 +32,7 @@ import {
   SupplierPackageSchema,
 } from 'src/supplier/schemas/supplier-package.schema';
 import { TestDataModule } from 'src/test-data/test-data.module';
+import { Admin, AdminSchema } from 'src/admin/schemas/admin.schema';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { TestDataModule } from 'src/test-data/test-data.module';
       { name: Otp.name, schema: OtpSchema },
       { name: EmailTemplate.name, schema: EmailTemplateSchema },
       { name: Customer.name, schema: CustomerSchema },
+      { name: Admin.name, schema: AdminSchema },
     ]),
 
     UserModule,
