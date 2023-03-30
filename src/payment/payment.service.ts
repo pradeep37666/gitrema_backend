@@ -146,10 +146,10 @@ export class PaymentService {
         action: 1,
         metaId: paymentRequestDetails.metaId,
         redirectUrl: paymentRequestDetails.redirectUrl,
-        // accountDetails: await this.preparePayout(
-        //   order.supplierId.toString(),
-        //   transaction.amount,
-        // ),
+        accountDetails: await this.preparePayout(
+          order.supplierId.toString(),
+          transaction.amount,
+        ),
       };
 
       const res = await this.arbPgService.requestPaymentToken(options);

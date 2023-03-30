@@ -155,4 +155,6 @@ export class PaymentTokenDto {
   metaId?: string;
 
   redirectUrl?: string;
+
+  accountDetails: any[];
 }
