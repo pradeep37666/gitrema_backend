@@ -23,6 +23,7 @@ import { ReservationDocument } from 'src/reservation/schemas/reservation.schema'
 import { ReportOrderKitchenDto } from './dto/report-order-kitchen.dto';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { ReportPaymentDto } from './dto/report-payment.dto';
+import { PayoutPreviewDto } from './dto/payout-preview.dto';
 
 @Controller('report')
 @ApiTags('Reports')
@@ -241,5 +242,29 @@ export class ReportController {
       query,
       paginateOptions,
     );
+  }
+
+  @Get('payout/preview')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="payout.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async payoutPreviewExport(
+    @Req() req,
+    @Query() query: PayoutPreviewDto,
+  ): Promise<StreamableFile> {
+    return await this.reportService.exportPayoutPreview(req, query);
+  }
+
+  @Get('payout/aggregated-preview')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="payout.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async payoutAggregatedPreviewExport(
+    @Req() req,
+    @Query() query: PayoutPreviewDto,
+  ): Promise<StreamableFile> {
+    return await this.reportService.exportPayoutAggregatePreview(req, query);
   }
 }

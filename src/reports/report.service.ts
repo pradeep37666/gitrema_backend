@@ -10,7 +10,7 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
-import { PaymentType } from 'src/core/Constants/enum';
+import { PaymentStatus, PaymentType } from 'src/core/Constants/enum';
 import { ReportOrderGeneralDto } from './dto/report-order-general.dto';
 import { createReadStream } from 'fs';
 import {
@@ -32,6 +32,10 @@ import {
   TransactionDocument,
 } from 'src/transaction/schemas/transactions.schema';
 import { ReportPaymentDto } from './dto/report-payment.dto';
+import { PayoutPreviewDto } from './dto/payout-preview.dto';
+import { PaymentMethod } from 'src/payment/enum/en.enum';
+import { DELIVERY_MARGIN } from 'src/core/Constants/financial.constant';
+import { GlobalConfigService } from 'src/global-config/global-config.service';
 
 @Injectable()
 export class ReportService {
@@ -48,13 +52,14 @@ export class ReportService {
     private readonly transactionModel: Model<TransactionDocument>,
     @InjectModel(Transaction.name)
     private readonly transactionModelAggPag: AggregatePaginateModel<TransactionDocument>,
+    private globalConfigService: GlobalConfigService,
   ) {}
 
   async populateOrderGeneralReport(
     req: any,
     query: ReportOrderGeneralDto,
     paginateOptions: PaginationDto,
-    isExport: boolean = false,
+    isExport = false,
   ): Promise<[AggregatePaginateResult<OrderDocument>, any]> {
     if (query.restaurantId) {
       query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
@@ -210,7 +215,7 @@ export class ReportService {
     );
     const orderData = orders[0].docs;
 
-    if (!(await createXlsxFileFromJson(orderData, REPORT_HEADER.ORDER_GENERAL)))
+    if (!(await createXlsxFileFromJson(orderData, 'ORDER_GENERAL')))
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);
@@ -322,7 +327,7 @@ export class ReportService {
     );
     const orderData = orders.docs;
 
-    if (!(await createXlsxFileFromJson(orderData, REPORT_HEADER.ORDER_USER)))
+    if (!(await createXlsxFileFromJson(orderData, 'ORDER_USER')))
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);
@@ -333,7 +338,7 @@ export class ReportService {
     req: any,
     query: ReportOrderLifeCycleDto,
     paginateOptions: PaginationDto,
-    isExport: boolean = false,
+    isExport = false,
   ): Promise<[AggregatePaginateResult<OrderDocument>, any]> {
     if (query.restaurantId) {
       query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
@@ -600,9 +605,7 @@ export class ReportService {
     );
     const orderData = orders[0].docs;
 
-    if (
-      !(await createXlsxFileFromJson(orderData, REPORT_HEADER.ORDER_LIVE_CYCLE))
-    )
+    if (!(await createXlsxFileFromJson(orderData, 'ORDER_LIVE_CYCLE')))
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);
@@ -613,7 +616,7 @@ export class ReportService {
     req: any,
     query: ReportReservationDto,
     paginateOptions: PaginationDto,
-    isExport: boolean = false,
+    isExport = false,
   ): Promise<[AggregatePaginateResult<ReservationDocument>, any]> {
     if (query.restaurantId) {
       query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
@@ -698,12 +701,7 @@ export class ReportService {
     );
     const reservationsData = reservations[0].docs;
 
-    if (
-      !(await createXlsxFileFromJson(
-        reservationsData,
-        REPORT_HEADER.RESERVATIONS,
-      ))
-    )
+    if (!(await createXlsxFileFromJson(reservationsData, 'RESERVATIONS')))
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);
@@ -714,7 +712,7 @@ export class ReportService {
     req: any,
     query: ReportOrderKitchenDto,
     paginateOptions: PaginationDto,
-    isExport: boolean = false,
+    isExport = false,
   ): Promise<[AggregatePaginateResult<OrderDocument>, any]> {
     query.restaurantId = new mongoose.Types.ObjectId(query.restaurantId);
 
@@ -886,7 +884,7 @@ export class ReportService {
     );
     const orderData = orders[0].docs;
 
-    if (!(await createXlsxFileFromJson(orderData, REPORT_HEADER.ORDER_KITCHEN)))
+    if (!(await createXlsxFileFromJson(orderData, 'ORDER_KITCHEN')))
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);
@@ -974,12 +972,7 @@ export class ReportService {
     );
     const transactionData = transactions.docs;
 
-    if (
-      !(await createXlsxFileFromJson(
-        transactionData,
-        REPORT_HEADER.PAYMENT_REFUND,
-      ))
-    )
+    if (!(await createXlsxFileFromJson(transactionData, 'PAYMENT_REFUND')))
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);
@@ -990,7 +983,7 @@ export class ReportService {
     req: any,
     query: ReportPaymentDto,
     paginateOptions: PaginationDto,
-    isExport: boolean = false,
+    isExport = false,
   ): Promise<[AggregatePaginateResult<TransactionDocument>, any]> {
     if (query.cashierId) {
       query.cashierId = new mongoose.Types.ObjectId(query.cashierId);
@@ -1062,9 +1055,9 @@ export class ReportService {
       },
     );
 
-    let summary = [];
+    const summary = [];
     if (!isExport) {
-      // summary = await this.populateOrderKitchenSummary(req, query);
+      //summary = await this.populateOrderKitchenSummary(req, query);
     }
 
     return [transactions, summary];
@@ -1083,7 +1076,190 @@ export class ReportService {
     );
     const transactionData = transactions[0].docs;
 
-    if (!(await createXlsxFileFromJson(transactionData, REPORT_HEADER.PAYMENT)))
+    if (!(await createXlsxFileFromJson(transactionData, 'PAYMENT')))
+      throw new NotFoundException();
+
+    const file = createReadStream(DefaultPath);
+    return new StreamableFile(file);
+  }
+
+  async exportPayoutPreview(req: any, query: PayoutPreviewDto) {
+    let deliveryMargin = DELIVERY_MARGIN;
+    const globalConfig = await this.globalConfigService.fetch();
+    if (globalConfig) {
+      deliveryMargin = globalConfig?.deliveryMargin ?? DELIVERY_MARGIN;
+    }
+    if (query.startDate && query.endDate) {
+      const condition = {
+        $and: [
+          { createdAt: { $gte: query.startDate } },
+          { createdAt: { $lte: query.endDate } },
+        ],
+      };
+
+      delete query.startDate;
+      delete query.endDate;
+      query = { ...query, ...condition };
+    }
+    const transactions = await this.transactionModel.aggregate([
+      {
+        $match: {
+          isRefund: false,
+          paymentMethod: PaymentMethod.Online,
+          isRemitted: false,
+          status: PaymentStatus.Success,
+          ...query,
+        },
+      },
+      {
+        $lookup: {
+          from: 'suppliers',
+          localField: 'supplierId',
+          foreignField: '_id',
+          as: 'supplier',
+        },
+      },
+      {
+        $addFields: {
+          supplier: { $first: '$supplier' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'paymentsetups',
+          localField: 'supplierId',
+          foreignField: 'supplierId',
+          as: 'paymentsetup',
+        },
+      },
+      {
+        $addFields: {
+          paymentsetup: { $first: '$paymentsetup' },
+          amountTobePaid: {
+            $subtract: [
+              '$amount',
+              {
+                $divide: [
+                  {
+                    $multiply: ['$amount', deliveryMargin],
+                  },
+                  100,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          amountTobePaid: { $round: ['$amountTobePaid', 2] },
+          date: {
+            $dateToString: { format: '%Y-%m-%d %H:%M', date: '$createdAt' },
+          },
+          supplierId: '$supplierId',
+          supplierName: '$supplier.name',
+          amountReceived: '$amount',
+          bankId: '$paymentsetup.bankIdCode',
+          bankIban: '$paymentsetup.iban',
+          bankName: '$paymentsetup.bankName',
+          transactionId: '$pgResponse.transId',
+          referenceId: '$pgResponse.ref',
+          paymentId: '$pgResponse.paymentId',
+          ourTransactionId: '$_id',
+        },
+      },
+    ]);
+
+    if (!(await createXlsxFileFromJson(transactions, 'PAYOUT_PREVIEW')))
+      throw new NotFoundException();
+
+    const file = createReadStream(DefaultPath);
+    return new StreamableFile(file);
+  }
+  async exportPayoutAggregatePreview(req: any, query: PayoutPreviewDto) {
+    let deliveryMargin = DELIVERY_MARGIN;
+    const globalConfig = await this.globalConfigService.fetch();
+    if (globalConfig) {
+      deliveryMargin = globalConfig?.deliveryMargin ?? DELIVERY_MARGIN;
+    }
+    if (query.startDate && query.endDate) {
+      const condition = {
+        $and: [
+          { createdAt: { $gte: query.startDate } },
+          { createdAt: { $lte: query.endDate } },
+        ],
+      };
+
+      delete query.startDate;
+      delete query.endDate;
+      query = { ...query, ...condition };
+    }
+    const transactions = await this.transactionModel.aggregate([
+      {
+        $match: {
+          isRefund: false,
+          paymentMethod: PaymentMethod.Online,
+          isRemitted: false,
+          status: PaymentStatus.Success,
+          ...query,
+        },
+      },
+      {
+        $lookup: {
+          from: 'suppliers',
+          localField: 'supplierId',
+          foreignField: '_id',
+          as: 'supplier',
+        },
+      },
+      {
+        $addFields: {
+          supplier: { $first: '$supplier' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'paymentsetups',
+          localField: 'supplierId',
+          foreignField: 'supplierId',
+          as: 'paymentsetup',
+        },
+      },
+      {
+        $addFields: {
+          paymentsetup: { $first: '$paymentsetup' },
+          amountTobePaid: {
+            $subtract: [
+              '$amount',
+              {
+                $divide: [
+                  {
+                    $multiply: ['$amount', deliveryMargin],
+                  },
+                  100,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$supplierId',
+          amountTobePaid: { $sum: { $round: ['$amountTobePaid', 2] } },
+          amountReceived: { $sum: { $round: ['$amount', 2] } },
+          supplierId: { $first: '$supplierId' },
+          supplierName: { $first: '$supplier.name' },
+          bankId: { $first: '$paymentsetup.bankIdCode' },
+          bankIban: { $first: '$paymentsetup.iban' },
+          bankName: { $first: '$paymentsetup.bankName' },
+        },
+      },
+    ]);
+
+    if (
+      !(await createXlsxFileFromJson(transactions, 'PAYOUT_AGGREGATED_PREVIEW'))
+    )
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);

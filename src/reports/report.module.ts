@@ -11,6 +11,7 @@ import {
 } from 'src/transaction/schemas/transactions.schema';
 import { ReportController } from './report.controller';
 import { ReportService } from './report.service';
+import { GlobalConfigModule } from 'src/global-config/global-config.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ReportService } from './report.service';
       { name: Reservation.name, schema: ReservationSchema },
       { name: Transaction.name, schema: TransactionSchema },
     ]),
+    GlobalConfigModule,
   ],
   controllers: [ReportController],
   providers: [ReportService],
