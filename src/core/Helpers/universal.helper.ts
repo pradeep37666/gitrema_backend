@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as moment from 'moment';
 
 export const generateRandomPassword = function () {
   return Math.random().toString(36).slice(-8);
@@ -58,4 +59,14 @@ export const replaceAll = (sentence, wordsToReplace) => {
     (f, s, i) => `az${f}`.replace(new RegExp(s, 'ig'), wordsToReplace[s]),
     sentence,
   );
+};
+
+export const findDay = (dayNeeded) => {
+  const today = moment().isoWeekday();
+
+  if (today < dayNeeded) {
+    return moment().isoWeekday(dayNeeded);
+  } else {
+    return moment().add(1, 'weeks').isoWeekday(dayNeeded);
+  }
 };

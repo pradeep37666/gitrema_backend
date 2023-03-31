@@ -24,7 +24,7 @@ import {
   TransactionDocument,
 } from 'src/transaction/schemas/transactions.schema';
 import { PaymentStatus } from 'src/core/Constants/enum';
-import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import { findDay, roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { RefundDto } from './dto/refund.dto';
 import { OrderPaymentStatus, OrderStatus } from 'src/order/enum/en.enum';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
@@ -36,6 +36,10 @@ import { PaymentSetupService } from 'src/payment-setup/payment-setup.service';
 import { SupplierService } from 'src/supplier/Supplier.service';
 import { GlobalConfigService } from 'src/global-config/global-config.service';
 import * as moment from 'moment';
+import {
+  DELIVERY_MARGIN,
+  PAYOUT_DAY,
+} from 'src/core/Constants/financial.constant';
 
 @Injectable()
 export class PaymentService {
@@ -261,13 +265,15 @@ export class PaymentService {
     if (paymentSetup) {
       const supplierPackage =
         await this.supplierService.getSupplierActivePackage(supplierId);
-      let deliveryMargin = 0;
+      let deliveryMargin = DELIVERY_MARGIN;
+      let payoutDay = PAYOUT_DAY;
       if (supplierPackage && supplierPackage.deliveryMargin) {
         deliveryMargin = supplierPackage.deliveryMargin;
       } else {
         const globalConfig = await this.globalConfigService.fetch();
         if (globalConfig) {
-          deliveryMargin = globalConfig?.deliveryMargin ?? 0;
+          deliveryMargin = globalConfig?.deliveryMargin ?? DELIVERY_MARGIN;
+          payoutDay = globalConfig.payoutDay ?? PAYOUT_DAY;
         }
       }
 
@@ -280,7 +286,7 @@ export class PaymentService {
           iBanNum: paymentSetup.iban,
           benificiaryName: paymentSetup.bankAccountHolder,
           serviceAmount: amount - deliveryMarginAmount,
-          valueDate: moment.utc().format('YYYY-MM-DD'),
+          valueDate: findDay(payoutDay).format('YYYY-MM-DD'),
         },
       ];
     }

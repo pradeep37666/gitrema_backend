@@ -8,6 +8,9 @@ export type GlobalConfigDocument = GlobalConfig & Document;
 export class GlobalConfig {
   @Prop({})
   deliveryMargin: number;
+
+  @Prop({})
+  payoutDay: number;
 }
 export const GlobalConfigSchema = SchemaFactory.createForClass(GlobalConfig);
 GlobalConfigSchema.plugin(paginate);
