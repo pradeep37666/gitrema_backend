@@ -24,8 +24,8 @@ export class CreateMenuCategoryDTO {
   @IsOptional()
   image?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsNumber()
   order: number;
 }
