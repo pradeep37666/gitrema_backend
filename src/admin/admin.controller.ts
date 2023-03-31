@@ -18,7 +18,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PaginateResult } from 'mongoose';
 import { PaginationDto } from 'src/core/Constants/pagination';
-import { AdminDocument } from './schemas/admin.schema';
+import { Admin, AdminDocument } from 'src/admin/schemas/admin.schema';
 
 @Controller('admin')
 @ApiTags('Admins')

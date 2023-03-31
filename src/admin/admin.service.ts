@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Admin, AdminDocument } from './schemas/admin.schema';
+import { Admin, AdminDocument } from 'src/admin/schemas/admin.schema';
 import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import {
   DefaultSort,
