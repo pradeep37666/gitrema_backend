@@ -1,6 +1,3 @@
-export const RagSettlementConfig = {
-  variableFee: 1.75,
-  fixedFee: 1,
-  taxOnFee: 15,
-  paybleTax: 15,
-};
+export const DELIVERY_MARGIN = 1.725;
+
+export const PAYOUT_DAY = 1;
