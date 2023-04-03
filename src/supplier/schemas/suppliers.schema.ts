@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { TIMEZONE } from 'src/core/Constants/system.constant';
 import { Tax } from 'src/core/Constants/tax-rate.constant';
 import { ImportDocument } from 'src/import/schemas/import.schema';
 import {
@@ -138,6 +139,9 @@ export class Supplier {
 
   @Prop({ default: true })
   active: boolean;
+
+  @Prop({ default: TIMEZONE })
+  timezone: string;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

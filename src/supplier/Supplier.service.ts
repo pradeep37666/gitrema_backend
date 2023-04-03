@@ -126,7 +126,7 @@ export class SupplierService {
     });
   }
 
-  async getOne(supplierId: string): Promise<Supplier> {
+  async getOne(supplierId: string): Promise<SupplierDocument> {
     return await this.supplierModel.findOne({ _id: supplierId });
   }
 
