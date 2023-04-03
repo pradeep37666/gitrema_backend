@@ -36,10 +36,13 @@ import { PaymentSetupService } from 'src/payment-setup/payment-setup.service';
 import { SupplierService } from 'src/supplier/Supplier.service';
 import { GlobalConfigService } from 'src/global-config/global-config.service';
 import * as moment from 'moment';
+
 import {
   DELIVERY_MARGIN,
   PAYOUT_DAY,
-} from 'src/core/Constants/financial.constant';
+  TIMEZONE,
+} from 'src/core/Constants/system.constant';
+import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
 @Injectable()
 export class PaymentService {
@@ -143,6 +146,9 @@ export class PaymentService {
     this.cashierLogService.logTransactionAsync(cashierId, transaction._id);
 
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Online) {
+      const supplier = await this.supplierService.getOne(
+        order.supplierId.toString(),
+      );
       const options: PaymentTokenDto = {
         orderId: order._id,
         transactionId: transaction._id,
@@ -150,17 +156,22 @@ export class PaymentService {
         action: 1,
         metaId: paymentRequestDetails.metaId,
         redirectUrl: paymentRequestDetails.redirectUrl,
-        accountDetails: await this.preparePayout(
-          order.supplierId.toString(),
-          transaction.amount,
-        ),
+        accountDetails: await this.preparePayout(supplier, transaction.amount),
       };
 
       const res = await this.arbPgService.requestPaymentToken(options);
 
-      this.transactionService.update(transaction._id, {
+      const dataToUpdate: any = {
         externalTransactionId: res.paymentId,
-      });
+      };
+      if (options.accountDetails && options.accountDetails.length > 0) {
+        dataToUpdate.isRemitScheduled = true;
+
+        dataToUpdate.scheduledPayoutDate = new Date(
+          moment.utc(options.accountDetails[0].valueDate).format('YYYY-MM-DD'),
+        );
+      }
+      this.transactionService.update(transaction._id, dataToUpdate);
       return res;
     }
 
@@ -245,7 +256,7 @@ export class PaymentService {
     return transactions;
   }
   async preparePayout(
-    supplierId: string,
+    supplier: SupplierDocument,
     amount: number,
   ): Promise<
     [
@@ -260,11 +271,11 @@ export class PaymentService {
   > {
     let accountDetails = null;
     const paymentSetup = await this.paymentSetupService.findOneBySupplier(
-      supplierId,
+      supplier._id,
     );
     if (paymentSetup) {
       const supplierPackage =
-        await this.supplierService.getSupplierActivePackage(supplierId);
+        await this.supplierService.getSupplierActivePackage(supplier._id);
       let deliveryMargin = DELIVERY_MARGIN;
       let payoutDay = PAYOUT_DAY;
       if (supplierPackage && supplierPackage.deliveryMargin) {
@@ -286,7 +297,9 @@ export class PaymentService {
           iBanNum: paymentSetup.iban,
           benificiaryName: paymentSetup.bankAccountHolder,
           serviceAmount: amount - deliveryMarginAmount,
-          valueDate: findDay(payoutDay).format('YYYY-MM-DD'),
+          valueDate: findDay(payoutDay, supplier.timezone ?? TIMEZONE).format(
+            'YYYY-MM-DD',
+          ),
         },
       ];
     }

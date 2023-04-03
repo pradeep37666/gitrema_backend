@@ -87,6 +87,7 @@ export const REPORT_HEADER = {
     'Transaction ID',
     'Reference ID',
     'Our Transaction ID',
+    'Scheduled Payout Date',
   ],
   PAYOUT_AGGREGATED_PREVIEW: [
     'Supplier ID',
@@ -96,6 +97,7 @@ export const REPORT_HEADER = {
     'Bank IBAN',
     'Bank Name',
     'Amonut to be Paid to Supplier',
+    'Scheduled Payout Date',
   ],
 };
 export const REPORT_FIELDS = {
@@ -187,6 +189,7 @@ export const REPORT_FIELDS = {
     'transactionId',
     'referenceId',
     'ourTransactionId',
+    'scheduledPayoutDate',
   ],
   PAYOUT_AGGREGATED_PREVIEW: [
     'supplierId',
@@ -196,6 +199,7 @@ export const REPORT_FIELDS = {
     'bankIban',
     'bankName',
     'amountTobePaid',
+    'scheduledPayoutDate',
   ],
 };
 

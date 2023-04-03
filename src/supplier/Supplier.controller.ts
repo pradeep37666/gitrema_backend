@@ -56,7 +56,7 @@ export class SupplierController {
   @PermissionGuard(PermissionSubject.Supplier, Permission.Common.FETCH)
   fetchSingleSupplier(
     @Param('supplierId') supplierId: string,
-  ): Promise<Supplier> {
+  ): Promise<SupplierDocument> {
     return this.supplierService.getOne(supplierId);
   }
 

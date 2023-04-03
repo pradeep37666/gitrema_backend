@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as moment from 'moment';
+import 'moment-timezone';
 
 export const generateRandomPassword = function () {
   return Math.random().toString(36).slice(-8);
@@ -61,12 +62,12 @@ export const replaceAll = (sentence, wordsToReplace) => {
   );
 };
 
-export const findDay = (dayNeeded) => {
-  const today = moment().isoWeekday();
+export const findDay = (dayNeeded, timezone) => {
+  const today = moment().tz(timezone).isoWeekday();
 
   if (today < dayNeeded) {
-    return moment().isoWeekday(dayNeeded);
+    return moment().tz(timezone).isoWeekday(dayNeeded);
   } else {
-    return moment().add(1, 'weeks').isoWeekday(dayNeeded);
+    return moment().tz(timezone).add(1, 'weeks').isoWeekday(dayNeeded);
   }
 };

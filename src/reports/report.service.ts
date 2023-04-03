@@ -34,7 +34,7 @@ import {
 import { ReportPaymentDto } from './dto/report-payment.dto';
 import { PayoutPreviewDto } from './dto/payout-preview.dto';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
-import { DELIVERY_MARGIN } from 'src/core/Constants/financial.constant';
+import { DELIVERY_MARGIN } from 'src/core/Constants/system.constant';
 import { GlobalConfigService } from 'src/global-config/global-config.service';
 
 @Injectable()
@@ -1107,7 +1107,8 @@ export class ReportService {
           isRefund: false,
           paymentMethod: PaymentMethod.Online,
           isRemitted: false,
-          status: PaymentStatus.Success,
+          isRemitScheduled: true,
+          //status: PaymentStatus.Success,
           ...query,
         },
       },
@@ -1166,6 +1167,12 @@ export class ReportService {
           referenceId: '$pgResponse.ref',
           paymentId: '$pgResponse.paymentId',
           ourTransactionId: '$_id',
+          scheduledPayoutDate: {
+            $dateToString: {
+              format: '%Y-%m-%d %H:%M',
+              date: '$scheduledPayoutDate',
+            },
+          },
         },
       },
     ]);
@@ -1200,7 +1207,8 @@ export class ReportService {
           isRefund: false,
           paymentMethod: PaymentMethod.Online,
           isRemitted: false,
-          status: PaymentStatus.Success,
+          isRemitScheduled: true,
+          //status: PaymentStatus.Success,
           ...query,
         },
       },
@@ -1245,7 +1253,10 @@ export class ReportService {
       },
       {
         $group: {
-          _id: '$supplierId',
+          _id: {
+            supplierId: '$supplierId',
+            scheduledPayoutDate: '$scheduledPayoutDate',
+          },
           amountTobePaid: { $sum: { $round: ['$amountTobePaid', 2] } },
           amountReceived: { $sum: { $round: ['$amount', 2] } },
           supplierId: { $first: '$supplierId' },
@@ -1253,6 +1264,14 @@ export class ReportService {
           bankId: { $first: '$paymentsetup.bankIdCode' },
           bankIban: { $first: '$paymentsetup.iban' },
           bankName: { $first: '$paymentsetup.bankName' },
+          scheduledPayoutDate: {
+            $first: {
+              $dateToString: {
+                format: '%Y-%m-%d %H:%M',
+                date: '$scheduledPayoutDate',
+              },
+            },
+          },
         },
       },
     ]);

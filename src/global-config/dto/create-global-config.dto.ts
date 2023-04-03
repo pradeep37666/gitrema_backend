@@ -9,7 +9,7 @@ import {
 import {
   DELIVERY_MARGIN,
   PAYOUT_DAY,
-} from 'src/core/Constants/financial.constant';
+} from 'src/core/Constants/system.constant';
 
 export class CreateGlobalConfigDto {
   @ApiProperty({ required: false, example: DELIVERY_MARGIN })
