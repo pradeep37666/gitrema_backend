@@ -114,7 +114,7 @@ export class InvoiceService {
     // create invoice record
     const invoice = await this.invoiceModel.create({
       ...dto,
-      addedBy: req.user.userId,
+      addedBy: req?.user?.userId ?? null,
       supplierId: order.supplierId._id,
       restaurantId: order.restaurantId._id,
       url: invoiceData.url,
@@ -124,8 +124,7 @@ export class InvoiceService {
     });
 
     this.invoiceHelperService.postInvoiceCreate(invoice, order);
-    if (dto.print && invoiceData.html)
-      this.printerService.print(invoiceData.html);
+
     return invoice;
   }
 
@@ -192,11 +191,14 @@ export class InvoiceService {
         throw new BadRequestException(`Invoice not found`);
       }
       commands = await this.invoiceHelperService.generateEscCommandsForInvoice(
-        invoice,
+        invoice.imageUrl,
       );
       commands = Object.values(commands);
     } else if (query.type == InvoiceType.KitchenReceipt) {
-      commands = '';
+      const order = await this.orderModel.findById(query.orderId);
+      commands = await this.invoiceHelperService.generateEscCommandsForInvoice(
+        order.kitchenReceipt,
+      );
     }
     return commands;
   }

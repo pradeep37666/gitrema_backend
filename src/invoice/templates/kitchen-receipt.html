@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      .text-24 {
+        font-size: 24px;
+      }
+      .text-8 {
+        font-size: 8px;
+      }
+      .fw-600 {
+        font-weight: 600;
+      }
+      .title {
+        font-family: 'Calibri';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 40px;
+        color: #0e110e;
+      }
+      .divider {
+        height: 1px;
+        width: 100%;
+        margin: 30px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .divider span {
+        padding: 0 10px;
+        background-color: #fff;
+      }
+      .container {
+        width: 600px;
+        margin: 0px auto;
+        padding: 0px 21px;
+        font-family: 'Cairo';
+        border-radius: 4px;
+        background: #ffffff;
+      }
+
+      .topContainer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .mainTable table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+      table {
+        border-collapse: collapse;
+      }
+
+      td,
+      th {
+        border: 1px solid #00000033;
+        padding: 6px;
+        text-align: left;
+      }
+      body {
+        line-height: 35px;
+        font-family: 'Calibri', sans-serif;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container" id="container">
+      <div>
+        <div style="text-align: center">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              padding-bottom: 20px;
+              padding-top: 20px;
+              text-align: center;
+              border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            "
+          >
+            <div class="title">{{ order.restaurantId.name }}</div>
+            <div class="title">{{ order.restaurantId.nameAr }}</div>
+            <!-- <div
+              class="text-24 fw-600"
+              style="color: #5c5c5c; margin-top: 8px; line-height: 22px"
+            >
+              <span>رقم الفاتورة : </span><span>{{ invoiceNumber }}</span>
+            </div> -->
+            <div class="text-24 fw-600" style="margin-top: 10px">
+              <div
+                style="
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+                "
+              >
+                <span style="direction: ltr">Order |&nbsp;</span>
+                <span style="direction: rtl">رقم الطلب</span>
+                <span style="direction: ltr"
+                  >&nbsp;#{{ order.orderNumber }}</span
+                >
+              </div>
+              <div>
+                <span>VAT |&nbsp;</span>
+                <span>الرقم الضريبي</span>
+              </div>
+              <div>{{ order.supplierId.vatNumber }}</div>
+              <div>{{moment order.createdAt format="D/M/YYYY [|] h:mm A"}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style="
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          padding-bottom: 40px;
+        "
+        class="tableData"
+      >
+        <div
+          class="text-24"
+          style="margin: 15px 0px; text-align: center; line-height: 30px"
+        >
+          {{#each order.items}}
+          <div style="display: flex; justify-content: space-between; gap: 10px">
+            <div style="flex: 1">Item{{math @index "+" 1}}</div>
+            <div style="flex: 3">
+              <div style="display: flex; flex-direction: column">
+                <div style="direction: ltr">{{this.menuItem.name}}</div>
+                <div style="direction: rtl">{{this.menuItem.nameAr}}</div>
+              </div>
+            </div>
+            <div style="flex: 1">X{{this.quantity}}</div>
+          </div>
+
+          <br />
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

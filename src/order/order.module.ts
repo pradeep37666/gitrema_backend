@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -29,6 +29,7 @@ import { HttpCallerModule } from 'src/core/Providers/http-caller/http-caller.mod
 import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
 import { OrderNotificationService } from './order-notification.service';
 import { CustomerModule } from 'src/customer/customer.module';
+import { InvoiceModule } from 'src/invoice/invoice.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { CustomerModule } from 'src/customer/customer.module';
     TableModule,
     HttpCallerModule,
     CustomerModule,
+    forwardRef(() => InvoiceModule),
   ],
   controllers: [OrderController],
   providers: [

@@ -31,6 +31,8 @@ import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { OrderService } from 'src/order/order.service';
 import { TableHelperService } from 'src/table/table-helper.service';
+import { InvoiceService } from 'src/invoice/invoice.service';
+import { InvoiceType } from 'src/invoice/invoice.enum';
 
 @Injectable()
 export class TransactionService {
@@ -47,6 +49,7 @@ export class TransactionService {
     private orderService: OrderService,
     private cashierLogService: CashierLogService,
     private tableHelperService: TableHelperService,
+    private invoiceService: InvoiceService,
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
@@ -167,6 +170,10 @@ export class TransactionService {
           }
           order.set(dataToUpdate);
           await order.save();
+          this.invoiceService.create(req, {
+            orderId: order._id,
+            type: InvoiceType.Invoice,
+          });
           this.orderHelperService.postOrderUpdate(order, dataToUpdate);
 
           // update table log

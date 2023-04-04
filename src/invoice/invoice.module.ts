@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { InvoiceController } from './invoice.controller';
 import { FatooraService } from './fatoora.service';
@@ -20,12 +20,12 @@ import { HttpModule } from '@nestjs/axios';
       { name: Invoice.name, schema: InvoiceSchema },
       { name: Order.name, schema: OrderSchema },
     ]),
-    OrderModule,
+    forwardRef(() => OrderModule),
     PrinterModule,
     HttpModule,
   ],
   controllers: [InvoiceController],
   providers: [InvoiceService, FatooraService, InvoiceHelperService],
-  exports: [InvoiceService],
+  exports: [InvoiceService, InvoiceHelperService],
 })
 export class InvoiceModule {}

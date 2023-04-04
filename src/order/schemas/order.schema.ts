@@ -240,6 +240,9 @@ export class Order {
 
   @Prop({ type: [ChefInquirySchema], default: [] })
   chefInquiry: ChefInquiry;
+
+  @Prop({ default: null })
+  kitchenReceipt: string;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.plugin(paginate);

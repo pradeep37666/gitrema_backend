@@ -10,6 +10,7 @@ import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
 import { CashierModule } from 'src/cashier/cashier.module';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
 import { TableModule } from 'src/table/table.module';
+import { InvoiceModule } from 'src/invoice/invoice.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TableModule } from 'src/table/table.module';
     OrderModule,
     CashierModule,
     TableModule,
+    InvoiceModule,
   ],
   providers: [TransactionService],
   exports: [TransactionService],

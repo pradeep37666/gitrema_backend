@@ -1,5 +1,11 @@
 import { Invoice } from '@axenda/zatca';
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import Handlebars from 'handlebars';
@@ -46,6 +52,7 @@ export class InvoiceHelperService {
     @InjectModel(Invoice.name) private invoiceModel: Model<InvoiceDocument>,
 
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
     private readonly httpService: HttpService,
   ) {}
@@ -102,6 +109,29 @@ export class InvoiceHelperService {
         imageUrl: document.imageUrl.Location,
       };
     throw new BadRequestException(`Error generating invoice`);
+  }
+
+  async generateKitchenReceipt(order: OrderDocument): Promise<string> {
+    await order.populate([{ path: 'restaurantId' }]);
+    const templateHtml = fs.readFileSync(
+      'src/invoice/templates/kitchen-receipt.html',
+      'utf8',
+    );
+
+    const template = Handlebars.compile(templateHtml);
+    const html = template({
+      order: order.toObject(),
+    });
+
+    const imageUrl = await this.uploadDocument(
+      html,
+      order.supplierId._id + '/' + order.restaurantId._id + '/kitchen-receipt/',
+      true,
+    );
+
+    console.log(imageUrl);
+    if (imageUrl) return imageUrl;
+    throw new BadRequestException(`Error generating kitchen receipt`);
   }
 
   async generateCreditMemo(
@@ -213,7 +243,7 @@ export class InvoiceHelperService {
     return summary;
   }
 
-  async uploadDocument(html: string, directory: string) {
+  async uploadDocument(html: string, directory: string, onlyImage = false) {
     const browser = await puppeteer.launch({
       headless: true,
       executablePath: '/usr/bin/google-chrome',
@@ -237,24 +267,31 @@ export class InvoiceHelperService {
       //   document.getElementById('container').offsetWidth,
       // ];
     });
-    const pdfPath =
-      './upload/' + (await uniqid.process().toUpperCase()) + '.pdf';
+
     const imagePath =
       './upload/' + (await uniqid.process().toUpperCase()) + '.png';
-    await page.pdf({
-      format: 'A4',
-      path: pdfPath,
-    });
+
     await page.screenshot({
       path: imagePath,
       clip: { x, y, width, height },
     });
-    browser.close();
-    const s3Url: any = await this.s3Service.uploadLocalFile(pdfPath, directory);
     const imageUrl: any = await this.s3Service.uploadLocalFile(
       imagePath,
       directory,
     );
+    if (onlyImage) {
+      browser.close();
+      return imageUrl.Location;
+    }
+    const pdfPath =
+      './upload/' + (await uniqid.process().toUpperCase()) + '.pdf';
+    await page.pdf({
+      format: 'A4',
+      path: pdfPath,
+    });
+    browser.close();
+    const s3Url: any = await this.s3Service.uploadLocalFile(pdfPath, directory);
+
     return { s3Url, imageUrl };
   }
 
@@ -280,10 +317,10 @@ export class InvoiceHelperService {
     }
   }
 
-  async generateEscCommandsForInvoice(invoice: InvoiceDocument) {
+  async generateEscCommandsForInvoice(imageUrl: string) {
     const imageResponse = await lastValueFrom(
       this.httpService
-        .get(invoice.imageUrl, {
+        .get(imageUrl, {
           responseType: 'arraybuffer',
         })
         .pipe(
