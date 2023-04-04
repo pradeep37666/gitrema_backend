@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { OrderStatus, OrderPaymentStatus } from '../enum/en.enum';
+import { OrderStatus, OrderPaymentStatus, OrderType } from '../enum/en.enum';
 import { Transform, Type } from 'class-transformer';
 import { ToBoolean } from 'src/core/Helpers/custom.validators';
 
@@ -40,6 +40,15 @@ export class QueryOrderDto {
   @IsEnum(OrderPaymentStatus)
   @IsOptional()
   paymentStatus: OrderPaymentStatus;
+
+  @ApiProperty({
+    required: false,
+    enum: OrderType,
+    enumName: 'OrderType',
+  })
+  @IsEnum(OrderType)
+  @IsOptional()
+  orderType: OrderType;
 
   @ApiProperty({ required: false, type: String, example: 'New,Processing' })
   @IsOptional()

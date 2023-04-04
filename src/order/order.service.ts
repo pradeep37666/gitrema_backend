@@ -33,6 +33,8 @@ import {
   KitchenQueue,
   KitchenQueueDocument,
 } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
+import { InvoiceService } from 'src/invoice/invoice.service';
+import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
 
 @Injectable()
 export class OrderService {
@@ -51,6 +53,8 @@ export class OrderService {
     private readonly orderHelperService: OrderHelperService,
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
+    @Inject(forwardRef(() => InvoiceHelperService))
+    private readonly invoiceHelperService: InvoiceHelperService,
   ) {}
 
   async create(
@@ -266,6 +270,9 @@ export class OrderService {
     }
 
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
+      // generate kitchen receipt
+      orderData.kitchenReceipt =
+        await this.invoiceHelperService.generateKitchenReceipt(order);
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
