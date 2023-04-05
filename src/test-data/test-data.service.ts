@@ -71,6 +71,8 @@ export class TestDataService {
       };
     } else req.user.supplierId = supplier._id;
 
+    this.paymentSetup(req);
+
     let user: UserDocument = await this.userModel.findOne({
       supplierId: supplier._id,
     });
@@ -150,7 +152,7 @@ export class TestDataService {
     return user;
   }
 
-  async paymentSetup(req, supplier: SupplierDocument) {
+  async paymentSetup(req) {
     const dto: CreatePaymentSetupDto = {
       inStore: {
         ePayment: true,

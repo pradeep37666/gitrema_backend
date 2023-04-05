@@ -18,7 +18,7 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
-import { QueryOrderDto } from './dto/query-order.dto';
+import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
 import {
   Supplier,
   SupplierDocument,
@@ -201,7 +201,7 @@ export class OrderService {
 
   async findByCustomer(
     req: any,
-    query: QueryOrderDto,
+    query: QueryCustomerOrderDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     const orders = await this.orderModelPag.paginate(
