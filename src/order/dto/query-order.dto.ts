@@ -63,3 +63,10 @@ export class QueryOrderDto {
   @IsOptional()
   chefRequestedClarification: boolean;
 }
+
+export class QueryCustomerOrderDto extends QueryOrderDto {
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  supplierId: string;
+}
