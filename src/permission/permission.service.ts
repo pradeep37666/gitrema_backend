@@ -79,7 +79,7 @@ export class PermissionService {
     permission: PermissionActions,
   ) {
     const role = await this.roleModel.findById(user.roleId).lean();
-
+    console.log(role, subject, permission);
     if (!role) return false;
 
     return this.checkPermission(role.permissions, subject, permission);
@@ -90,27 +90,29 @@ export class PermissionService {
     subject: PermissionSubject,
     permission: PermissionActions,
   ) {
-    const wildcardPermissionObj = permissions.find((p) => {
+    const wildcardPermissions = permissions.filter((p) => {
       return p.subject == PermissionSubject.ALL;
     });
 
-    if (
-      wildcardPermissionObj &&
-      (wildcardPermissionObj.permissions.includes(permission) ||
-        wildcardPermissionObj.permissions.includes(CommonPermissions.MANAGE))
-    )
-      return true;
+    for (const i in wildcardPermissions) {
+      if (
+        wildcardPermissions[i].permissions.includes(permission) ||
+        wildcardPermissions[i].permissions.includes(CommonPermissions.MANAGE)
+      )
+        return true;
+    }
 
-    const permissionObj = permissions.find((p) => {
+    const permissionObjs = permissions.filter((p) => {
       return p.subject == subject;
     });
 
-    if (
-      permissionObj &&
-      (permissionObj.permissions.includes(permission) ||
-        permissionObj.permissions.includes(CommonPermissions.MANAGE))
-    )
-      return true;
+    for (const i in permissionObjs) {
+      if (
+        permissionObjs[i].permissions.includes(permission) ||
+        permissionObjs[i].permissions.includes(CommonPermissions.MANAGE)
+      )
+        return true;
+    }
 
     return false;
   }
