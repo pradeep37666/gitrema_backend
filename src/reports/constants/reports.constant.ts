@@ -88,6 +88,8 @@ export const REPORT_HEADER = {
     'Reference ID',
     'Our Transaction ID',
     'Scheduled Payout Date',
+    'Payment Method',
+    'Settlement Status',
   ],
   PAYOUT_AGGREGATED_PREVIEW: [
     'Supplier ID',
@@ -190,6 +192,8 @@ export const REPORT_FIELDS = {
     'referenceId',
     'ourTransactionId',
     'scheduledPayoutDate',
+    'paymentMethod',
+    'settlementStatus',
   ],
   PAYOUT_AGGREGATED_PREVIEW: [
     'supplierId',

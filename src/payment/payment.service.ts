@@ -273,7 +273,12 @@ export class PaymentService {
     const paymentSetup = await this.paymentSetupService.findOneBySupplier(
       supplier._id,
     );
-    if (paymentSetup) {
+    if (
+      paymentSetup &&
+      paymentSetup.bankIdCode &&
+      paymentSetup.iban &&
+      paymentSetup.bankAccountHolder
+    ) {
       const supplierPackage =
         await this.supplierService.getSupplierActivePackage(supplier._id);
       let deliveryMargin = DELIVERY_MARGIN;

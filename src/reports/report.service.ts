@@ -1083,7 +1083,11 @@ export class ReportService {
     return new StreamableFile(file);
   }
 
-  async exportPayoutPreview(req: any, query: PayoutPreviewDto) {
+  async exportPayoutPreview(
+    req: any,
+    query: PayoutPreviewDto,
+    isFile = true,
+  ): Promise<any[] | StreamableFile> {
     let deliveryMargin = DELIVERY_MARGIN;
     const globalConfig = await this.globalConfigService.fetch();
     if (globalConfig) {
@@ -1106,9 +1110,9 @@ export class ReportService {
         $match: {
           isRefund: false,
           paymentMethod: PaymentMethod.Online,
-          isRemitted: false,
-          isRemitScheduled: true,
-          //status: PaymentStatus.Success,
+          //isRemitted: false,
+          //isRemitScheduled: true,
+          status: PaymentStatus.Success,
           ...query,
         },
       },
@@ -1173,17 +1177,31 @@ export class ReportService {
               date: '$scheduledPayoutDate',
             },
           },
+          paymentMethod: '$pgResponse.cardType',
+          settlementStatus: {
+            $cond: {
+              if: {
+                $eq: ['$isRemitted', true],
+              },
+              then: 'Paid',
+              else: 'Not Paid',
+            },
+          },
         },
       },
     ]);
-
+    if (!isFile) return transactions;
     if (!(await createXlsxFileFromJson(transactions, 'PAYOUT_PREVIEW')))
       throw new NotFoundException();
 
     const file = createReadStream(DefaultPath);
     return new StreamableFile(file);
   }
-  async exportPayoutAggregatePreview(req: any, query: PayoutPreviewDto) {
+  async exportPayoutAggregatePreview(
+    req: any,
+    query: PayoutPreviewDto,
+    isFile = true,
+  ): Promise<any[] | StreamableFile> {
     let deliveryMargin = DELIVERY_MARGIN;
     const globalConfig = await this.globalConfigService.fetch();
     if (globalConfig) {
@@ -1207,8 +1225,8 @@ export class ReportService {
           isRefund: false,
           paymentMethod: PaymentMethod.Online,
           isRemitted: false,
-          isRemitScheduled: true,
-          //status: PaymentStatus.Success,
+          //isRemitScheduled: true,
+          status: PaymentStatus.Success,
           ...query,
         },
       },
@@ -1276,6 +1294,7 @@ export class ReportService {
       },
     ]);
 
+    if (!isFile) return transactions;
     if (
       !(await createXlsxFileFromJson(transactions, 'PAYOUT_AGGREGATED_PREVIEW'))
     )
