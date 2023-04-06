@@ -245,18 +245,31 @@ export class ReportController {
   }
 
   @Get('payout/preview')
+  @PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async payoutPreview(@Req() req, @Query() query: PayoutPreviewDto) {
+    return await this.reportService.exportPayoutPreview(req, query, false);
+  }
+
+  @Get('payout/preview-export')
   @Header('Content-Type', 'application/xlsx')
   @Header('Content-Disposition', 'attachment; filename="payout.xlsx"')
   @SkipInterceptor()
   @PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
-  async payoutPreviewExport(
-    @Req() req,
-    @Query() query: PayoutPreviewDto,
-  ): Promise<StreamableFile> {
+  async payoutPreviewExport(@Req() req, @Query() query: PayoutPreviewDto) {
     return await this.reportService.exportPayoutPreview(req, query);
   }
 
   @Get('payout/aggregated-preview')
+  @PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async payoutAggregatedPreview(@Req() req, @Query() query: PayoutPreviewDto) {
+    return await this.reportService.exportPayoutAggregatePreview(
+      req,
+      query,
+      false,
+    );
+  }
+
+  @Get('payout/aggregated-preview-export')
   @Header('Content-Type', 'application/xlsx')
   @Header('Content-Disposition', 'attachment; filename="payout.xlsx"')
   @SkipInterceptor()
@@ -264,7 +277,7 @@ export class ReportController {
   async payoutAggregatedPreviewExport(
     @Req() req,
     @Query() query: PayoutPreviewDto,
-  ): Promise<StreamableFile> {
+  ) {
     return await this.reportService.exportPayoutAggregatePreview(req, query);
   }
 }
