@@ -67,6 +67,16 @@ export class SupplierService {
         );
       }
     }
+    if (supplierDetails.domain) {
+      const exist = await this.supplierModel.count({
+        domain: supplierDetails.domain,
+      });
+      if (exist > 0) {
+        throw new BadRequestException(
+          `A record already exists with same domain`,
+        );
+      }
+    }
     const supplier = new this.supplierModel(supplierDetails);
     if (supplier.taxEnabled) {
       await this.menuItemModel.updateMany(
