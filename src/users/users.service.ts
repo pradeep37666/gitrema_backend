@@ -19,6 +19,8 @@ import {
 import { Role, RoleDocument } from 'src/role/schemas/roles.schema';
 import { RoleSlug } from 'src/core/Constants/enum';
 import { JwtService } from '@nestjs/jwt';
+import { ChangeUserPasswordDto } from './dto/change-user-password.dto';
+import { MailService } from 'src/notification/mail/mail.service';
 
 @Injectable()
 export class UserService {
@@ -27,6 +29,7 @@ export class UserService {
     @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     @InjectModel(User.name) private userModelPag: PaginateModel<UserDocument>,
     private jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async create(req: any, userRequest: any): Promise<UserDocument> {
@@ -97,6 +100,33 @@ export class UserService {
       throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
     }
     return user;
+  }
+
+  async changePassword(req: any, dto: ChangeUserPasswordDto): Promise<boolean> {
+    const user = await this.userModel.findOne({
+      supplierId: req.user.supplierId,
+      _id: dto.userId,
+    });
+    if (!user)
+      throw new BadRequestException(
+        `Provided userId is invalid or logged in user does not have the access to perform this action`,
+      );
+    user.password = dto.password;
+    await user.save();
+    if (user.email) {
+      const html = `The system admin has set following password for you account.
+    <b>${dto.password}</b>`;
+
+      this.mailService.send({
+        to: user.email,
+        subject: 'Password Update',
+        body: html,
+      });
+    }
+    if (user) {
+      return true;
+    }
+    return false;
   }
 
   async all(

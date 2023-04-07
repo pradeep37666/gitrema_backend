@@ -6,6 +6,7 @@ import { User, UserSchema } from './schemas/users.schema';
 import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/core/Constants/auth.constants';
+import { MailModule } from 'src/notification/mail/mail.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { jwtConstants } from 'src/core/Constants/auth.constants';
         secret: jwtConstants.secret,
       }),
     }),
+    MailModule,
   ],
   controllers: [UserController],
   providers: [UserService],
