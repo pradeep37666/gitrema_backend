@@ -28,6 +28,7 @@ import {
 } from 'src/notification/email-templates/schemas/email-template.schema';
 import { MailService } from 'src/notification/mail/mail.service';
 import { CustomEvent } from 'src/core/Constants/enum';
+import { generateRandomPassword } from 'src/core/Helpers/universal.helper';
 
 @Injectable()
 export class RecoverPasswordService {
@@ -44,45 +45,24 @@ export class RecoverPasswordService {
   async sendChangePasswordMail(
     recoverPasswordDto: RecoverPasswordDto,
   ): Promise<any> {
-    // 1. find the email user
-    const userExists = await this.userService.findByEmail(
-      recoverPasswordDto.email,
-    );
+    const userExists = await this.userModel.findOne({
+      email: recoverPasswordDto.email,
+    });
 
     if (!userExists) {
       throw new BadRequestException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
     }
 
-    // 2. create jwt token 30 min expiry with userID and email
-    const user = {
-      userId: userExists._id,
-    };
+    const password = generateRandomPassword();
+    userExists.password = password;
+    userExists.save();
 
-    const accessToken = await this.generateAuthToken(user, '30m');
-
-    // 3. generate email template for forgot password
-
-    const templateData = await this.findBySlug(CustomEvent.ForgotPassword);
-
-    if (!templateData) {
-      throw new InternalServerErrorException(STATUS_MSG.ERROR.SERVER_ERROR);
-    }
-
-    // 4. attached reset password link with token
-
-    const template = Handlebars.compile(templateData.body, { noEscape: true });
-
-    const html = template({
-      ForgotPasswordLink: `${this.configService.get(
-        'app.frontendBaseUrl',
-      )}?token=${accessToken}`,
-    });
-
-    // 5. send email to the user
+    const html = `The system has set a following temporary password on your account.
+    <b>${password}</b>`;
 
     return this.mailService.send({
       to: recoverPasswordDto.email,
-      subject: 'Recover Password',
+      subject: 'Temporary Password',
       body: html,
     });
   }
