@@ -33,6 +33,7 @@ export enum PermissionSubject {
   Import = 'Import',
   GlobalConfig = 'Global Config',
   Report = 'Report',
+  Delivery = 'Delivery',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
@@ -77,6 +78,7 @@ export enum OrderPermissions {
 
 export enum UserPermission {
   ImpersonateSupplier = 'Impersonate Supplier',
+  ChangeUserPassword = 'Change User Password',
 }
 
 export enum ReportPermission {
