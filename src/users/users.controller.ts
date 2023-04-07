@@ -26,6 +26,7 @@ import { Permission } from 'src/core/Constants/permission.type';
 import { User, UserDocument } from './schemas/users.schema';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
+import { ChangeUserPasswordDto } from './dto/change-user-password.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -74,6 +75,15 @@ export class UserController {
       return STATUS_MSG.SUCCESS.DELETED;
     }
     throw new InternalServerErrorException(STATUS_MSG.ERROR.SERVER_ERROR);
+  }
+
+  @Post('change-password')
+  @PermissionGuard(PermissionSubject.User, Permission.User.ChangeUserPassword)
+  async changePassword(
+    @Req() req,
+    @Body() dto: ChangeUserPasswordDto,
+  ): Promise<boolean> {
+    return this.userService.changePassword(req, dto);
   }
 
   @Post('impersonate-supplier')
