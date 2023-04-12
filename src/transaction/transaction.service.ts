@@ -22,6 +22,7 @@ import {
   OrderActivityType,
   OrderStatus,
   OrderPaymentStatus,
+  OrderType,
 } from 'src/order/enum/en.enum';
 import { capitalize } from 'src/core/Helpers/universal.helper';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
@@ -33,6 +34,7 @@ import { OrderService } from 'src/order/order.service';
 import { TableHelperService } from 'src/table/table-helper.service';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { InvoiceType } from 'src/invoice/invoice.enum';
+import { DeliveryService } from 'src/delivery/delivery.service';
 
 @Injectable()
 export class TransactionService {
@@ -50,6 +52,7 @@ export class TransactionService {
     private cashierLogService: CashierLogService,
     private tableHelperService: TableHelperService,
     private invoiceService: InvoiceService,
+    private deliveryService: DeliveryService,
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
@@ -167,13 +170,18 @@ export class TransactionService {
               : OrderStatus.Closed;
             dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
             dataToUpdate.paymentTime = new Date();
+
+            this.invoiceService.create(req, {
+              orderId: order._id,
+              type: InvoiceType.Invoice,
+            });
+
+            if (order.orderType == OrderType.Delivery)
+              this.deliveryService.create(order);
           }
           order.set(dataToUpdate);
           await order.save();
-          this.invoiceService.create(req, {
-            orderId: order._id,
-            type: InvoiceType.Invoice,
-          });
+
           this.orderHelperService.postOrderUpdate(order, dataToUpdate);
 
           // update table log

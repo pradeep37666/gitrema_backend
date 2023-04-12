@@ -56,7 +56,9 @@ import { PrinterModule } from './printer/printer.module';
 import { GlobalConfigModule } from './global-config/global-config.module';
 import { TestDataModule } from './test-data/test-data.module';
 import { AdminModule } from './admin/admin.module';
+import { DeliveryModule } from './delivery/delivery.module';
 import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
+import yallowDeliveryConfiguration from './config/yallow-delivery.configuration';
 
 @Module({
   imports: [
@@ -70,6 +72,7 @@ import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
         mailConfiguration,
         //asmscSmsConfiguration,
         taqnyatSmsConfiguration,
+        yallowDeliveryConfiguration,
       ],
     }),
     MongooseModule.forRootAsync({
@@ -122,6 +125,7 @@ import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
     GlobalConfigModule,
     TestDataModule,
     AdminModule,
+    DeliveryModule,
   ],
   controllers: [AppController],
   providers: [
