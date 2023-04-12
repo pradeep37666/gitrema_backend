@@ -35,6 +35,9 @@ import {
 } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
+import { OrderTypes } from 'src/core/Constants/enum';
+import * as moment from 'moment';
+import 'moment-timezone';
 
 @Injectable()
 export class OrderService {
@@ -68,6 +71,45 @@ export class OrderService {
       .findById(req.user.supplierId)
       .lean();
 
+    if ([OrderType.Delivery, OrderType.Pickup].includes(dto.orderType)) {
+      let workingHours = [supplier.defaultWorkingHours];
+      if (supplier.overrideWorkingHours.length > 0) {
+        workingHours = supplier.overrideWorkingHours.filter((workingHour) => {
+          return (
+            workingHour.day ==
+            moment()
+              .tz(supplier.timezone ?? 'UTC')
+              .format('dddd')
+          );
+        });
+        const matchedPeriod = workingHours.find((workingHour) => {
+          const startArr = workingHour.start.split(':');
+          const endArr = workingHour.end.split(':');
+          const startDate = moment()
+            .tz(supplier.timezone ?? 'UTC')
+            .set({
+              hour: startArr.length == 2 ? parseInt(startArr[0]) : 0,
+              minute: startArr.length == 2 ? parseInt(startArr[1]) : 0,
+            });
+          const endDate = moment()
+            .tz(supplier.timezone ?? 'UTC')
+            .set({
+              hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
+              minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
+            });
+          const currentDate = moment().tz(supplier.timezone ?? 'UTC');
+          if (
+            currentDate.isSameOrAfter(startDate) &&
+            currentDate.isSameOrBefore(endDate)
+          ) {
+            return true;
+          }
+        });
+        if (!matchedPeriod) {
+          throw new BadRequestException(`Restaurant is closed`);
+        }
+      }
+    }
     orderData.taxRate = supplier.taxRate ?? 15;
 
     if (orderData.isScheduled != true) {
