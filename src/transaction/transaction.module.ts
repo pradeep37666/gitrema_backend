@@ -11,6 +11,7 @@ import { CashierModule } from 'src/cashier/cashier.module';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
 import { TableModule } from 'src/table/table.module';
 import { InvoiceModule } from 'src/invoice/invoice.module';
+import { DeliveryModule } from 'src/delivery/delivery.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { InvoiceModule } from 'src/invoice/invoice.module';
     CashierModule,
     TableModule,
     InvoiceModule,
+    DeliveryModule,
   ],
   providers: [TransactionService],
   exports: [TransactionService],
