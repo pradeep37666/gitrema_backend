@@ -33,6 +33,7 @@ import {
 } from 'src/supplier/schemas/supplier-package.schema';
 import { TestDataModule } from 'src/test-data/test-data.module';
 import { Admin, AdminSchema } from 'src/admin/schemas/admin.schema';
+import { HttpCallerModule } from 'src/core/Providers/http-caller/http-caller.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { Admin, AdminSchema } from 'src/admin/schemas/admin.schema';
 
     MailModule,
     TestDataModule,
+    HttpCallerModule,
   ],
   controllers: [AuthController, ProfileController, ChangePasswordController],
   providers: [AuthService, LocalStrategy, JwtStrategy, RecoverPasswordService],

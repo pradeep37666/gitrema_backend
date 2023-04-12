@@ -56,7 +56,6 @@ export class OrderNotificationService {
     if (phoneNumber) {
       template = this.prepareMessage(order, template, customer);
       const response = await this.whatsappService.sendMessage(
-        order.supplierId.toString(),
         phoneNumber,
         template,
       );
