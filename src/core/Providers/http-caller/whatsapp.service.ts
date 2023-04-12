@@ -10,11 +10,7 @@ export class WhatsappService {
     private configService: ConfigService,
   ) {}
 
-  async sendMessage(
-    sessionId: string,
-    phoneNumber: string,
-    message: string,
-  ): Promise<boolean> {
+  async sendMessage(phoneNumber: string, message: string): Promise<boolean> {
     const response = await lastValueFrom(
       this.httpService
         .post(
@@ -22,7 +18,6 @@ export class WhatsappService {
             'app.whatsappBaseUrl',
           )}/whatsapp-manager/send-message`,
           {
-            sessionId,
             phoneNumber,
             message,
           },

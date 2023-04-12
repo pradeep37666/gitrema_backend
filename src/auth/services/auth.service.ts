@@ -44,6 +44,7 @@ import {
 import { TaqnyatService } from 'src/core/Providers/Sms/taqnyat.service';
 import { TestDataService } from 'src/test-data/test-data.service';
 import { Admin, AdminDocument } from 'src/admin/schemas/admin.schema';
+import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service';
 
 @Injectable()
 export class AuthService {
@@ -68,6 +69,7 @@ export class AuthService {
     private readonly tanqyatService: TaqnyatService,
     private readonly mailService: MailService,
     private readonly testDataService: TestDataService,
+    private readonly whatsappService: WhatsappService,
   ) {}
 
   async validateUser(
@@ -216,16 +218,25 @@ export class AuthService {
     );
     this.otpModel.create({ phoneNumber: requestOtpDetails.phoneNumber, code });
 
-    const response = await this.tanqyatService.send(
-      requestOtpDetails.phoneNumber,
-      template,
-    );
-    console.log(response);
-    if (response.statusCode == HttpStatus.CREATED)
-      return { verificationId: response.messageId };
-    // if (response.status == 'S') {
-    //   return { verificationId: response.verfication_id };
-    // }
+    if (
+      requestOtpDetails.phoneNumber.substring(0, 3) == '966' ||
+      requestOtpDetails.phoneNumber.substring(0, 4) == '+966'
+    ) {
+      const response = await this.tanqyatService.send(
+        requestOtpDetails.phoneNumber,
+        template,
+      );
+      console.log(response);
+      if (response.statusCode == HttpStatus.CREATED)
+        return { verificationId: response.messageId };
+    } else {
+      const response = await this.whatsappService.sendMessage(
+        requestOtpDetails.phoneNumber,
+        template,
+      );
+      if (response) return { verificationId: 0 };
+    }
+
     throw new BadRequestException(STATUS_MSG.ERROR.ERROR_SMS);
   }
 
