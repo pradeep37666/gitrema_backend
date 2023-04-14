@@ -50,6 +50,7 @@ import {
 import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service';
 import { OrderNotificationService } from './order-notification.service';
 import { CustomerService } from 'src/customer/customer.service';
+import { OrderEvents } from 'src/notification/enum/en.enum';
 
 @Injectable()
 export class OrderHelperService {
@@ -340,6 +341,16 @@ export class OrderHelperService {
     // if (order.isScheduled)
     //   this.calculationService.identifyOrdersToRecalculateForScheduled(order);
     // store activity
+
+    // notify for new pickup or delivery order
+    if ([OrderType.Delivery, OrderType.Pickup].includes(order.orderType)) {
+      this.socketGateway.emit(
+        order.supplierId.toString(),
+        SocketEvents.OrderCreated,
+        order.toObject(),
+      );
+    }
+
     if (order.sittingStartTime)
       this.storeOrderStateActivity(
         order,
@@ -362,7 +373,10 @@ export class OrderHelperService {
     this.manageInventory(order);
 
     // notify customer
-    this.orderNotificationService.triggerOrderNotification(order);
+    this.orderNotificationService.triggerOrderNotification(
+      OrderEvents.OrderCreated,
+      order,
+    );
 
     // increment coupon usage
     if (order.couponCode) this.postCouponUsage(order.couponCode);
@@ -426,8 +440,8 @@ export class OrderHelperService {
         if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
           this.calculationService.handleOrderPreparationAfterUpdate(order);
       }
-
-      this.orderNotificationService.triggerOrderNotification(order);
+      this.orderNotificationService.triggerOrderNotification(dto.status, order);
+      //this.orderNotificationService.triggerOrderNotification(order);
     }
 
     if (dto.tableId) {

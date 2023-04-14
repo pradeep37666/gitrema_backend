@@ -21,7 +21,7 @@ import { TransactionModule } from './transaction/transaction.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionGuard } from './permission/permission.guard';
-import { EmailTemplateModule } from './notification/email-templates/email-template.module';
+
 import { AuthModule } from './auth/auth.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
 import { TableModule } from './table/table.module';
@@ -59,6 +59,7 @@ import { AdminModule } from './admin/admin.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
 import yallowDeliveryConfiguration from './config/yallow-delivery.configuration';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -93,7 +94,6 @@ import yallowDeliveryConfiguration from './config/yallow-delivery.configuration'
     RoleModule,
     EnumModule,
     TransactionModule,
-    EmailTemplateModule,
     RestaurantModule,
     TableModule,
     MenuModule,
@@ -126,6 +126,7 @@ import yallowDeliveryConfiguration from './config/yallow-delivery.configuration'
     TestDataModule,
     AdminModule,
     DeliveryModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

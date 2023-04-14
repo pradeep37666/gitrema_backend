@@ -25,6 +25,7 @@ export enum PermissionSubject {
   Order = 'Order',
   Business = 'Business',
   Offer = 'Offer',
+  NotificationConfig = 'Notification Config',
   Invoice = 'Invoice',
   Customer = 'Customer',
   ScreenDisplay = 'Screen Display',
