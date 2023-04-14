@@ -30,6 +30,16 @@ import { Customer, CustomerSchema } from 'src/customer/schemas/customer.schema';
 import { OrderNotificationService } from './order-notification.service';
 import { CustomerModule } from 'src/customer/customer.module';
 import { InvoiceModule } from 'src/invoice/invoice.module';
+import { SmsModule } from 'src/core/Providers/Sms/sms.module';
+import { MailModule } from 'src/notification/mail/mail.module';
+import {
+  Notification,
+  NotificationSchema,
+} from 'src/notification/schemas/notification.schema';
+import {
+  TrackNotification,
+  TrackNotificationSchema,
+} from 'src/notification/schemas/track-notification.schema';
 
 @Module({
   imports: [
@@ -45,10 +55,14 @@ import { InvoiceModule } from 'src/invoice/invoice.module';
       { name: Cart.name, schema: CartSchema },
       { name: KitchenQueue.name, schema: KitchenQueueSchema },
       { name: Customer.name, schema: CustomerSchema },
+      { name: Notification.name, schema: NotificationSchema },
+      { name: TrackNotification.name, schema: TrackNotificationSchema },
     ]),
     SocketIoModule,
     TableModule,
     HttpCallerModule,
+    SmsModule,
+    MailModule,
     CustomerModule,
     forwardRef(() => InvoiceModule),
   ],

@@ -35,6 +35,8 @@ import { TableHelperService } from 'src/table/table-helper.service';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { InvoiceType } from 'src/invoice/invoice.enum';
 import { DeliveryService } from 'src/delivery/delivery.service';
+import { OrderNotificationService } from 'src/order/order-notification.service';
+import { OrderEvents } from 'src/notification/enum/en.enum';
 
 @Injectable()
 export class TransactionService {
@@ -53,6 +55,7 @@ export class TransactionService {
     private tableHelperService: TableHelperService,
     private invoiceService: InvoiceService,
     private deliveryService: DeliveryService,
+    private readonly orderNotificationService: OrderNotificationService,
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
@@ -178,6 +181,11 @@ export class TransactionService {
 
             if (order.orderType == OrderType.Delivery)
               this.deliveryService.create(order);
+
+            this.orderNotificationService.triggerOrderNotification(
+              OrderEvents.OrderPaid,
+              order,
+            );
           }
           order.set(dataToUpdate);
           await order.save();

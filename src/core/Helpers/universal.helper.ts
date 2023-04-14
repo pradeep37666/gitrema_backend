@@ -57,7 +57,7 @@ export async function reduce(asyncIter, f, init) {
  */
 export const replaceAll = (sentence, wordsToReplace) => {
   return Object.keys(wordsToReplace).reduce(
-    (f, s, i) => `az${f}`.replace(new RegExp(s, 'ig'), wordsToReplace[s]),
+    (f, s, i) => `${f}`.replace(new RegExp(s, 'ig'), wordsToReplace[s]),
     sentence,
   );
 };

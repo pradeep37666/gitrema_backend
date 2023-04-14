@@ -7,4 +7,5 @@ export enum SocketEvents {
   KitchenQueue = 'KitchenQueue',
   ping = 'ping',
   auth = 'auth',
+  OrderCreated = 'Order:Created',
 }

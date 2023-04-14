@@ -22,10 +22,7 @@ import { ConfigService } from '@nestjs/config';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import { UserService } from 'src/users/users.service';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
-import {
-  EmailTemplate,
-  EmailTemplateDocument,
-} from 'src/notification/email-templates/schemas/email-template.schema';
+
 import { MailService } from 'src/notification/mail/mail.service';
 import { CustomEvent } from 'src/core/Constants/enum';
 import { generateRandomPassword } from 'src/core/Helpers/universal.helper';
@@ -33,8 +30,6 @@ import { generateRandomPassword } from 'src/core/Helpers/universal.helper';
 @Injectable()
 export class RecoverPasswordService {
   constructor(
-    @InjectModel(EmailTemplate.name)
-    private emailTemplateModel: Model<EmailTemplateDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private userService: UserService,
     private readonly mailService: MailService,
@@ -65,20 +60,6 @@ export class RecoverPasswordService {
       subject: 'Temporary Password',
       body: html,
     });
-  }
-
-  private async generateAuthToken(
-    payload: { userId: string },
-    expiry = '800s',
-  ) {
-    return this.jwtService.sign(payload, { expiresIn: expiry });
-  }
-
-  private async findBySlug(
-    slug: CustomEvent,
-  ): Promise<LeanDocument<EmailTemplateDocument>> {
-    const template = await this.emailTemplateModel.findOne({ slug });
-    return template;
   }
 
   async changePassword(

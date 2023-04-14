@@ -5,13 +5,11 @@ import { ConfigService } from '@nestjs/config';
 
 import { join } from 'path';
 
-import { EmailTemplateModule } from '../email-templates/email-template.module';
 import { MailController } from './mail.controller';
 import { MailService } from './mail.service';
 
 @Module({
   imports: [
-    EmailTemplateModule,
     MailerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({

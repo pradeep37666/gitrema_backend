@@ -18,10 +18,7 @@ import { User, UserSchema } from 'src/users/schemas/users.schema';
 import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
 import { Otp, OtpSchema } from './schemas/otp.schema';
 import { MailModule } from 'src/notification/mail/mail.module';
-import {
-  EmailTemplate,
-  EmailTemplateSchema,
-} from 'src/notification/email-templates/schemas/email-template.schema';
+
 import {
   Supplier,
   SupplierSchema,
@@ -44,7 +41,6 @@ import { HttpCallerModule } from 'src/core/Providers/http-caller/http-caller.mod
       { name: SupplierPackage.name, schema: SupplierPackageSchema },
       { name: Role.name, schema: RoleSchema },
       { name: Otp.name, schema: OtpSchema },
-      { name: EmailTemplate.name, schema: EmailTemplateSchema },
       { name: Customer.name, schema: CustomerSchema },
       { name: Admin.name, schema: AdminSchema },
     ]),
