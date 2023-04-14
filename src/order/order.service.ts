@@ -38,6 +38,7 @@ import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
 import { OrderTypes } from 'src/core/Constants/enum';
 import * as moment from 'moment';
 import 'moment-timezone';
+import { TIMEZONE } from 'src/core/Constants/system.constant';
 
 @Injectable()
 export class OrderService {
@@ -72,32 +73,44 @@ export class OrderService {
       .lean();
 
     if ([OrderType.Delivery, OrderType.Pickup].includes(dto.orderType)) {
+      console.log(supplier);
       let workingHours = [supplier.defaultWorkingHours];
-      if (supplier.overrideWorkingHours.length > 0) {
+      if (supplier.overrideWorkingHours?.length > 0) {
         workingHours = supplier.overrideWorkingHours.filter((workingHour) => {
           return (
             workingHour.day ==
             moment()
-              .tz(supplier.timezone ?? 'UTC')
+              .tz(supplier.timezone ?? TIMEZONE)
               .format('dddd')
           );
         });
+        if (!workingHours) {
+          workingHours = [supplier.defaultWorkingHours];
+        }
+      }
+      console.log(workingHours);
+      if (workingHours) {
         const matchedPeriod = workingHours.find((workingHour) => {
           const startArr = workingHour.start.split(':');
           const endArr = workingHour.end.split(':');
           const startDate = moment()
-            .tz(supplier.timezone ?? 'UTC')
+            .tz(supplier.timezone ?? TIMEZONE)
             .set({
               hour: startArr.length == 2 ? parseInt(startArr[0]) : 0,
               minute: startArr.length == 2 ? parseInt(startArr[1]) : 0,
             });
+
           const endDate = moment()
-            .tz(supplier.timezone ?? 'UTC')
+            .tz(supplier.timezone ?? TIMEZONE)
             .set({
               hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
               minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
             });
-          const currentDate = moment().tz(supplier.timezone ?? 'UTC');
+          if (parseInt(endArr[0]) <= parseInt(startArr[0])) {
+            endDate.add(1, 'd');
+          }
+          const currentDate = moment().tz(supplier.timezone ?? TIMEZONE);
+          console.log(currentDate, startDate, endDate);
           if (
             currentDate.isSameOrAfter(startDate) &&
             currentDate.isSameOrBefore(endDate)
