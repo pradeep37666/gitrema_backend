@@ -194,9 +194,6 @@ export class OrderService {
       supplier._id,
     );
 
-    if (req.user.isCustomer) {
-      orderData.customerId = req.user.userId;
-    }
     // create order
     const order = await this.orderModel.create({
       ...orderData,
@@ -205,7 +202,7 @@ export class OrderService {
     });
 
     // post order create
-    this.orderHelperService.postOrderCreate(order);
+    this.orderHelperService.postOrderCreate(req, order);
     return order;
   }
 
@@ -215,6 +212,14 @@ export class OrderService {
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     const queryToApply: any = { ...query };
+
+    if (query.search) {
+      queryToApply.$or = [
+        { name: { $regex: query.search, $options: 'i' } },
+        { contactNumber: { $regex: query.search, $options: 'i' } },
+        { orderNumber: { $regex: query.search, $options: 'i' } },
+      ];
+    }
     if (query.notBelongingToTable) {
       queryToApply.tableId = null;
       delete queryToApply.notBelongingToTable;
@@ -261,9 +266,15 @@ export class OrderService {
     query: QueryCustomerOrderDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
+    const queryToApply: any = { ...query };
+    if (query.search) {
+      queryToApply.$or = [
+        { orderNumber: { $regex: query.search, $options: 'i' } },
+      ];
+    }
     const orders = await this.orderModelPag.paginate(
       {
-        ...query,
+        ...queryToApply,
         $or: [
           {
             customerId: req.user.userId,
