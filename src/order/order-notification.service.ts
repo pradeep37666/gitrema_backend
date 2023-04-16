@@ -227,7 +227,7 @@ export class OrderNotificationService {
       '{{OrderPaymentStatus}}': order.paymentStatus,
       '{{OrderType}}': order.orderType,
       '{{PreparationTime}}': `${order.preparationDetails.preparationTime} mins`,
-      '{{RestaurantName}}': order.supplierId.name,
+      '{{RestaurantName}}': order.supplierId.nameAr,
       '{{RestaurantPhoneNumber}}': order.supplierId.phoneNumber,
       '{{RestaurantWhatsappNumber}}': order.supplierId.whatsapp,
       '{{RestaurantEmail}}': order.supplierId.email,
