@@ -25,6 +25,7 @@ import {
 } from './order-item.schema';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+import { CustomerDocument } from 'src/customer/schemas/customer.schema';
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
@@ -59,10 +60,10 @@ export class Order {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Customer',
     default: null,
   })
-  customerId: UserDocument;
+  customerId: CustomerDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
