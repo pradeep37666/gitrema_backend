@@ -88,10 +88,8 @@ export class NotificationService {
   }
 
   async remove(notificationId: string): Promise<boolean> {
-    const notification = await this.notificationModel.findByIdAndUpdate(
+    const notification = await this.notificationModel.findByIdAndDelete(
       notificationId,
-      { deletedAt: new Date() },
-      { new: true },
     );
 
     if (!notification) {
