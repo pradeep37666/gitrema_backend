@@ -113,6 +113,8 @@ export class OrderNotificationService {
     content: string,
     order: OrderDocument,
   ) {
+    content = content.replace('\n', '<br>');
+    console.log(content);
     for (const i in recipients) {
       this.mailService.send({
         to: recipients[i],
@@ -231,7 +233,21 @@ export class OrderNotificationService {
       '{{RestaurantPhoneNumber}}': order.supplierId.phoneNumber,
       '{{RestaurantWhatsappNumber}}': order.supplierId.whatsapp,
       '{{RestaurantEmail}}': order.supplierId.email,
+      '{{OrderSummary}}': this.prepareOrderSummary(order),
     };
     return replaceAll(notification.content, wordsToReplace);
+  }
+
+  prepareOrderSummary(order: OrderDocument) {
+    let message = '\n';
+    order.items.forEach((oi) => {
+      message += `-- ${oi.quantity} ${oi.menuItem.nameAr}`;
+      oi.additions.forEach((oia) => {
+        message += `\n`;
+        message += `  - with ${oia.nameAr}`;
+      });
+      message += `\n`;
+    });
+    return message;
   }
 }
