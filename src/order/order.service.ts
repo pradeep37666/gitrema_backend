@@ -75,6 +75,7 @@ export class OrderService {
     if ([OrderType.Delivery, OrderType.Pickup].includes(dto.orderType)) {
       console.log(supplier);
       let workingHours = [supplier.defaultWorkingHours];
+      console.log(workingHours);
       if (supplier.overrideWorkingHours?.length > 0) {
         workingHours = supplier.overrideWorkingHours.filter((workingHour) => {
           return (
@@ -84,12 +85,13 @@ export class OrderService {
               .format('dddd')
           );
         });
-        if (!workingHours) {
+        console.log(workingHours);
+        if (workingHours.length == 0) {
           workingHours = [supplier.defaultWorkingHours];
         }
       }
       console.log(workingHours);
-      if (workingHours) {
+      if (workingHours.length > 0) {
         const matchedPeriod = workingHours.find((workingHour) => {
           const startArr = workingHour.start.split(':');
           const endArr = workingHour.end.split(':');
