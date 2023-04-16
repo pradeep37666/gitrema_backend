@@ -336,7 +336,7 @@ export class OrderHelperService {
     return preparedItems;
   }
 
-  async postOrderCreate(order: OrderDocument) {
+  async postOrderCreate(req, order: OrderDocument) {
     // commenting the  schedule activities
     // if (order.isScheduled)
     //   this.calculationService.identifyOrdersToRecalculateForScheduled(order);
@@ -349,6 +349,16 @@ export class OrderHelperService {
         SocketEvents.OrderCreated,
         order.toObject(),
       );
+    }
+
+    if (req.user.isCustomer) {
+      const customer = await this.customerModel.findById(req.user.userId);
+      if (customer) {
+        order.customerId = customer._id;
+        order.contactNumber = customer.phoneNumber;
+        order.name = customer.name;
+        order.save();
+      }
     }
 
     if (order.sittingStartTime)

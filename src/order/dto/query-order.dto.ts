@@ -62,6 +62,11 @@ export class QueryOrderDto {
   @ToBoolean()
   @IsOptional()
   chefRequestedClarification: boolean;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  search: string;
 }
 
 export class QueryCustomerOrderDto extends QueryOrderDto {
