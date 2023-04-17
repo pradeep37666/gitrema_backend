@@ -45,6 +45,9 @@ export class TrackNotification {
   @Prop({})
   content: string;
 
+  @Prop({ type: [String], default: [] })
+  attachments: string[];
+
   @Prop({
     type: String,
     enum: NotificationStatus,

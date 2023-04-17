@@ -16,6 +16,7 @@ import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service
 import { OrderNotifications } from './constant/whatsapp-templates.constant';
 import { MailService } from '../notification/mail/mail.service';
 import {
+  Attachments,
   NotificationStatus,
   NotificationType,
   OrderEvents,
@@ -32,6 +33,8 @@ import {
   TrackNotificationDocument,
 } from 'src/notification/schemas/track-notification.schema';
 import { TrackNotificationDto } from 'src/notification/dto/track-notification.dto';
+import { InvoiceType } from 'src/invoice/invoice.enum';
+import { Invoice, InvoiceDocument } from 'src/invoice/schemas/invoice.schema';
 
 @Injectable()
 export class OrderNotificationService {
@@ -42,6 +45,8 @@ export class OrderNotificationService {
     private readonly notificationModel: Model<NotificationDocument>,
     @InjectModel(TrackNotification.name)
     private readonly trackNotificationModel: Model<TrackNotificationDocument>,
+    @InjectModel(Invoice.name)
+    private readonly invoiceModel: Model<InvoiceDocument>,
     private readonly whatsappService: WhatsappService,
     private readonly mailService: MailService,
     private readonly tanqyatService: TaqnyatService,
@@ -115,11 +120,15 @@ export class OrderNotificationService {
   ) {
     content = content.replace('\n', '<br>');
     console.log(content);
+    let attachments = [];
+    if (notification.attachments.length > 0)
+      attachments = await this.resolveAttachments(notification, order);
     for (const i in recipients) {
-      this.mailService.send({
+      await this.mailService.send({
         to: recipients[i],
         subject: notification.subject,
         body: content,
+        attachments: attachments,
       });
       this.storeNotificationTrack({
         supplierId: notification.supplierId.toString(),
@@ -128,6 +137,7 @@ export class OrderNotificationService {
         sentOn: recipients[i],
         content,
         status: NotificationStatus.Success,
+        attachments: attachments.map((a) => a.filename),
       });
     }
   }
@@ -143,6 +153,18 @@ export class OrderNotificationService {
         recipients[i],
         content,
       );
+      let status = NotificationStatus.Failed;
+      if (response) {
+        status = NotificationStatus.Success;
+      }
+      this.storeNotificationTrack({
+        supplierId: notification.supplierId.toString(),
+        notificationId: notification._id.toString(),
+        dataId: order._id.toString(),
+        sentOn: recipients[i],
+        content,
+        status,
+      });
     }
   }
 
@@ -179,7 +201,7 @@ export class OrderNotificationService {
       case NotificationType.Sms:
         recipients = this.findPhoneNumbers(recipientTypes, order);
       case NotificationType.Whatsapp:
-        recipients = this.findPhoneNumbers(recipientTypes, order);
+        recipients = this.findWhatsappNumbers(recipientTypes, order);
     }
     return recipients;
   }
@@ -219,6 +241,23 @@ export class OrderNotificationService {
     return recipients;
   }
 
+  findWhatsappNumbers(recipientTypes, order: OrderDocument) {
+    const recipients = [];
+    for (const i in recipientTypes) {
+      switch (recipientTypes[i]) {
+        case RecipientTypes.Customer:
+          if (order.customerId?.phoneNumber)
+            recipients.push(order.customerId.phoneNumber);
+          else if (order.contactNumber) recipients.push(order.contactNumber);
+          break;
+        case RecipientTypes.Restaurant:
+          if (order.supplierId?.phoneNumber)
+            recipients.push(order.supplierId.whatsapp);
+      }
+    }
+    return recipients;
+  }
+
   prepareMessage(notification: NotificationDocument, order: OrderDocument) {
     const wordsToReplace = {
       '{{CustomerName}}': order.customerId ? order.customerId.name : order.name,
@@ -241,13 +280,42 @@ export class OrderNotificationService {
   prepareOrderSummary(order: OrderDocument) {
     let message = '\n';
     order.items.forEach((oi) => {
-      message += `-- ${oi.quantity} ${oi.menuItem.nameAr}`;
+      message += `-- ${oi.quantity} X ${oi.menuItem.nameAr}`;
       oi.additions.forEach((oia) => {
         message += `\n`;
-        message += `  - with ${oia.nameAr}`;
+        message += `  - with ${oia.options
+          .map((o) => {
+            o.nameAr;
+          })
+          .join(',')}`;
       });
       message += `\n`;
     });
     return message;
+  }
+
+  async resolveAttachments(
+    notification: NotificationDocument,
+    order: OrderDocument,
+  ) {
+    const attachments = [];
+    for (const i in notification.attachments) {
+      switch (notification.attachments[i]) {
+        case Attachments.Invoice:
+          const invoice = await this.invoiceModel.findOne({
+            orderId: order._id,
+            type: InvoiceType.Invoice,
+            isReversedInvoice: false,
+            reversedInvoiceId: null,
+          });
+          if (invoice) {
+            attachments.push({
+              filename: invoice.imageUrl,
+            });
+          }
+          break;
+      }
+    }
+    return attachments;
   }
 }

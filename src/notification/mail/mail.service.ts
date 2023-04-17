@@ -14,15 +14,17 @@ export class MailService {
   ) {}
 
   async send(sendMailDetails: SendMailDto): Promise<void> {
+    const attachmentsArr = [];
     for (const i in sendMailDetails.attachments) {
-      sendMailDetails.attachments[i] = {
+      attachmentsArr.push({
         filename: path.basename(sendMailDetails.attachments[i].filename),
         contentDisposition: 'attachment',
         contentType: mime.lookup(sendMailDetails.attachments[i].filename),
         path: sendMailDetails.attachments[i].filename,
         href: sendMailDetails.attachments[i].filename,
-      };
+      });
     }
+
     // const html = await this.customFieldService.resolveCustomFields(
     //   sendMailDetails.body,
     //   metaData,
@@ -46,7 +48,7 @@ export class MailService {
         body: sendMailDetails.body,
         subject: sendMailDetails.subject,
       },
-      attachments: sendMailDetails.attachments,
+      attachments: attachmentsArr,
     });
   }
 }
