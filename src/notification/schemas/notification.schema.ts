@@ -5,7 +5,12 @@ import { ImportDocument } from 'src/import/schemas/import.schema';
 import { OrderType } from 'src/order/enum/en.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { NotificationType, OrderEvents, RecipientTypes } from '../enum/en.enum';
+import {
+  Attachments,
+  NotificationType,
+  OrderEvents,
+  RecipientTypes,
+} from '../enum/en.enum';
 
 export type NotificationDocument = Notification & Document;
 
@@ -36,6 +41,9 @@ export class Notification {
 
   @Prop({ type: [String], enum: RecipientTypes })
   recipientTypes: RecipientTypes[];
+
+  @Prop({ type: [String], enum: Attachments })
+  attachments: Attachments[];
 
   @Prop({ default: [] })
   customRecipients: string[];

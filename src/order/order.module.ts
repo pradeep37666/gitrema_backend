@@ -40,6 +40,7 @@ import {
   TrackNotification,
   TrackNotificationSchema,
 } from 'src/notification/schemas/track-notification.schema';
+import { Invoice, InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import {
       { name: Customer.name, schema: CustomerSchema },
       { name: Notification.name, schema: NotificationSchema },
       { name: TrackNotification.name, schema: TrackNotificationSchema },
+      { name: Invoice.name, schema: InvoiceSchema },
     ]),
     SocketIoModule,
     TableModule,

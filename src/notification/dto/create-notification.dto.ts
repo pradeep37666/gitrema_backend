@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { NotificationType, OrderEvents, RecipientTypes } from '../enum/en.enum';
+import {
+  Attachments,
+  NotificationType,
+  OrderEvents,
+  RecipientTypes,
+} from '../enum/en.enum';
 import {
   IsArray,
   IsEmail,
@@ -56,6 +61,16 @@ export class CreateNotificationDto {
   @IsEnum(RecipientTypes, { each: true })
   @IsNotEmpty()
   recipientTypes: RecipientTypes[];
+
+  @ApiProperty({
+    type: [String],
+    enum: Attachments,
+    enumName: 'Attachments',
+  })
+  @IsArray()
+  @IsEnum(Attachments, { each: true })
+  @IsNotEmpty()
+  attachments: Attachments[];
 
   @ApiProperty({ required: false })
   @IsArray()

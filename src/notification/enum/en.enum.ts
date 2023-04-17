@@ -23,3 +23,7 @@ export enum NotificationType {
   Sms = 'Sms',
   Email = 'Email',
 }
+
+export enum Attachments {
+  Invoice = 'Invoice',
+}

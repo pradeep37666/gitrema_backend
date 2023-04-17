@@ -7,4 +7,5 @@ export class TrackNotificationDto {
   sentOn: string;
   content: string;
   status: NotificationStatus;
+  attachments?: any[];
 }
