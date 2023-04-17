@@ -248,11 +248,12 @@ export class OrderNotificationService {
         case RecipientTypes.Customer:
           if (order.customerId?.phoneNumber)
             recipients.push(order.customerId.phoneNumber);
-          else if (order.contactNumber) recipients.push(order.contactNumber);
+          else if (order.contactNumber)
+            recipients.push(order.contactNumber.replace('+', ''));
           break;
         case RecipientTypes.Restaurant:
           if (order.supplierId?.phoneNumber)
-            recipients.push(order.supplierId.whatsapp);
+            recipients.push(order.supplierId.whatsapp.replace('+', ''));
       }
     }
     return recipients;
