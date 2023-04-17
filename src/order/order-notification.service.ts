@@ -119,7 +119,7 @@ export class OrderNotificationService {
     order: OrderDocument,
   ) {
     content = content.replace('\n', '<br>');
-    console.log(content);
+
     let attachments = [];
     if (notification.attachments.length > 0)
       attachments = await this.resolveAttachments(notification, order);
@@ -283,12 +283,12 @@ export class OrderNotificationService {
     order.items.forEach((oi) => {
       message += `-- ${oi.quantity} X ${oi.menuItem.nameAr}`;
       oi.additions.forEach((oia) => {
+        const options = oia.options.map((o) => {
+          return o.nameAr;
+        });
+
         message += `\n`;
-        message += `  - with ${oia.options
-          .map((o) => {
-            o.nameAr;
-          })
-          .join(',')}`;
+        message += `  - with ${options.join(',')}`;
       });
       message += `\n`;
     });
