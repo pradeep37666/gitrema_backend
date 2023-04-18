@@ -95,6 +95,15 @@ export class OrderService {
         const matchedPeriod = workingHours.find((workingHour) => {
           const startArr = workingHour.start.split(':');
           const endArr = workingHour.end.split(':');
+          if (
+            startArr.length == 2 &&
+            endArr.length == 2 &&
+            parseInt(startArr[0]) == parseInt(endArr[0]) &&
+            parseInt(startArr[1]) == parseInt(endArr[1])
+          ) {
+            return true;
+          }
+
           const startDate = moment()
             .tz(supplier.timezone ?? TIMEZONE)
             .set({
@@ -108,7 +117,10 @@ export class OrderService {
               hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
               minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
             });
-          if (parseInt(endArr[0]) <= parseInt(startArr[0])) {
+          if (
+            parseInt(endArr[0]) <= parseInt(startArr[0]) &&
+            parseInt(endArr[1]) <= parseInt(startArr[1])
+          ) {
             endDate.add(1, 'd');
           }
           const currentDate = moment().tz(supplier.timezone ?? TIMEZONE);
