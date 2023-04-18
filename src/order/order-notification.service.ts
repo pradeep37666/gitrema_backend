@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -35,6 +35,8 @@ import {
 import { TrackNotificationDto } from 'src/notification/dto/track-notification.dto';
 import { InvoiceType } from 'src/invoice/invoice.enum';
 import { Invoice, InvoiceDocument } from 'src/invoice/schemas/invoice.schema';
+import { InvoiceService } from 'src/invoice/invoice.service';
+import { getHBVars } from 'src/core/Helpers/universal.helper';
 
 @Injectable()
 export class OrderNotificationService {
@@ -50,6 +52,8 @@ export class OrderNotificationService {
     private readonly whatsappService: WhatsappService,
     private readonly mailService: MailService,
     private readonly tanqyatService: TaqnyatService,
+    @Inject(forwardRef(() => InvoiceService))
+    private invoiceService: InvoiceService,
   ) {}
 
   async triggerOrderNotification(
@@ -73,7 +77,10 @@ export class OrderNotificationService {
     }
     console.log(notifications);
     for (const i in notifications) {
-      const content = this.prepareMessage(notifications[i], order);
+      const { content, subject } = await this.prepareMessage(
+        notifications[i],
+        order,
+      );
       console.log(content);
       for (const j in notifications[i].channels) {
         const recipients: string[] = await this.resolveRecipients(
@@ -88,6 +95,7 @@ export class OrderNotificationService {
               notifications[i],
               recipients.concat(notifications[i].customRecipients),
               content,
+              subject,
               order,
             );
             break;
@@ -116,6 +124,7 @@ export class OrderNotificationService {
     notification: NotificationDocument,
     recipients: string[],
     content: string,
+    subject: string,
     order: OrderDocument,
   ) {
     content = content.replace('\n', '<br>');
@@ -126,7 +135,7 @@ export class OrderNotificationService {
     for (const i in recipients) {
       await this.mailService.send({
         to: recipients[i],
-        subject: notification.subject,
+        subject,
         body: content,
         attachments: attachments,
       });
@@ -259,7 +268,10 @@ export class OrderNotificationService {
     return recipients;
   }
 
-  prepareMessage(notification: NotificationDocument, order: OrderDocument) {
+  async prepareMessage(
+    notification: NotificationDocument,
+    order: OrderDocument,
+  ) {
     const wordsToReplace = {
       '{{CustomerName}}': order.customerId ? order.customerId.name : order.name,
       '{{OrderNumber}}': order.orderNumber,
@@ -275,7 +287,27 @@ export class OrderNotificationService {
       '{{RestaurantEmail}}': order.supplierId.email,
       '{{OrderSummary}}': this.prepareOrderSummary(order),
     };
-    return replaceAll(notification.content, wordsToReplace);
+    const placeholders = getHBVars(notification.content);
+
+    if (placeholders.includes('InvoiceImageUrl')) {
+      let invoice: InvoiceDocument = await this.invoiceModel.findOne({
+        orderId: order._id,
+        type: InvoiceType.Invoice,
+        isReversedInvoice: false,
+        reversedInvoiceId: null,
+      });
+      if (!invoice) {
+        invoice = await this.invoiceService.create(null, {
+          orderId: order._id,
+          type: InvoiceType.Invoice,
+        });
+      }
+      wordsToReplace['{{InvoiceImageUrl}}'] = invoice ? invoice.imageUrl : '';
+    }
+    return {
+      content: replaceAll(notification.content, wordsToReplace),
+      subject: replaceAll(notification.subject, wordsToReplace),
+    };
   }
 
   prepareOrderSummary(order: OrderDocument) {
@@ -303,12 +335,18 @@ export class OrderNotificationService {
     for (const i in notification.attachments) {
       switch (notification.attachments[i]) {
         case Attachments.Invoice:
-          const invoice = await this.invoiceModel.findOne({
+          let invoice: InvoiceDocument = await this.invoiceModel.findOne({
             orderId: order._id,
             type: InvoiceType.Invoice,
             isReversedInvoice: false,
             reversedInvoiceId: null,
           });
+          if (!invoice) {
+            invoice = await this.invoiceService.create(null, {
+              orderId: order._id,
+              type: InvoiceType.Invoice,
+            });
+          }
           if (invoice) {
             attachments.push({
               filename: invoice.imageUrl,

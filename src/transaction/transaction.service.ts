@@ -174,7 +174,7 @@ export class TransactionService {
             dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
             dataToUpdate.paymentTime = new Date();
 
-            this.invoiceService.create(req, {
+            await this.invoiceService.create(req, {
               orderId: order._id,
               type: InvoiceType.Invoice,
             });
