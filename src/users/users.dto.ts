@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 
 import { Role } from 'src/role/schemas/roles.schema';
+import { Transform } from 'class-transformer';
 
 export class UserCreateDto {
   @IsOptional()
@@ -39,6 +40,7 @@ export class UserCreateDto {
   phoneNumber: string;
 
   @ApiProperty({ required: false })
+  @Transform(({ value }) => value.replace('+', ''))
   @IsString()
   @IsOptional()
   whatsappNumber?: string;

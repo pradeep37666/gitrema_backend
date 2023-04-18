@@ -81,6 +81,7 @@ export class AddSupplierDto {
   tiktok: string;
 
   @ApiProperty({ required: false })
+  @Transform(({ value }) => value.replace('+', ''))
   @IsString()
   @IsOptional()
   whatsapp: string;
