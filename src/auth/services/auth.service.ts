@@ -211,7 +211,7 @@ export class AuthService {
 
   async requestOtp(req, requestOtpDetails: RequestOtpDto): Promise<any> {
     const code = Math.floor(1000 + Math.random() * 9000);
-    const template = `لاكمال عملية الدخول والطلبات على منصة المطعم يرجى استخدام رمز التحقق: ${code}\nTo complete your login and ordering on Talabatmenu, please use verification code: ${code}`;
+    const template = `لاكمال عملية الدخول والطلبات على منصة المطعم يرجى استخدام رمز التحقق: ${code}\n\nTo complete your login and ordering on Talabatmenu, please use verification code: ${code}`;
     await this.otpModel.updateMany(
       { phoneNumber: requestOtpDetails.phoneNumber },
       { status: OtpStatus.Used },
