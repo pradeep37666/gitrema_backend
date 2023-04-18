@@ -1,5 +1,5 @@
 export enum AnswerOption {
-  Star = 'Star',
-  Emoji = 'Emoji',
-  Writing = 'Writing',
+  Star = 'نجوم',
+  Emoji = 'ايموجي',
+  Writing = 'بالكتابة',
 }

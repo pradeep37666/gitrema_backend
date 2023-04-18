@@ -1,4 +1,3 @@
-import { Customer } from '../../customer/schemas/customer.schema';
 export enum OrderEvents {
   OrderCreated = 'Order Created',
   SentToKitchen = 'Sent To Kitchen',

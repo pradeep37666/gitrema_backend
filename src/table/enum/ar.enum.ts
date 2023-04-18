@@ -1,5 +1,11 @@
 export enum Shape {
-  Square = 'Square',
-  Circle = 'Circle',
-  Rectangular = 'Rectangular',
+  Square = 'مربع',
+  Circle = 'دائرة',
+  Rectangular = 'مستطيل',
+}
+
+export enum TableStatus {
+  Empty = 'متوفرة',
+  InUse = 'مستخدمة',
+  Reserved = 'محجوزة',
 }

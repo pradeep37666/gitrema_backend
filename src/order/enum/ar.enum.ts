@@ -1,18 +1,41 @@
 export enum Source {
-  App = 'App',
-  Website = 'Website',
-  DineIn = 'Dine In',
+  App = 'من التطبيق',
+  Website = 'من الموقع',
+  DineIn = 'محلي',
 }
 
 export enum OrderType {
-  Pickup = 'Pickup',
-  Delivery = 'Delivery',
-  DineIn = 'Dine In',
+  ToGo = 'طلبات سفري',
+  Pickup = 'طلبات استلام',
+  Delivery = 'طلبات توصيل',
+  DineIn = 'طلبات محلي',
 }
 
 export enum OrderStatus {
-  New = 'New',
-  Processing = 'Processing',
-  OnTable = 'On Table',
-  Paid = 'Paid',
+  New = 'جديد',
+  SentToKitchen = 'ارسل للمطبخ',
+  StartedPreparing = 'بدئ التحضير',
+  DonePreparing = 'الطلب جاهز',
+  OnTable = 'على الطاولة',
+  Closed = 'مقفل',
+  Cancelled = 'ملغي',
+}
+
+export enum OrderPaymentStatus {
+  NotPaid = 'غير مدفوع',
+  Paid = 'مدفوع',
+  Refunded = 'تم الارجاع',
+  PartiallyRefunded = 'تم الارجاع جزئياً',
+}
+
+export enum InvoiceStatus {
+  Invoiced = 'اصدرت الفاتورة',
+  Reversed = 'الغيت الفاتورة',
+  CreditMemo = 'ايصال ارجاع',
+}
+
+export enum PreparationStatus {
+  NotStarted = 'لم يبدئ التحضير',
+  StartedPreparing = 'بدئ التحضير',
+  DonePreparing = 'انتهى التحضير',
 }

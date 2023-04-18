@@ -1,9 +1,9 @@
 export enum PaymentMethod {
-  Cash = 'Cash',
-  Online = 'Online',
+  Cash = 'كاش',
+  Online = 'بطاقة اونلاين',
 }
 
 export enum SplitType {
-  Equal = 'Equal',
-  Item = 'Item',
+  Equal = 'تقسيم بالتساوي',
+  Item = 'الصنف',
 }
