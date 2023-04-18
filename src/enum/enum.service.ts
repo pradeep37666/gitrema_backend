@@ -20,6 +20,8 @@ import * as QrCodeEnEnum from 'src/qr-code/enum/en.enum';
 import * as QrCodeArEnum from 'src/qr-code/enum/ar.enum';
 import * as TableEnEnum from 'src/table/enum/en.enum';
 import * as TableArEnum from 'src/table/enum/ar.enum';
+import * as NotificationEnEnum from 'src/notification/enum/en.enum';
+import * as NotificationArEnum from 'src/notification/enum/ar.enum';
 import { IEnum, IEnumValue } from 'src/core/Constants/interface';
 import { Logger } from '@nestjs/common';
 
@@ -44,6 +46,7 @@ export class EnumService {
       ...OfferEnEnum,
       ...SocketEnEnum,
       ...PaymentSetupEnEnum,
+      ...NotificationEnEnum,
     };
     const arEnums = {
       ...CoreArEnum,
@@ -55,6 +58,7 @@ export class EnumService {
       ...TableArEnum,
       ...PaymentSetupArEnum,
       ...OfferArEnum,
+      ...NotificationArEnum,
     };
     for (const item of items) {
       const doc: IEnum = { name: item };

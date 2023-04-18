@@ -1,20 +1,20 @@
 export enum Alergies {
-  Corn = 'Corn',
-  Milk = 'Milk',
-  Fish = 'Fish',
-  Nuts = 'Nuts',
-  Wheat = 'Wheat',
-  Soy = 'Soy',
+  Corn = 'ذرة',
+  Milk = 'حليب',
+  Fish = 'سمك',
+  Nuts = 'مكسرات',
+  Wheat = 'قمح',
+  Soy = 'صويا',
 }
 
 export enum MenuSticker {
-  New = 'New',
-  ChefSelection = 'Chef Selection',
-  MostSold = 'Most Sold',
+  New = 'جديد',
+  ChefSelection = 'اختيار الشيف',
+  MostSold = 'الأكثر مبيعاً',
 }
 
 export enum MenuStickerStyle {
-  Border = 'Border',
-  LargerFont = 'Larger Font',
-  Star = 'Star',
+  Border = 'اطار',
+  LargerFont = 'خط كبير',
+  Star = 'نجمة',
 }

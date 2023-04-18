@@ -1,8 +1,8 @@
 export enum Bank {
-  NCB = 'NCB (Alahli)',
-  AlrajhiBank = 'Alrajhi Bank',
-  RiyadBank = 'Riyad Bank',
-  SambaBank = 'Samba Bank',
-  SABBBank = 'SABB Bank',
-  AlinmaBank = 'Alinma Bank',
+  NCB = 'البنك الأهلي',
+  AlrajhiBank = 'البنك الراجحي',
+  RiyadBank = 'بنك الرياض',
+  SambaBank = 'بنك سامبا',
+  SABBBank = 'بنك ساب',
+  AlinmaBank = 'بنك انما',
 }

@@ -1,9 +1,9 @@
 export enum OfferType {
-  Coupon = 'Coupon',
-  Promotion = 'Promotion',
+  Coupon = 'كوبون',
+  Promotion = 'عرض',
 }
 
 export enum ApplicationType {
-  LineItem = 'Line Item',
-  Header = 'Header',
+  LineItem = 'على الصنف',
+  Header = 'على الفاتورة',
 }
