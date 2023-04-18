@@ -121,7 +121,7 @@ export class OrderService {
             parseInt(endArr[0]) <= parseInt(startArr[0]) &&
             parseInt(endArr[1]) <= parseInt(startArr[1])
           ) {
-            endDate.add(1, 'd');
+            endDate.add(24, 'hours');
           }
           const currentDate = moment().tz(supplier.timezone ?? TIMEZONE);
           console.log(currentDate, startDate, endDate);

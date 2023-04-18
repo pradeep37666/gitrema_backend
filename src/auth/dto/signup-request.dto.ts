@@ -10,7 +10,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { AddSupplierDto } from 'src/supplier/Supplier.dto';
 
 export class SignupRequestDto {
@@ -42,6 +42,7 @@ export class SignupRequestDto {
   phoneNumber: string;
 
   @ApiProperty({ required: false })
+  @Transform(({ value }) => value.replace('+', ''))
   @IsString()
   @IsOptional()
   whatsappNumber: string;

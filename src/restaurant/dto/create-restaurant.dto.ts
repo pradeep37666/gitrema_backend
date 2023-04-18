@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -130,6 +130,7 @@ export class CreateRestaurantDto {
   city: string;
 
   @ApiProperty()
+  @Transform(({ value }) => value.replace('+', ''))
   @IsString()
   @IsNotEmpty()
   whatsappNumber: string;
