@@ -27,26 +27,21 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 export class DeliveryController {
   constructor(private readonly deliveryService: DeliveryService) {}
 
-  @Get()
-  @PermissionGuard(PermissionSubject.Delivery, Permission.Common.LIST)
-  async findAll(
-    @Req() req,
-    @Query() query: QueryDeliveryDto,
-    @Query() paginateOptions: PaginationDto,
-  ): Promise<PaginateResult<DeliveryDocument>> {
-    return await this.deliveryService.findAll(req, query, paginateOptions);
-  }
-
   @Patch('update-delivery')
   @Public()
   async update(@Body() dto: any) {
     return await this.deliveryService.updateHook(dto);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.deliveryService.findOne(+id);
-  // }
+  @Get(':orderId')
+  findOne(@Param('orderId') orderId: string) {
+    return this.deliveryService.findOne(orderId);
+  }
+
+  @Get('refresh/:orderId')
+  refresh(@Param('orderId') orderId: string) {
+    return this.deliveryService.refresh(orderId);
+  }
 
   // @Patch(':id')
   // update(

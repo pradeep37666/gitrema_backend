@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import { OrderDocument } from 'src/order/schemas/order.schema';
@@ -62,25 +62,33 @@ export class DeliveryService {
     }
   }
 
-  async findAll(
-    req: any,
-    query: QueryDeliveryDto,
-    paginateOptions: PaginationDto,
-  ): Promise<PaginateResult<DeliveryDocument>> {
-    const deliveries = await this.deliveryModelPag.paginate(
-      {
-        ...query,
-        supplierId: req.user.supplierId,
-      },
-      {
-        sort: DefaultSort,
-        lean: true,
-        ...paginateOptions,
-        ...pagination,
-      },
-    );
+  async refresh(orderId: string): Promise<DeliveryDocument> {
+    const delivery = await this.deliveryModel.findOne({
+      orderId,
+    });
+    if (delivery && delivery.daResponse?.status) {
+      const response = await this.yallowService.getOrder(
+        delivery.daResponse.response.order_id,
+      );
+      if (response.status) {
+        delivery.daResponse.response = response.response;
+        delivery.save();
+        return delivery;
+      }
+      console.log(response.error);
+      throw new BadRequestException(
+        `Delivery fetch failed:${response?.error?.message}`,
+      );
+    }
+    throw new BadRequestException(`Delivery not found`);
+  }
 
-    return deliveries;
+  async findOne(orderId): Promise<DeliveryDocument> {
+    const delivery = await this.deliveryModel.findOne({
+      orderId,
+    });
+
+    return delivery;
   }
 
   async updateHook(dto: any) {
