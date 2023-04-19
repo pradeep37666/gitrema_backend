@@ -114,4 +114,39 @@ export class YallowService {
     }
     return response;
   }
+
+  async getOrder(orderId: string): Promise<any> {
+    const response = {
+      status: false,
+      response: null,
+      error: null,
+    };
+    try {
+      const apiRes = await lastValueFrom(
+        this.httpService
+          .get(
+            `${this.configService.get(
+              'yallow.API_BASE_URL',
+            )}/a/${this.configService.get(
+              'yallow.TOKEN',
+            )}/order/get/${orderId}`,
+            {
+              headers: { 'Accept-Encoding': 'gzip,deflate,compress' },
+            },
+          )
+          .pipe(map((resp) => resp.data))
+          .pipe(
+            catchError((e) => {
+              //console.log(e);
+              throw e;
+            }),
+          ),
+      );
+      response.status = true;
+      response.response = apiRes;
+    } catch (err) {
+      response.error = err?.response?.data;
+    }
+    return response;
+  }
 }

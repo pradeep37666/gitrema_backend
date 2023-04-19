@@ -134,6 +134,9 @@ export class Transaction {
   @Prop({})
   scheduledPayoutDate: Date;
 
+  @Prop({})
+  payoutAmount: number;
+
   @Prop({ default: false })
   isRefund: boolean;
 
