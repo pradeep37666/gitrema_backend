@@ -6,4 +6,5 @@ export interface AddOrder {
   lng: number;
   customer_phone: string;
   customer_name: string;
+  client_order_id: string;
 }

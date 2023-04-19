@@ -45,4 +45,73 @@ export class YallowService {
     }
     return response;
   }
+
+  async trackOrder(orderId: string): Promise<any> {
+    const response = {
+      status: false,
+      response: null,
+      error: null,
+    };
+    try {
+      const apiRes = await lastValueFrom(
+        this.httpService
+          .get(
+            `${this.configService.get(
+              'yallow.API_BASE_URL',
+            )}/a/${this.configService.get(
+              'yallow.TOKEN',
+            )}/order/track/${orderId}`,
+            {
+              headers: { 'Accept-Encoding': 'gzip,deflate,compress' },
+            },
+          )
+          .pipe(map((resp) => resp.data))
+          .pipe(
+            catchError((e) => {
+              //console.log(e);
+              throw e;
+            }),
+          ),
+      );
+      response.status = true;
+      response.response = apiRes;
+    } catch (err) {
+      response.error = err?.response?.data;
+    }
+    return response;
+  }
+  async cancelOrder(orderId: string): Promise<any> {
+    const response = {
+      status: false,
+      response: null,
+      error: null,
+    };
+    try {
+      const apiRes = await lastValueFrom(
+        this.httpService
+          .get(
+            `${this.configService.get(
+              'yallow.API_BASE_URL',
+            )}/a/${this.configService.get(
+              'yallow.TOKEN',
+            )}/order/cancel/${orderId}`,
+            {
+              headers: { 'Accept-Encoding': 'gzip,deflate,compress' },
+            },
+          )
+          .pipe(map((resp) => resp.data))
+          .pipe(
+            catchError((e) => {
+              //console.log(e);
+              throw e;
+            }),
+          ),
+      );
+      response.status = true;
+      response.response = apiRes;
+    } catch (err) {
+      response.error = err?.response?.data;
+    }
+    return response;
+  }
 }

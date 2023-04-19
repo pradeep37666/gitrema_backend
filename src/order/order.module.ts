@@ -41,6 +41,7 @@ import {
   TrackNotificationSchema,
 } from 'src/notification/schemas/track-notification.schema';
 import { Invoice, InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
+import { DeliveryModule } from 'src/delivery/delivery.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { Invoice, InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
     MailModule,
     CustomerModule,
     forwardRef(() => InvoiceModule),
+    DeliveryModule,
   ],
   controllers: [OrderController],
   providers: [

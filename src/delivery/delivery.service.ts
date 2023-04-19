@@ -38,6 +38,7 @@ export class DeliveryService {
         preparation_time: order.preparationDetails.preparationTime,
         customer_name: order.name ?? order.customerId?.name,
         customer_phone: order.contactNumber ?? order.customerId?.phoneNumber,
+        client_order_id: order._id.toString(),
       };
       const response = await this.yallowService.addOrder(payload);
       await this.deliveryModel.create({
@@ -47,6 +48,11 @@ export class DeliveryService {
         daResponse: response,
       });
     }
+  }
+
+  async cancel(orderId: string) {
+    const response = await this.yallowService.cancelOrder(orderId);
+    console.log('Cancel Order Res ########', response);
   }
 
   async findAll(
