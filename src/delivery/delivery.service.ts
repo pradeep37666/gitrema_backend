@@ -51,8 +51,15 @@ export class DeliveryService {
   }
 
   async cancel(orderId: string) {
-    const response = await this.yallowService.cancelOrder(orderId);
-    console.log('Cancel Order Res ########', response);
+    const delivery = await this.deliveryModel.findOne({
+      orderId,
+    });
+    if (delivery && delivery.daResponse?.status) {
+      const response = await this.yallowService.cancelOrder(
+        delivery.daResponse.response.order_id,
+      );
+      console.log('Cancel Order Res ########', response);
+    }
   }
 
   async findAll(
@@ -78,7 +85,7 @@ export class DeliveryService {
 
   async updateHook(dto: any) {
     const delivery = await this.deliveryModel.findOne({
-      'daResponse.order_id': dto.order_id,
+      'daResponse.response.order_id': dto.order_id,
     });
     if (delivery) {
       delivery.daResponse = { ...delivery.daResponse, ...dto };
