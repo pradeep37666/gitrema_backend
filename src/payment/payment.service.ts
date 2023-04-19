@@ -170,6 +170,7 @@ export class PaymentService {
         dataToUpdate.scheduledPayoutDate = new Date(
           moment.utc(options.accountDetails[0].valueDate).format('YYYY-MM-DD'),
         );
+        dataToUpdate.payoutAmount = options.accountDetails[0].serviceAmount;
       }
       this.transactionService.update(transaction._id, dataToUpdate);
       return res;

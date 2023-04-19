@@ -1140,24 +1140,24 @@ export class ReportService {
       {
         $addFields: {
           paymentsetup: { $first: '$paymentsetup' },
-          amountTobePaid: {
-            $subtract: [
-              '$amount',
-              {
-                $divide: [
-                  {
-                    $multiply: ['$amount', deliveryMargin],
-                  },
-                  100,
-                ],
-              },
-            ],
-          },
+          // amountTobePaid: {
+          //   $subtract: [
+          //     '$amount',
+          //     {
+          //       $divide: [
+          //         {
+          //           $multiply: ['$amount', deliveryMargin],
+          //         },
+          //         100,
+          //       ],
+          //     },
+          //   ],
+          // },
         },
       },
       {
         $project: {
-          amountTobePaid: { $round: ['$amountTobePaid', 2] },
+          amountTobePaid: { $round: ['$payoutAmount', 2] },
           date: {
             $dateToString: { format: '%Y-%m-%d %H:%M', date: '$createdAt' },
           },
@@ -1254,19 +1254,19 @@ export class ReportService {
       {
         $addFields: {
           paymentsetup: { $first: '$paymentsetup' },
-          amountTobePaid: {
-            $subtract: [
-              '$amount',
-              {
-                $divide: [
-                  {
-                    $multiply: ['$amount', deliveryMargin],
-                  },
-                  100,
-                ],
-              },
-            ],
-          },
+          // amountTobePaid: {
+          //   $subtract: [
+          //     '$amount',
+          //     {
+          //       $divide: [
+          //         {
+          //           $multiply: ['$amount', deliveryMargin],
+          //         },
+          //         100,
+          //       ],
+          //     },
+          //   ],
+          // },
         },
       },
       {
@@ -1275,7 +1275,7 @@ export class ReportService {
             supplierId: '$supplierId',
             scheduledPayoutDate: '$scheduledPayoutDate',
           },
-          amountTobePaid: { $sum: { $round: ['$amountTobePaid', 2] } },
+          amountTobePaid: { $sum: { $round: ['$payoutAmount', 2] } },
           amountReceived: { $sum: { $round: ['$amount', 2] } },
           supplierId: { $first: '$supplierId' },
           supplierName: { $first: '$supplier.name' },
