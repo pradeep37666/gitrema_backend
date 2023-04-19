@@ -351,6 +351,9 @@ export class OrderHelperService {
       );
     }
 
+    // manage inventory
+    this.manageInventory(order);
+
     if (req.user.isCustomer) {
       const customer = await this.customerModel.findById(req.user.userId);
       if (customer) {
@@ -378,9 +381,6 @@ export class OrderHelperService {
       OrderActivityType.OrderPlaced,
       order.createdAt,
     );
-
-    // manage inventory
-    this.manageInventory(order);
 
     // notify customer
     this.orderNotificationService.triggerOrderNotification(
