@@ -51,6 +51,7 @@ import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service
 import { OrderNotificationService } from './order-notification.service';
 import { CustomerService } from 'src/customer/customer.service';
 import { OrderEvents } from 'src/notification/enum/en.enum';
+import { DeliveryService } from 'src/delivery/delivery.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -79,6 +80,7 @@ export class OrderHelperService {
     private readonly tableHelperService: TableHelperService,
     private readonly orderNotificationService: OrderNotificationService,
     private readonly customerService: CustomerService,
+    private readonly deliveryService: DeliveryService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -442,6 +444,8 @@ export class OrderHelperService {
         //   OrderActivityType.OrderReady,
         //   order.orderReadyTime,
         // );
+        if (order.orderType == OrderType.Delivery)
+          this.deliveryService.cancel(order._id.toString());
         this.calculationService.identifyOrdersToRecalculateAfterCompleted(
           order,
         );
