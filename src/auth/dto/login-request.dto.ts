@@ -75,9 +75,8 @@ export class VerificationOtpDto {
   @IsNotEmpty()
   verificationCode: number;
 
-  @ApiProperty()
-  @ValidateIf((o) => !(o.verificationId && o.verificationCode) || o.code)
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   code?: string;
 }
