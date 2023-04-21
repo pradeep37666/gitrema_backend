@@ -47,7 +47,7 @@ export class SupplierController {
   @PermissionGuard(PermissionSubject.Supplier, Permission.Common.LIST)
   getAll(
     @Query() query: SupplierQueryDto,
-    paginationOptions: PaginationDto,
+    @Query() paginationOptions: PaginationDto,
   ): Promise<PaginateResult<SupplierDocument>> {
     return this.supplierService.getAll(query, paginationOptions);
   }
