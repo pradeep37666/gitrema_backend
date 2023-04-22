@@ -29,6 +29,7 @@ import { Image } from 'canvas';
 import * as CodepageEncoder from 'codepage-encoder';
 import { HttpService } from '@nestjs/axios';
 import { catchError, lastValueFrom, map } from 'rxjs';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -108,7 +109,7 @@ export class InvoiceHelperService {
         html,
         imageUrl: document.imageUrl.Location,
       };
-    throw new BadRequestException(`Error generating invoice`);
+    throw new BadRequestException(VALIDATION_MESSAGES.InvoiceError.key);
   }
 
   async generateKitchenReceipt(order: OrderDocument): Promise<string> {
@@ -131,7 +132,7 @@ export class InvoiceHelperService {
 
     console.log(imageUrl);
     if (imageUrl) return imageUrl;
-    throw new BadRequestException(`Error generating kitchen receipt`);
+    throw new BadRequestException(VALIDATION_MESSAGES.KitchenReceiptError.key);
   }
 
   async generateCreditMemo(
@@ -179,7 +180,7 @@ export class InvoiceHelperService {
         html,
         imageUrl: document.imageUrl.Location,
       };
-    throw new BadRequestException(`Error generating invoice`);
+    throw new BadRequestException(VALIDATION_MESSAGES.InvoiceError.key);
   }
 
   prepareCreditMemoItems(
@@ -332,7 +333,7 @@ export class InvoiceHelperService {
 
     console.log(imageResponse);
     if (imageResponse.status != HttpStatus.OK)
-      throw new BadRequestException(`Error generating resource for print`);
+      throw new BadRequestException(VALIDATION_MESSAGES.InvoicePrintError.key);
     const raw = Buffer.from(imageResponse.data).toString('base64');
 
     const img = new Image();

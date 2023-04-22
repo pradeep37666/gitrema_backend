@@ -15,7 +15,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { CashierService } from './cashier.service';
 import { CreateCashierDto } from './dto/create-cashier.dto';
 import { UpdateCashierDto } from './dto/update-cashier.dto';
@@ -32,6 +32,7 @@ import { PauseDto } from './dto/pause.dto';
 @Controller('cashier')
 @ApiTags('Cashiers')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class CashierController {
   constructor(
     private readonly cashierService: CashierService,

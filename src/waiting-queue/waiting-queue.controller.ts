@@ -14,7 +14,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { WaitingQueueService } from './waiting-queue.service';
 import { CreateWaitingQueueDto } from './dto/create-waiting-queue.dto';
 import { UpdateWaitingQueueDto } from './dto/update-waiting-queue.dto';
@@ -24,6 +24,7 @@ import { QueryWaitingQueueDto } from './dto/query-waiting-queue.dto';
 @ApiTags('Waiting Queue')
 @ApiBearerAuth('access-token')
 @Controller('waiting-queue')
+@ApiHeader({ name: 'lang' })
 export class WaitingQueueController {
   constructor(private readonly waitingQueueService: WaitingQueueService) {}
 

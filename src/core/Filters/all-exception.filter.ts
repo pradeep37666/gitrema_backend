@@ -8,6 +8,7 @@ import {
   LoggerService,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { VALIDATION_MESSAGES } from '../Constants/validation-message';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -39,8 +40,28 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
     if (exception instanceof HttpException) {
       const res: any = exception.getResponse();
-      if (res) responseBody.message = res.message;
+      console.log(res.message);
+      const lang = req.headers.lang ?? 'en';
+      if (res) {
+        let messageKey = res.message;
+        const parts = res.message.split('__');
+        if (parts.length > 1) {
+          messageKey = parts[0];
+        }
+        console.log(messageKey);
+        if (VALIDATION_MESSAGES[messageKey]) {
+          let message = VALIDATION_MESSAGES[messageKey][lang];
+          if (parts.length > 1) {
+            for (const i in parts) {
+              message = message.replace(`{{p${i}}}`, parts[i]);
+            }
+          }
+          responseBody.message = message;
+        } else responseBody.message = VALIDATION_MESSAGES['ServerError'][lang];
+      }
     }
+
+    console.log(req.headers.lang);
 
     if (httpStatus == 500) {
       const meta = {

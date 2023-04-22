@@ -19,6 +19,7 @@ import * as QrCodeLib from 'qrcode';
 import { QrCodeType } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
 import { S3Service } from 'src/core/Providers/Storage/S3.service';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class QrCodeService {
@@ -66,9 +67,10 @@ export class QrCodeService {
           path: 'supplierId',
         },
       ]);
-      if (!table) throw new BadRequestException(`Table not found`);
+      if (!table)
+        throw new BadRequestException(VALIDATION_MESSAGES.TableNotFound.key);
       if (!table?.supplierId?.domain)
-        throw new BadRequestException(`Domain not set`);
+        throw new BadRequestException(VALIDATION_MESSAGES.DomainNotFound.key);
       const domain = table.supplierId.domain.endsWith('/')
         ? table.supplierId.domain.slice(0, -1)
         : table.supplierId.domain;
@@ -92,7 +94,7 @@ export class QrCodeService {
     console.log(s3Url);
     if (s3Url.Location) return s3Url.Location;
 
-    throw new BadRequestException(`Error Generating Qrcode`);
+    throw new BadRequestException(VALIDATION_MESSAGES.ErrorQrCode.key);
   }
 
   async findAll(

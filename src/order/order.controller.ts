@@ -18,7 +18,7 @@ import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { OrderDocument } from './schemas/order.schema';
 import { PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
@@ -29,6 +29,7 @@ import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 @Controller('order')
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 

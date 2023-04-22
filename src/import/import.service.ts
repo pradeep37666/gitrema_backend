@@ -12,6 +12,7 @@ import { Model } from 'mongoose';
 import { Import, ImportDocument } from './schemas/import.schema';
 
 import { ImportHelperService } from './import-helper.service';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class ImportService {
@@ -32,7 +33,7 @@ export class ImportService {
       addedBy: req.user.userId,
     });
     if (!importObj)
-      throw new BadRequestException(`Failed to create the import`);
+      throw new BadRequestException(VALIDATION_MESSAGES.ImportFailed.key);
     switch (dto.type) {
       case ImportType.Supplier:
         this.importHelperService.handleSupplierImport(req, file, importObj);

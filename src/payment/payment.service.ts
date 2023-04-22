@@ -43,6 +43,7 @@ import {
   TIMEZONE,
 } from 'src/core/Constants/system.constant';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class PaymentService {
@@ -71,7 +72,8 @@ export class PaymentService {
     paymentRequestDetails: PaymentInitiateDto,
   ): Promise<any> {
     const order = await this.orderModel.findById(paymentRequestDetails.orderId);
-    if (!order) throw new NotFoundException(`Order is not found`);
+    if (!order)
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
 
     if ([OrderStatus.Closed, OrderStatus.Cancelled].includes(order.status))
       throw new NotFoundException(
@@ -94,7 +96,7 @@ export class PaymentService {
 
     if (order.summary.totalWithTax < order.summary.totalPaid + amountToCollect)
       throw new BadRequestException(
-        `This will result in an overpayment. Pending amount to collect is ${
+        `${VALIDATION_MESSAGES.OverPayment.key}__${
           order.summary.totalWithTax - order.summary.totalPaid
         }`,
       );
@@ -183,7 +185,8 @@ export class PaymentService {
 
   async refund(req: any, dto: RefundDto): Promise<TransactionDocument> {
     const order = await this.orderModel.findById(dto.orderId);
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order)
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     if (dto.amount > order.summary.totalPaid - order.summary.totalRefunded) {
       throw new BadRequestException(
         `Max allowed refund for the given order is ${
@@ -217,7 +220,8 @@ export class PaymentService {
 
   async split(req: any, dto: PaymentSplitDto): Promise<TransactionDocument[]> {
     const order = await this.orderModel.findById(dto.orderId);
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order)
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
 
     let transactions = await this.transactionModel.find({
       orderId: order._id,

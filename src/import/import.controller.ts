@@ -9,7 +9,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ImportService } from './import.service';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiHeader,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FilesFastifyInterceptor, diskStorage } from 'fastify-file-interceptor';
 import { editFileName, importFilter } from 'src/core/Helpers/file-upload-utils';
 import { MultipleFileDto } from 'src/file-uploader/files.dto';
@@ -21,6 +26,7 @@ import { Permission } from 'src/core/Constants/permission.type';
 @Controller('import')
 @ApiTags('Imports')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class ImportController {
   constructor(private readonly importService: ImportService) {}
 

@@ -19,7 +19,7 @@ import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { AggregatePaginateResult, PaginateResult } from 'mongoose';
 import { TableDocument } from './schemas/table.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { QueryTableDto } from './dto/query-table.dto';
 import { TableLogDto } from './dto/table-log.dto';
 import { TableLogService } from './table-log.service';
@@ -28,6 +28,7 @@ import { TableLogDocument } from './schemas/table-log.schema';
 @Controller('table')
 @ApiTags('Tables')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class TableController {
   constructor(
     private readonly tableService: TableService,

@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Request } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PaymentInitiateDto, PaymentSplitDto } from './dto/payment.dto';
 import { PaymentService } from './payment.service';
 import { RefundDto } from './dto/refund.dto';
@@ -7,6 +7,7 @@ import { RefundDto } from './dto/refund.dto';
 @ApiTags('Payments')
 @ApiBearerAuth('access-token')
 @Controller('payments')
+@ApiHeader({ name: 'lang' })
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 

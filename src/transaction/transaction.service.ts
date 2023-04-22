@@ -37,6 +37,7 @@ import { InvoiceType } from 'src/invoice/invoice.enum';
 import { DeliveryService } from 'src/delivery/delivery.service';
 import { OrderNotificationService } from 'src/order/order-notification.service';
 import { OrderEvents } from 'src/notification/enum/en.enum';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class TransactionService {
@@ -69,7 +70,7 @@ export class TransactionService {
   async get(transactionId: string): Promise<LeanDocument<TransactionDocument>> {
     const transaction = await this.transactionModel.findById(transactionId);
     if (!transaction) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
 
     return transaction;
@@ -83,7 +84,7 @@ export class TransactionService {
       .findByIdAndUpdate(transactionId, transactionDetail, { new: true })
       .lean();
     if (!transaction) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
     return transaction;
   }

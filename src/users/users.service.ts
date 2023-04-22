@@ -21,6 +21,7 @@ import { RoleSlug } from 'src/core/Constants/enum';
 import { JwtService } from '@nestjs/jwt';
 import { ChangeUserPasswordDto } from './dto/change-user-password.dto';
 import { MailService } from 'src/notification/mail/mail.service';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class UserService {
@@ -35,11 +36,12 @@ export class UserService {
   async create(req: any, userRequest: any): Promise<UserDocument> {
     const userExists = await this.findByEmail(userRequest.email);
     if (userExists) {
-      throw new BadRequestException(STATUS_MSG.ERROR.EMAIL_EXISTS);
+      throw new BadRequestException(VALIDATION_MESSAGES.SameEmailExist.key);
     }
     if (userRequest.role) {
       const role = await this.roleModel.findById(userRequest.role);
-      if (!role) throw new NotFoundException(`Role not found`);
+      if (!role)
+        throw new NotFoundException(VALIDATION_MESSAGES.RoleNotFound.key);
 
       console.log(role);
       if (
@@ -52,7 +54,7 @@ export class UserService {
           RoleSlug.Chef,
         ].includes(role.slug)
       ) {
-        throw new NotFoundException(`Invalid Role`);
+        throw new NotFoundException(VALIDATION_MESSAGES.RoleNotFound.key);
       }
     }
     let userDetails: any = userRequest;
@@ -97,7 +99,7 @@ export class UserService {
       })
       .lean();
     if (!user) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
     return user;
   }
@@ -108,9 +110,7 @@ export class UserService {
       _id: dto.userId,
     });
     if (!user)
-      throw new BadRequestException(
-        `Provided userId is invalid or logged in user does not have the access to perform this action`,
-      );
+      throw new BadRequestException(VALIDATION_MESSAGES.InvalidUserId.key);
     user.password = dto.password;
     await user.save();
     if (user.email) {
@@ -157,7 +157,7 @@ export class UserService {
   async fetch(userId: string): Promise<LeanDocument<User>> {
     const user = await this.userModel.findById(userId, { password: 0 }).lean();
     if (!user) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
 
     return user;
@@ -166,7 +166,7 @@ export class UserService {
   async delete(userId: string): Promise<LeanDocument<User>> {
     const user = await this.userModel.findByIdAndDelete(userId).lean();
     if (!user) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
     return user;
   }

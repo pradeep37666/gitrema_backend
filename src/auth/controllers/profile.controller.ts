@@ -1,5 +1,5 @@
 import { Controller, Get, Body, Put, Req } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { LeanDocument } from 'mongoose';
 import { User } from 'src/users/schemas/users.schema';
 import { UserUpdateDto } from 'src/users/users.dto';
@@ -8,6 +8,7 @@ import { UserService } from 'src/users/users.service';
 @ApiTags('Profile')
 @ApiBearerAuth('access-token')
 @Controller('profile')
+@ApiHeader({ name: 'lang' })
 export class ProfileController {
   constructor(private readonly userService: UserService) {}
 

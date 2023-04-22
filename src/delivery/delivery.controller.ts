@@ -19,11 +19,12 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { DeliveryDocument } from './schemas/delivery.schema';
 import { PaginateResult } from 'mongoose';
 import { Public } from 'src/core/decorators/public.decorator';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('delivery')
 @ApiTags('Deliveries')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class DeliveryController {
   constructor(private readonly deliveryService: DeliveryService) {}
 

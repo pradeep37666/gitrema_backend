@@ -14,7 +14,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
@@ -24,6 +24,7 @@ import { ReservationDocument } from './schemas/reservation.schema';
 @ApiTags('Reservation')
 @ApiBearerAuth('access-token')
 @Controller('reservation')
+@ApiHeader({ name: 'lang' })
 export class ReservationController {
   constructor(private readonly reservationService: ReservationService) {}
 

@@ -17,6 +17,7 @@ import {
 import { QueryCustomerDto } from './dto/query-customer.dto';
 import { RoleSlug } from 'src/core/Constants/enum';
 import { Role, RoleDocument } from 'src/role/schemas/roles.schema';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class CustomerService {
@@ -30,17 +31,13 @@ export class CustomerService {
   async create(req: any, dto: CreateCustomerDto): Promise<CustomerDocument> {
     const exists = await this.findByPhoneNumber(dto.phoneNumber);
     if (exists) {
-      throw new BadRequestException(
-        `Customer exists for provided phone number`,
-      );
+      throw new BadRequestException(VALIDATION_MESSAGES.CustomerExist.key);
     }
     const customerRole = await this.roleModel.findOne({
       slug: RoleSlug.Customer,
     });
     if (!customerRole)
-      throw new BadRequestException(
-        `Role is not defined. Please contact admin`,
-      );
+      throw new BadRequestException(VALIDATION_MESSAGES.RoleNotFound.key);
 
     const customer = await this.customerModel.create({
       ...dto,

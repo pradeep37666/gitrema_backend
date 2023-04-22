@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import {
   ChangePasswordDto,
   RecoverPassword,
@@ -10,6 +10,7 @@ import { RecoverPasswordService } from '../services/recover-password.service';
 @ApiTags('Auth')
 @ApiBearerAuth('access-token')
 @Controller('auth')
+@ApiHeader({ name: 'lang' })
 export class ChangePasswordController {
   constructor(
     private readonly recoverPasswordService: RecoverPasswordService,

@@ -15,7 +15,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { CreateQrCodeDto } from './dto/create-qr-code.dto';
 import { UpdateQrCodeDto } from './dto/update-qr-code.dto';
 import { QrCodeService } from './qr-code.service';
@@ -24,6 +24,7 @@ import { QrCodeDocument } from './schemas/qr-code.schema';
 @Controller('qr-code')
 @ApiTags('Qr Codes')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class QrCodeController {
   constructor(private readonly qrCodeService: QrCodeService) {}
 

@@ -12,7 +12,7 @@ import {
 import { ScreenDisplayService } from './screen-display.service';
 import { CreateScreenDisplayDto } from './dto/create-screen-display.dto';
 import { UpdateScreenDisplayDto } from './dto/update-screen-display.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
@@ -23,6 +23,7 @@ import { ScreenDisplayDocument } from './schemas/screen-display.schema';
 @Controller('screen-display')
 @ApiTags('Screen Displays')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class ScreenDisplayController {
   constructor(private readonly screenDisplayService: ScreenDisplayService) {}
 

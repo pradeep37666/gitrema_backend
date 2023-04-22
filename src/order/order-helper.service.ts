@@ -52,6 +52,7 @@ import { OrderNotificationService } from './order-notification.service';
 import { CustomerService } from 'src/customer/customer.service';
 import { OrderEvents } from 'src/notification/enum/en.enum';
 import { DeliveryService } from 'src/delivery/delivery.service';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class OrderHelperService {
@@ -130,12 +131,14 @@ export class OrderHelperService {
       // check if valid menu item
       if (!menuItem)
         throw new NotFoundException(
-          `${items[i].menuItem.menuItemId} is not available`,
+          `${VALIDATION_MESSAGES.MenuItemNotAvailable.key}__${items[i].menuItem.menuItemId}`,
         );
 
       // check if the items is soldout
       if (menuItem.soldOut)
-        throw new BadRequestException(`${menuItem.name} is sold out`);
+        throw new BadRequestException(
+          `${VALIDATION_MESSAGES.SoldOut.key}__${menuItem.name}`,
+        );
 
       // check the quantity
       if (menuItem.manageQuantity) {
@@ -146,7 +149,9 @@ export class OrderHelperService {
           !availableQuantities ||
           availableQuantities.quantity < items[i].quantity
         )
-          throw new BadRequestException(`${menuItem.name} is sold out`);
+          throw new BadRequestException(
+            `${VALIDATION_MESSAGES.SoldOut.key}__${menuItem.name}`,
+          );
       }
 
       // calculate price

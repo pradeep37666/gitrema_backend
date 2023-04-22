@@ -26,6 +26,7 @@ import { SocketIoService } from 'src/socket-io/socket-io.service';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { Restaurant } from 'src/restaurant/schemas/restaurant.schema';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class TableLogService {
@@ -91,7 +92,7 @@ export class TableLogService {
 
     if (start) {
       if (tableLog && tableLog.closingTime == null) {
-        throw new BadRequestException('Table is already started');
+        throw new BadRequestException(VALIDATION_MESSAGES.TableStarted.key);
       }
 
       const user = await this.userModel.findOne({
@@ -112,7 +113,7 @@ export class TableLogService {
       });
     } else {
       if (!tableLog) {
-        throw new BadRequestException('Table has not started yet');
+        throw new BadRequestException(VALIDATION_MESSAGES.TableNotStarted.key);
       }
       if (
         (await this.orderModel.count({
@@ -121,7 +122,9 @@ export class TableLogService {
           tableId: tableLog.tableId,
         })) > 0
       ) {
-        throw new BadRequestException('Some of the orders are not closed yet');
+        throw new BadRequestException(
+          VALIDATION_MESSAGES.OrdersPendingToClose.key,
+        );
       }
 
       tableLog.closingTime = new Date();
@@ -149,7 +152,7 @@ export class TableLogService {
     );
 
     if (!tableLog) {
-      throw new NotFoundException(`Table has not started yet`);
+      throw new NotFoundException(VALIDATION_MESSAGES.TableNotStarted.key);
     }
 
     this.socketGateway.emit(

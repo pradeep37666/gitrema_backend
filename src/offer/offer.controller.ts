@@ -20,11 +20,12 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 import { QueryOfferDto } from './dto/query-offer.dto';
 import { OfferDocument } from './schemas/offer.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('offer')
 @ApiTags('Offers')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class OfferController {
   constructor(private readonly offerService: OfferService) {}
 

@@ -10,7 +10,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
@@ -25,6 +25,7 @@ import { Public } from 'src/core/decorators/public.decorator';
 @ApiTags('Invoice')
 @ApiBearerAuth('access-token')
 @Controller('invoice')
+@ApiHeader({ name: 'lang' })
 export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService) {}
 

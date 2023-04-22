@@ -18,6 +18,7 @@ import {
   KitchenQueueLogDocument,
 } from './schemas/kitchen-queue-log.schema';
 import { PauseDto } from 'src/cashier/dto/pause.dto';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class KitchenQueueLogService {
@@ -73,7 +74,9 @@ export class KitchenQueueLogService {
     );
 
     if (kitchenQueueLog && !kitchenQueueLog.closedAt) {
-      throw new BadRequestException('Previous instance is not closed yet');
+      throw new BadRequestException(
+        VALIDATION_MESSAGES.PreviousOpenInstance.key,
+      );
     }
     return await this.kitchenQueueLogModel.create({
       kitchenQueueId,
@@ -93,7 +96,7 @@ export class KitchenQueueLogService {
     );
 
     if (kitchenQueueLog && kitchenQueueLog.closedAt) {
-      throw new BadRequestException('No instance open to close');
+      throw new BadRequestException(VALIDATION_MESSAGES.NoOpenInstance.key);
     }
 
     kitchenQueueLog.set({ closedAt: new Date() });
@@ -117,17 +120,17 @@ export class KitchenQueueLogService {
       if (kitchenQueueLog.pausedLogs.length > 0) {
         const lastItem = kitchenQueueLog.pausedLogs.at(-1);
         if (!lastItem.end) {
-          throw new BadRequestException('instance is already paused');
+          throw new BadRequestException(VALIDATION_MESSAGES.AlreadyPaused.key);
         }
       }
       kitchenQueueLog.pausedLogs.push({ ...dto, start: new Date() });
     } else {
       if (kitchenQueueLog.pausedLogs.length == 0) {
-        throw new BadRequestException('Nothing to resume');
+        throw new BadRequestException(VALIDATION_MESSAGES.NothingToResume.key);
       }
       const lastItem = kitchenQueueLog.pausedLogs.at(-1);
       if (lastItem.end) {
-        throw new BadRequestException('Nothing to resume');
+        throw new BadRequestException(VALIDATION_MESSAGES.NothingToResume.key);
       }
       lastItem.end = new Date();
       kitchenQueueLog.pausedLogs[kitchenQueueLog.pausedLogs.length - 1] =

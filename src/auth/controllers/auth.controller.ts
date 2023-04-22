@@ -8,7 +8,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { SignupRequestDto } from '../dto/signup-request.dto';
 import {
   AdminLoginDto,
@@ -28,6 +28,7 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 
 @Public()
 @ApiTags('Auth')
+@ApiHeader({ name: 'lang' })
 @Controller('auth')
 export class AuthController {
   constructor(

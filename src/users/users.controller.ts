@@ -11,7 +11,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 
 import { LeanDocument, PaginateResult } from 'mongoose';
 import { UserService } from './users.service';
@@ -31,6 +31,7 @@ import { ChangeUserPasswordDto } from './dto/change-user-password.dto';
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
 @Controller('users')
+@ApiHeader({ name: 'lang' })
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

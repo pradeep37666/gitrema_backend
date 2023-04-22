@@ -16,7 +16,7 @@ import { UpdateClientFeedbackDto } from './dto/update-client-feedback.dto';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
@@ -27,6 +27,7 @@ import { ClientFeedbackAnswerDocument } from './schemas/client-feedback-answers.
 @Controller('client-feedback')
 @ApiTags('Client Feedback')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class ClientFeedbackController {
   constructor(private readonly clientFeedbackService: ClientFeedbackService) {}
 
