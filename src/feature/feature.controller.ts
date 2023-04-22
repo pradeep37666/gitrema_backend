@@ -13,7 +13,7 @@ import {
 import { FeatureService } from './feature.service';
 import { CreateFeatureDto } from './dto/create-feature.dto';
 import { UpdateFeatureDto } from './dto/update-feature.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
@@ -24,6 +24,7 @@ import { PaginateResult } from 'mongoose';
 @Controller('feature')
 @ApiTags('Features')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class FeatureController {
   constructor(private readonly featureService: FeatureService) {}
 

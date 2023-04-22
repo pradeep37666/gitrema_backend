@@ -5,11 +5,12 @@ import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { Permission } from 'src/core/Constants/permission.type';
 import { CreateGlobalConfigDto } from './dto/create-global-config.dto';
 import { GlobalConfigDocument } from './schema/global-config.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('global-config')
 @ApiTags('Global Config')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class GlobalConfigController {
   constructor(private readonly globalConfigService: GlobalConfigService) {}
 

@@ -12,6 +12,7 @@ import { Model } from 'mongoose';
 import { Cashier, CashierDocument } from './schemas/cashier.schema';
 import { CashierLogService } from './cashier-log.service';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class CashierHelperService {
@@ -60,7 +61,10 @@ export class CashierHelperService {
           supplierId: req.user.supplierId,
           default: true,
         });
-        if (!cashier) throw new BadRequestException(`Cashier is not available`);
+        if (!cashier)
+          throw new BadRequestException(
+            VALIDATION_MESSAGES.NoCashierAvailable.key,
+          );
 
         cashierId = cashier._id;
       } else {
@@ -70,12 +74,15 @@ export class CashierHelperService {
     }
 
     if (!cashierId) {
-      throw new BadRequestException(`Cashier is not available`);
+      throw new BadRequestException(VALIDATION_MESSAGES.NoCashierAvailable.key);
     }
     if (autoStart) {
       if (!cashier) {
         cashier = await this.cashierModel.findById(cashierId);
-        if (!cashier) throw new BadRequestException(`Cashier is not available`);
+        if (!cashier)
+          throw new BadRequestException(
+            VALIDATION_MESSAGES.NoCashierAvailable.key,
+          );
       }
       if (!cashier.currentLog) {
         if (req.user.isCustomer)

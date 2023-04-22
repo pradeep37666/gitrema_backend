@@ -13,6 +13,7 @@ import {
   SupplierPackage,
   SupplierPackageDocument,
 } from 'src/supplier/schemas/supplier-package.schema';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -36,9 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         active: true,
       });
       if (!supplier) {
-        throw new BadRequestException(
-          'Supplier is not activated! Please contact administrator',
-        );
+        throw new BadRequestException(VALIDATION_MESSAGES.SupplierInactive.key);
       }
     }
 

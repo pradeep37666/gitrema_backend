@@ -28,6 +28,7 @@ import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { CashierHelperService } from './cashier-helper.service';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class CashierLogService {
@@ -97,7 +98,9 @@ export class CashierLogService {
     );
 
     if (cashierLog && !cashierLog.closedAt) {
-      throw new BadRequestException('Previous instance is not closed yet');
+      throw new BadRequestException(
+        VALIDATION_MESSAGES.PreviousOpenInstance.key,
+      );
     }
     const imageNoteDto: any = {};
     if (dto.image) {
@@ -142,14 +145,14 @@ export class CashierLogService {
     );
 
     if (cashierLog && cashierLog.closedAt) {
-      throw new BadRequestException('No instance open to close');
+      throw new BadRequestException(VALIDATION_MESSAGES.NoOpenInstance.key);
     }
     const difference = dto.closingBalance - cashierLog.currentBalance;
     // validate balance
     if (!dto.overrideReason) {
       if (cashierLog.currentBalance != dto.closingBalance)
         throw new BadRequestException(
-          `Closing balance is not matching the current balance. Difference is ${difference}`,
+          `${VALIDATION_MESSAGES.NoBalanceMatch.key} ${difference}`,
         );
     }
 
@@ -186,17 +189,17 @@ export class CashierLogService {
       if (cashierLog.pausedLogs.length > 0) {
         const lastItem = cashierLog.pausedLogs.at(-1);
         if (!lastItem.end) {
-          throw new BadRequestException('Instance is already paused');
+          throw new BadRequestException(VALIDATION_MESSAGES.AlreadyPaused.key);
         }
       }
       cashierLog.pausedLogs.push({ ...dto, start: new Date() });
     } else {
       if (cashierLog.pausedLogs.length == 0) {
-        throw new BadRequestException('Nothing to resume');
+        throw new BadRequestException(VALIDATION_MESSAGES.NothingToResume.key);
       }
       const lastItem = cashierLog.pausedLogs.at(-1);
       if (lastItem.end) {
-        throw new BadRequestException('Nothing to resume');
+        throw new BadRequestException(VALIDATION_MESSAGES.NothingToResume.key);
       }
       lastItem.end = new Date();
       cashierLog.pausedLogs[cashierLog.pausedLogs.length - 1] = lastItem;

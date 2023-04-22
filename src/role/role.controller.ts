@@ -11,7 +11,7 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { LeanDocument, PaginateResult } from 'mongoose';
 
 import { RoleCreateDto, RoleUpdateDto } from './role.dto';
@@ -27,6 +27,7 @@ import { SocketEvents } from 'src/socket-io/enum/events.enum';
 @Controller('roles')
 @ApiTags('Roles')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 

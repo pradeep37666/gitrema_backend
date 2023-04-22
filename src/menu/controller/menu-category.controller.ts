@@ -21,11 +21,12 @@ import {
   UpdateMenuCategoryDTO,
 } from '../dto/menu-category.dto';
 import { MenuCategoryDocument } from '../schemas/menu-category.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('menu-category')
 @ApiTags('Menu Categories')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class MenuCategoryController {
   constructor(private readonly menuCategoryService: MenuCategoryService) {}
 

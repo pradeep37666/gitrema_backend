@@ -15,6 +15,7 @@ import {
   pagination,
 } from 'src/core/Constants/pagination';
 import { SubjectsRestrictedForSupplier } from 'src/core/Constants/permissions/permissions.enum';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class RoleService {
@@ -35,9 +36,9 @@ export class RoleService {
         )
       ) {
         throw new BadRequestException(
-          `${Object.values(SubjectsRestrictedForSupplier).join(
-            ',',
-          )} are not allowed for supplier`,
+          `${VALIDATION_MESSAGES.PermissionNotAllowed.key}__${Object.values(
+            SubjectsRestrictedForSupplier,
+          ).join(',')}`,
         );
       }
     }
@@ -65,9 +66,9 @@ export class RoleService {
         )
       ) {
         throw new BadRequestException(
-          `${Object.values(SubjectsRestrictedForSupplier).join(
-            ',',
-          )} are not allowed for supplier`,
+          `${VALIDATION_MESSAGES.PermissionNotAllowed.key}__${Object.values(
+            SubjectsRestrictedForSupplier,
+          ).join(',')}`,
         );
       }
     }
@@ -78,7 +79,7 @@ export class RoleService {
       .lean();
 
     if (!role) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
     // refresh the role in cache
     //this.cacheService.set(role.id, role);
@@ -111,7 +112,7 @@ export class RoleService {
       .populate([{ path: 'screenDisplays' }])
       .lean();
     if (!role) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
     return role;
   }
@@ -119,11 +120,11 @@ export class RoleService {
   async delete(roleId: string): Promise<LeanDocument<RoleDocument>> {
     const usersHavingRole = await this.userModel.count({ role: roleId });
     if (usersHavingRole > 0)
-      throw new BadRequestException(STATUS_MSG.ERROR.CAN_NOT_BE_DELETED);
+      throw new BadRequestException(VALIDATION_MESSAGES.CanNotBeDeleted.key);
     const role = await this.roleModel.findByIdAndDelete(roleId);
 
     if (!role) {
-      throw new NotFoundException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
     return role;
   }

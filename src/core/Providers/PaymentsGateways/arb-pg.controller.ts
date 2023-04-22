@@ -17,6 +17,7 @@ import { Public } from 'src/core/decorators/public.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { Redirect } from '@nestjsplus/redirect';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Public()
 @Controller('arb-pg-webhook')
@@ -73,6 +74,6 @@ export class ArbPgController {
       }
       return { statusCode: HttpStatus.FOUND, url };
     }
-    throw new BadGatewayException('Something went wrong');
+    throw new BadGatewayException(VALIDATION_MESSAGES.ServerError.key);
   }
 }

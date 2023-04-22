@@ -33,6 +33,7 @@ import {
 import * as moment from 'moment';
 import { SupplierAggregated } from './interfaces/suppliers.interface';
 import { TestDataService } from 'src/test-data/test-data.service';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class SupplierService {
@@ -62,9 +63,7 @@ export class SupplierService {
         alias: supplierDetails.alias,
       });
       if (exist > 0) {
-        throw new BadRequestException(
-          `A record already exists with same alias`,
-        );
+        throw new BadRequestException(VALIDATION_MESSAGES.SameAlias.key);
       }
     }
     if (supplierDetails.domain) {
@@ -72,9 +71,7 @@ export class SupplierService {
         domain: supplierDetails.domain,
       });
       if (exist > 0) {
-        throw new BadRequestException(
-          `A record already exists with same domain`,
-        );
+        throw new BadRequestException(VALIDATION_MESSAGES.SameDomain.key);
       }
     }
     const supplier = new this.supplierModel(supplierDetails);
@@ -255,7 +252,7 @@ export class SupplierService {
         domain: supplierDetails.domain,
       });
       if (isExist > 0)
-        throw new BadRequestException(STATUS_MSG.ERROR.DOMAIN_NOT_ALLOWED);
+        throw new BadRequestException(VALIDATION_MESSAGES.DomainNotAllowed.key);
     }
     if (supplierDetails.alias) {
       const exist = await this.supplierModel.count({
@@ -263,9 +260,7 @@ export class SupplierService {
         _id: { $ne: supplierId },
       });
       if (exist > 0) {
-        throw new BadRequestException(
-          `A record already exists with same alias`,
-        );
+        throw new BadRequestException(VALIDATION_MESSAGES.SameAlias.key);
       }
     }
     const supplier = await this.supplierModel.findByIdAndUpdate(
@@ -296,10 +291,10 @@ export class SupplierService {
     }
     const packageObj = await this.packageModel.findOne(packageCriteria);
     if (!packageObj) {
-      throw new BadRequestException(`Package not found`);
+      throw new BadRequestException(VALIDATION_MESSAGES.PackageNotFound.key);
     }
     if (dto.startTrial && packageObj.trialPeriod == 0) {
-      throw new BadRequestException(`Package does not provide trial period`);
+      throw new BadRequestException(VALIDATION_MESSAGES.NoTrialPeriod.key);
     }
     return await this.createSupplierPackage(req, packageObj, supplierId, dto);
   }

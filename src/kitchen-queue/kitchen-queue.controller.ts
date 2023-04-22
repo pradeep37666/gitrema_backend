@@ -20,7 +20,7 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 import { QueryKitchenQueueDto } from './dto/query-kitchen-queue.dto';
 import { KitchenQueueDocument } from './schemas/kitchen-queue.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { KitchenQueueLogService } from './kitchen-queue-log.service';
 import { PauseDto } from 'src/cashier/dto/pause.dto';
 import { KitchenQueueLogDocument } from './schemas/kitchen-queue-log.schema';
@@ -28,6 +28,7 @@ import { KitchenQueueLogDocument } from './schemas/kitchen-queue-log.schema';
 @Controller('kitchen-queue')
 @ApiTags('Kitchen Queues')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class KitchenQueueController {
   constructor(
     private readonly kitchenQueueService: KitchenQueueService,

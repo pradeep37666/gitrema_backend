@@ -12,6 +12,7 @@ import aesjs = require('aes-js');
 import { ConfigService } from '@nestjs/config';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import { decodeBase64, encodeBase64 } from 'bcryptjs';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class ArbPgService {
@@ -97,7 +98,7 @@ export class ArbPgService {
         }
       }
     }
-    throw new BadRequestException(STATUS_MSG.ERROR.PAYMENT_GATEWAY_ERROR);
+    throw new BadRequestException(VALIDATION_MESSAGES.PaymentError.key);
   }
 
   aesEncrypt(trandata): any {

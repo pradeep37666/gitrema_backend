@@ -19,11 +19,12 @@ import { MenuItemService } from '../service/menu-item.service';
 import { CreateMenuItemDTO, UpdateMenuItemDTO } from '../dto/menu-item.dto';
 import { MenuItemDocument } from '../schemas/menu-item.schema';
 import { QueryMenuItemDto } from '../dto/query-menu-item.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('menu-item')
 @ApiTags('Menu Items')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class MenuItemController {
   constructor(private readonly menuItemService: MenuItemService) {}
 

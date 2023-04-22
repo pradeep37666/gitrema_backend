@@ -19,11 +19,12 @@ import { QueryKitchenQueueDto } from 'src/kitchen-queue/dto/query-kitchen-queue.
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('client-comment')
 @ApiTags('Client Comments')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class ClientCommentController {
   constructor(private readonly clientCommentService: ClientCommentService) {}
 

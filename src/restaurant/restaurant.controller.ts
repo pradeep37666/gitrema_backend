@@ -16,7 +16,7 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 import { RestaurantDocument } from './schemas/restaurant.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
@@ -24,6 +24,7 @@ import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 @Controller('restaurant')
 @ApiTags('Restaurants')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class RestaurantController {
   constructor(private readonly restaurantService: RestaurantService) {}
 

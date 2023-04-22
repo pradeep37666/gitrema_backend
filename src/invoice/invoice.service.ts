@@ -22,6 +22,7 @@ import {
 import { QueryInvoiceDto } from './dto/query-invoice.dto';
 import { PrinterService } from 'src/printer/printer.service';
 import { EscCommandsDto } from './dto/esc-commands.dto';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -81,7 +82,7 @@ export class InvoiceService {
       dto.type == InvoiceType.Invoice &&
       (await this.checkIfInvoiceExist(dto.orderId)) > 0
     ) {
-      throw new BadRequestException(`Invoice already exists`);
+      throw new BadRequestException(VALIDATION_MESSAGES.InvoiceExists.key);
     }
     dto.invoiceNumber = await this.invoiceHelperService.generateInvoiceNumber(
       order.supplierId._id,
@@ -101,7 +102,9 @@ export class InvoiceService {
         type: InvoiceType.Invoice,
       });
       if (!refInvoice) {
-        throw new BadRequestException(`Ref Invoice not found`);
+        throw new BadRequestException(
+          VALIDATION_MESSAGES.RefInvoiceNotFound.key,
+        );
       }
       invoiceData = await this.invoiceHelperService.generateCreditMemo(
         order,
@@ -135,7 +138,7 @@ export class InvoiceService {
     });
     // check if already cancelled
     if (!invoice) {
-      throw new BadRequestException(`Already cancelled`);
+      throw new BadRequestException(VALIDATION_MESSAGES.AlreadyCancelled.key);
     }
     // check if its main invoice and any credit / debit memo is already created
     if (invoice.type == InvoiceType.Invoice) {
@@ -143,7 +146,7 @@ export class InvoiceService {
         refInvoiceId: invoice._id,
       });
       if (relatedInvoice > 0) {
-        throw new BadRequestException(`Please cancel the credit memo first`);
+        throw new BadRequestException(VALIDATION_MESSAGES.CancelCreditMemo.key);
       }
     }
     // generate reversed invoice
@@ -188,7 +191,7 @@ export class InvoiceService {
         orderId: query.orderId,
       });
       if (!invoice) {
-        throw new BadRequestException(`Invoice not found`);
+        throw new BadRequestException(VALIDATION_MESSAGES.InvoiceNotFound.key);
       }
       commands = await this.invoiceHelperService.generateEscCommandsForInvoice(
         invoice.imageUrl,

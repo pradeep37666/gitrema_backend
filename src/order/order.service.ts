@@ -39,6 +39,7 @@ import { OrderTypes } from 'src/core/Constants/enum';
 import * as moment from 'moment';
 import 'moment-timezone';
 import { TIMEZONE } from 'src/core/Constants/system.constant';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class OrderService {
@@ -133,7 +134,9 @@ export class OrderService {
           }
         });
         if (!matchedPeriod) {
-          throw new BadRequestException(`Restaurant is closed`);
+          throw new BadRequestException(
+            VALIDATION_MESSAGES.RestaurantClosed.key,
+          );
         }
       }
     }
@@ -157,7 +160,8 @@ export class OrderService {
     if (orderData.orderType == OrderType.DineIn) {
       const table = await this.tableModel.findById(orderData.tableId);
 
-      if (!table) throw new NotFoundException(`No Table Found`);
+      if (!table)
+        throw new NotFoundException(VALIDATION_MESSAGES.TableNotFound.key);
       const tableFee = table.fees ?? 0;
       const netBeforeTax = supplier.taxEnabledOnTableFee
         ? tableFee / (1 + orderData.taxRate / 100)
@@ -342,11 +346,13 @@ export class OrderService {
     const orderData: any = { ...order.toObject(), ...dto };
 
     if (order.status == OrderStatus.Closed) {
-      throw new BadRequestException(`Order is closed. No changes can be made`);
+      throw new BadRequestException(VALIDATION_MESSAGES.OrderClosed.key);
     }
 
     if (dto.status && dto.status == order.status) {
-      throw new BadRequestException(`Order is already on ${dto.status}`);
+      throw new BadRequestException(
+        `${VALIDATION_MESSAGES.SameStatus.key}__${dto.status}`,
+      );
     }
 
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
@@ -393,9 +399,7 @@ export class OrderService {
       })
       .lean();
     if (orders.length == 0)
-      throw new BadRequestException(
-        'All provided orders are either closed or cancelled',
-      );
+      throw new BadRequestException(VALIDATION_MESSAGES.AllOrderClosed.key);
     let items = [];
     orders.forEach((o) => {
       items = items.concat(o.items);
@@ -439,10 +443,11 @@ export class OrderService {
 
   async moveItems(req: any, dto: MoveOrderItemDto): Promise<OrderDocument> {
     const sourceOrder = await this.orderModel.findById(dto.sourceOrderId);
-    if (!sourceOrder) throw new NotFoundException(`Source order not found`);
+    if (!sourceOrder)
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
 
     if (sourceOrder.status == OrderStatus.Closed)
-      throw new NotFoundException('Order is closed');
+      throw new NotFoundException(VALIDATION_MESSAGES.OrderClosed.key);
 
     const items = [];
     // loop over the received items
@@ -530,7 +535,7 @@ export class OrderService {
     const order = await this.orderModel.findById(dto.orderId);
 
     if (!order) {
-      throw new NotFoundException(`Order not found`);
+      throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
 
     let actualDateObj: any = {};

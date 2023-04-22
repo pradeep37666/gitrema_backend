@@ -8,7 +8,12 @@ import {
   Header,
   StreamableFile,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiHeader,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { FileUploaderService } from './file-uploader.service';
 
@@ -26,6 +31,7 @@ import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator'
 @ApiTags('Common')
 @Controller('file-uploader')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class FileUploaderController {
   constructor(private readonly fileUploaderService: FileUploaderService) {}
 

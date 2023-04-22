@@ -14,6 +14,7 @@ import {
   SupplierPackageDocument,
 } from 'src/supplier/schemas/supplier-package.schema';
 import * as moment from 'moment';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class PermissionService {
@@ -37,9 +38,7 @@ export class PermissionService {
         .populate([{ path: 'features' }]);
 
       if (!supplierPackage) {
-        throw new BadRequestException(
-          'No active subscription! Please contact administrator',
-        );
+        throw new BadRequestException(VALIDATION_MESSAGES.NoSubscription.key);
       }
       const checkIfTrialActive = supplierPackage.trialPeriodExpiryDate
         ? moment
@@ -53,9 +52,7 @@ export class PermissionService {
               .isAfter(moment.utc())
           : false;
       if (!checkIfTrialActive && !checkIfSubscriptionActive) {
-        throw new BadRequestException(
-          'Subscription is expired! Please contact administrator',
-        );
+        throw new BadRequestException(VALIDATION_MESSAGES.NoSubscription.key);
       }
       const permissions = supplierPackage.features
         .map((sp) => sp.permissions)
@@ -67,7 +64,7 @@ export class PermissionService {
       );
       if (!isPackageAllowed) {
         throw new BadRequestException(
-          'Action not allowed for the subscribed package',
+          VALIDATION_MESSAGES.SubscriptionActionNotAllowed.key,
         );
       }
     }

@@ -13,7 +13,7 @@ import {
 import { PackageService } from './package.service';
 import { CreatePackageDto } from './dto/create-package.dto';
 import { UpdatePackageDto } from './dto/update-package.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
@@ -24,6 +24,7 @@ import { PackageDocument } from './schemas/package.schema';
 @Controller('package')
 @ApiTags('Packages')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class PackageController {
   constructor(private readonly packageService: PackageService) {}
 

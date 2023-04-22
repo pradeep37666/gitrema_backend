@@ -12,7 +12,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { AggregatePaginateResult, PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { ReportOrderGeneralDto } from './dto/report-order-general.dto';
 import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
 import { OrderDocument } from 'src/order/schemas/order.schema';
@@ -28,6 +28,7 @@ import { PayoutPreviewDto } from './dto/payout-preview.dto';
 @Controller('report')
 @ApiTags('Reports')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 

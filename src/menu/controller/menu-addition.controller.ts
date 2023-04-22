@@ -21,11 +21,12 @@ import {
   UpdateMenuAdditionDTO,
 } from '../dto/menu-addition.dto';
 import { MenuAdditionDocument } from '../schemas/menu-addition.schema';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('menu-addition')
 @ApiTags('Menu Additions')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class MenuAdditionController {
   constructor(private readonly menuAdditionService: MenuAdditionService) {}
 

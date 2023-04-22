@@ -16,7 +16,7 @@ import {
   Response,
   Req,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { PaginateResult } from 'mongoose';
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
@@ -30,6 +30,7 @@ import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator'
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
 @Controller('transactions')
+@ApiHeader({ name: 'lang' })
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 

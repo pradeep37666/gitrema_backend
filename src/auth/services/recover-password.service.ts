@@ -26,6 +26,7 @@ import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { MailService } from 'src/notification/mail/mail.service';
 import { CustomEvent } from 'src/core/Constants/enum';
 import { generateRandomPassword } from 'src/core/Helpers/universal.helper';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class RecoverPasswordService {
@@ -45,7 +46,7 @@ export class RecoverPasswordService {
     });
 
     if (!userExists) {
-      throw new BadRequestException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
 
     const password = generateRandomPassword();
@@ -69,14 +70,14 @@ export class RecoverPasswordService {
     if (data.currentPassword) {
       const user = await this.userModel.findById(req.user.userId).lean();
       if (!(await bcrypt.compare(data.currentPassword, user.password))) {
-        throw new BadRequestException(STATUS_MSG.ERROR.UNAUTHORIZED);
+        throw new BadRequestException(VALIDATION_MESSAGES.Unauthorised.key);
       }
     }
 
     const user = await this.userModel.findById(req.user.userId);
     user.password = data.password;
     if (!user.save()) {
-      throw new ForbiddenException(STATUS_MSG.ERROR.SERVER_ERROR);
+      throw new ForbiddenException(VALIDATION_MESSAGES.ServerError.key);
     }
     delete user.password;
     return user;

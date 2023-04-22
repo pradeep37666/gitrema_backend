@@ -16,7 +16,7 @@ import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationDocument } from './schemas/notification.schema';
@@ -26,6 +26,7 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 @Controller('notification')
 @ApiTags('Notification Config')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 

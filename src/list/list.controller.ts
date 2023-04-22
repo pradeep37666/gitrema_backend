@@ -14,7 +14,7 @@ import { CreateListDto } from './dto/create-list.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
@@ -23,6 +23,7 @@ import { ListDocument } from './schemas/list.schema';
 @Controller('list')
 @ApiTags('List')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class ListController {
   constructor(private readonly listService: ListService) {}
 

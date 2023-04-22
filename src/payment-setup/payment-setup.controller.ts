@@ -15,7 +15,7 @@ import { PermissionSubject } from 'src/core/Constants/permissions/permissions.en
 import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { CreatePaymentSetupDto } from './dto/create-payment-setup.dto';
 import { UpdatePaymentSetupDto } from './dto/update-payment-setup.dto';
 import { PaymentSetupService } from './payment-setup.service';
@@ -25,6 +25,7 @@ import { QueryPaymentSetupDto } from './dto/query-payment-setup.dto';
 @Controller('payment-setup')
 @ApiTags('Payment Setup')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class PaymentSetupController {
   constructor(private readonly paymentSetupService: PaymentSetupService) {}
 

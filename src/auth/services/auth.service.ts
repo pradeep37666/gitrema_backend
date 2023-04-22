@@ -45,6 +45,7 @@ import { TaqnyatService } from 'src/core/Providers/Sms/taqnyat.service';
 import { TestDataService } from 'src/test-data/test-data.service';
 import { Admin, AdminDocument } from 'src/admin/schemas/admin.schema';
 import { WhatsappService } from 'src/core/Providers/http-caller/whatsapp.service';
+import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Injectable()
 export class AuthService {
@@ -98,7 +99,7 @@ export class AuthService {
   async login(user: any, loginRequest: LoginRequestDto): Promise<any> {
     console.log(user);
     if (loginRequest.alias && loginRequest.alias != user.supplierId?.alias) {
-      throw new BadRequestException(`Invalid alias`);
+      throw new BadRequestException(VALIDATION_MESSAGES.InvalidAlias.key);
     }
     const payload = {
       email: user.email,
@@ -237,7 +238,7 @@ export class AuthService {
       if (response) return { verificationId: 0 };
     }
 
-    throw new BadRequestException(STATUS_MSG.ERROR.ERROR_SMS);
+    throw new BadRequestException(VALIDATION_MESSAGES.ErrorSms.key);
   }
 
   async verifyCustomerOtp(
@@ -257,7 +258,7 @@ export class AuthService {
         code: verificationOtpDetails.verificationCode,
       });
       if (!otp) {
-        throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
+        throw new BadRequestException(VALIDATION_MESSAGES.OtpFailed.key);
       }
       this.otpModel.updateMany(
         { phoneNumber: verificationOtpDetails.phoneNumber },
@@ -274,9 +275,7 @@ export class AuthService {
         slug: RoleSlug.Customer,
       });
       if (!customerRole)
-        throw new BadRequestException(
-          `Role is not defined. Please contact admin`,
-        );
+        throw new BadRequestException(VALIDATION_MESSAGES.RoleNotFound.key);
       customer = await this.customerModel.create({
         phoneNumber: verificationOtpDetails.phoneNumber,
         role: customerRole._id,
@@ -301,7 +300,7 @@ export class AuthService {
         customer,
       };
     }
-    throw new BadRequestException(STATUS_MSG.ERROR.SERVER_ERROR);
+    throw new BadRequestException(VALIDATION_MESSAGES.ServerError.key);
   }
 
   async verifyUserOtp(
@@ -321,7 +320,7 @@ export class AuthService {
         code: verificationOtpDetails.verificationCode,
       });
       if (!otp) {
-        throw new BadRequestException(STATUS_MSG.ERROR.VERIFICATION_FAILED);
+        throw new BadRequestException(VALIDATION_MESSAGES.OtpFailed.key);
       }
       this.otpModel.updateMany(
         { phoneNumber: verificationOtpDetails.phoneNumber },
@@ -331,14 +330,15 @@ export class AuthService {
     const supplier = await this.supplierModel.findOne({
       alias: verificationOtpDetails.alias,
     });
-    if (!supplier) throw new BadRequestException(`Invalid alias`);
+    if (!supplier)
+      throw new BadRequestException(VALIDATION_MESSAGES.InvalidAlias.key);
     const user = await this.userModel.findOne({
       phoneNumber: verificationOtpDetails.phoneNumber,
       supplierId: supplier._id,
     });
 
     if (!user) {
-      throw new BadRequestException(`User is not registered yet`);
+      throw new BadRequestException(VALIDATION_MESSAGES.UserNotRegistered.key);
     }
     if (user) {
       const payload = {
@@ -351,18 +351,19 @@ export class AuthService {
         user,
       };
     }
-    throw new BadRequestException(STATUS_MSG.ERROR.SERVER_ERROR);
+    throw new BadRequestException(VALIDATION_MESSAGES.ServerError.key);
   }
 
   async getTokenToAccessPublicApis(domain: string): Promise<any> {
     const supplier = await this.supplierService.getByDomain(domain);
     if (!supplier) {
-      throw new BadRequestException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+      throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
     const role = await this.roleModel
       .findOne({ slug: RoleSlug.Visitor })
       .lean();
-    if (!role) throw new BadRequestException(STATUS_MSG.ERROR.RECORD_NOT_FOUND);
+    if (!role)
+      throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
     const payload = {
       userId: '',
       supplierId: supplier._id,
