@@ -28,7 +28,7 @@ import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 export class DeliveryController {
   constructor(private readonly deliveryService: DeliveryService) {}
 
-  @Patch('update-delivery')
+  @Post('update-delivery')
   @Public()
   async update(@Body() dto: any) {
     return await this.deliveryService.updateHook(dto);
