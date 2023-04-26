@@ -57,7 +57,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
             }
           }
           responseBody.message = message;
-        } else responseBody.message = VALIDATION_MESSAGES['ServerError'][lang];
+        }
       }
     }
 
