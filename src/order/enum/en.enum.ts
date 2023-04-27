@@ -19,6 +19,7 @@ export enum OrderStatus {
   OnTable = 'On Table',
   Closed = 'Closed',
   Cancelled = 'Cancelled',
+  CancelledWihPaymentFailed = 'CancelledWihPaymentFailed',
 }
 
 export enum OrderActivityType {
@@ -32,6 +33,7 @@ export enum OrderActivityType {
 }
 
 export enum OrderPaymentStatus {
+  Pending = 'Pending',
   NotPaid = 'Not Paid',
   Paid = 'Paid',
   Refunded = 'Refunded',

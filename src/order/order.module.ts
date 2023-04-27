@@ -42,6 +42,7 @@ import {
 } from 'src/notification/schemas/track-notification.schema';
 import { Invoice, InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
 import { DeliveryModule } from 'src/delivery/delivery.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { DeliveryModule } from 'src/delivery/delivery.module';
     CustomerModule,
     forwardRef(() => InvoiceModule),
     DeliveryModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [OrderController],
   providers: [

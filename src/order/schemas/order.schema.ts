@@ -132,7 +132,7 @@ export class Order {
   @Prop({
     type: String,
     enum: OrderPaymentStatus,
-    default: OrderPaymentStatus.NotPaid,
+    default: OrderPaymentStatus.Pending,
   })
   paymentStatus: OrderPaymentStatus;
 

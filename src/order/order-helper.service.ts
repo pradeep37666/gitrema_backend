@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
@@ -21,6 +22,7 @@ import {
 } from 'src/menu/schemas/menu-addition.schema';
 import {
   OrderActivityType,
+  OrderPaymentStatus,
   OrderStatus,
   OrderType,
   PreparationStatus,
@@ -443,7 +445,10 @@ export class OrderHelperService {
           OrderActivityType.OrderReady,
           order.orderReadyTime,
         );
-      } else if (dto.status == OrderStatus.Cancelled) {
+      } else if (
+        dto.status == OrderStatus.Cancelled ||
+        dto.status == OrderStatus.CancelledWihPaymentFailed
+      ) {
         // this.storeOrderStateActivity(
         //   order,
         //   OrderActivityType.OrderReady,

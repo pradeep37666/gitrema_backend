@@ -14,11 +14,12 @@ import * as moment from 'moment';
 import { CalculationType } from 'src/core/Constants/enum';
 import { ApplicationType } from 'src/offer/enum/en.enum';
 import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
-import { OrderStatus } from './enum/en.enum';
+import { OrderPaymentStatus, OrderStatus, OrderType } from './enum/en.enum';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { OrderService } from './order.service';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class CalculationService {
@@ -613,5 +614,30 @@ export class CalculationService {
         lastOrder.preparationDetails.kitchenSortingNumber + 1;
     }
     return preparationDetails;
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async cancelUnPaidOrders() {
+    console.log(`Cancel Unpaid Order Cron Started at: ${new Date()}`);
+    const orders = await this.orderModel.find({
+      status: OrderStatus.New,
+      orderType: { $in: [OrderType.Delivery, OrderType.Pickup] },
+      paymentStatus: OrderPaymentStatus.Pending,
+    });
+    const currentDate = moment.utc();
+    for (const i in orders) {
+      const orderDatePost10Mins = moment
+        .utc(orders[i].createdAt.toString())
+        .add('10', 'minutes');
+      if (currentDate.isSameOrAfter(orderDatePost10Mins)) {
+        console.log(
+          `OrderId -- ${orders[i]._id} CurrentDate -- ${currentDate} OrderDate -- ${orders[i].createdAt}`,
+        );
+        this.orderService.update(null, orders[i]._id, {
+          status: OrderStatus.CancelledWihPaymentFailed,
+        });
+      }
+    }
+    console.log(`Cancel Unpaid Order Cron Completed at: ${new Date()}`);
   }
 }
