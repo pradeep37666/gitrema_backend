@@ -626,16 +626,18 @@ export class CalculationService {
     });
     const currentDate = moment.utc();
     for (const i in orders) {
-      const orderDatePost10Mins = moment
-        .utc(orders[i].createdAt.toString())
-        .add('10', 'minutes');
-      if (currentDate.isSameOrAfter(orderDatePost10Mins)) {
-        console.log(
-          `OrderId -- ${orders[i]._id} CurrentDate -- ${currentDate} OrderDate -- ${orders[i].createdAt}`,
-        );
-        this.orderService.update(null, orders[i]._id, {
-          status: OrderStatus.CancelledWihPaymentFailed,
-        });
+      if (orders[i].transactions.length > 0) {
+        const orderDatePost10Mins = moment
+          .utc(orders[i].createdAt.toString())
+          .add('10', 'minutes');
+        if (currentDate.isSameOrAfter(orderDatePost10Mins)) {
+          console.log(
+            `OrderId -- ${orders[i]._id} CurrentDate -- ${currentDate} OrderDate -- ${orders[i].createdAt}`,
+          );
+          this.orderService.update(null, orders[i]._id, {
+            status: OrderStatus.CancelledWihPaymentFailed,
+          });
+        }
       }
     }
     console.log(`Cancel Unpaid Order Cron Completed at: ${new Date()}`);
