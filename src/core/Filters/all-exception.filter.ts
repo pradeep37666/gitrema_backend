@@ -42,9 +42,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const res: any = exception.getResponse();
       console.log(res.message);
       const lang = req.headers.lang ?? 'en';
-      if (res) {
+      if (res && res.message) {
         let messageKey = res.message;
-        const parts = res.message.split('__');
+        const parts = res.message?.toString()?.split('__');
         if (parts.length > 1) {
           messageKey = parts[0];
         }
@@ -57,6 +57,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
             }
           }
           responseBody.message = message;
+        } else {
+          responseBody.message = res.message;
         }
       }
     }
