@@ -123,14 +123,18 @@ export class PaymentService {
         cashierId,
       });
 
+      let paymentStatus = {};
+      if (
+        order.paymentStatus == OrderPaymentStatus.NotPaid &&
+        paymentRequestDetails.paymentMethod == PaymentMethod.Online
+      ) {
+        paymentStatus = { paymentStatus: OrderPaymentStatus.Pending };
+      }
       this.orderService.generalUpdate(req, paymentRequestDetails.orderId, {
         $push: {
           transactions: transaction._id,
         },
-        paymentStatus:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Online
-            ? OrderPaymentStatus.Pending
-            : OrderPaymentStatus.NotPaid,
+        ...paymentStatus,
       });
     } else {
       transaction.set({
