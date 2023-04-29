@@ -127,6 +127,10 @@ export class PaymentService {
         $push: {
           transactions: transaction._id,
         },
+        paymentStatus:
+          paymentRequestDetails.paymentMethod == PaymentMethod.Online
+            ? OrderPaymentStatus.Pending
+            : OrderPaymentStatus.NotPaid,
       });
     } else {
       transaction.set({
