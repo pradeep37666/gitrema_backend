@@ -34,12 +34,15 @@ export class QueryOrderDto {
 
   @ApiProperty({
     required: false,
-    enum: OrderPaymentStatus,
-    enumName: 'OrderPaymentStatus',
+    type: String,
+    example: 'Pending,Not Paid',
   })
-  @IsEnum(OrderPaymentStatus)
   @IsOptional()
-  paymentStatus: OrderPaymentStatus;
+  @IsArray()
+  @IsString({ each: true })
+  @Type(() => String)
+  @Transform(({ value }) => value.toString().split(','))
+  paymentStatus: OrderPaymentStatus[];
 
   @ApiProperty({
     required: false,
