@@ -219,5 +219,5 @@ export class CreateRestaurantDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  pickupId: string;
+  pickupId?: string;
 }
