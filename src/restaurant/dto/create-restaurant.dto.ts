@@ -215,4 +215,9 @@ export class CreateRestaurantDto {
   @ApiProperty({ type: LocationDto, required: false })
   @IsOptional()
   location?: LocationDto;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  pickupId: string;
 }
