@@ -31,8 +31,9 @@ export class DeliveryService {
       order.restaurantId?.location?.longitude
     ) {
       const payload: AddOrder = {
-        pickup_lat: order.restaurantId.location.latitude,
-        pickup_lng: order.restaurantId.location.longitude,
+        pickup_id: order.restaurantId?.pickupId,
+        // pickup_lat: order.restaurantId.location.latitude,
+        // pickup_lng: order.restaurantId.location.longitude,
         lat: order.deliveryAddress.latitude,
         lng: order.deliveryAddress.longitude,
         preparation_time: order.preparationDetails.preparationTime,

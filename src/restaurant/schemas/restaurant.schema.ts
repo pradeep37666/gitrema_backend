@@ -136,6 +136,11 @@ export class Restaurant {
     default: null,
   })
   importId: ImportDocument;
+
+  @Prop({
+    default: null,
+  })
+  pickupId: string;
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant);
