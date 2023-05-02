@@ -23,7 +23,11 @@ export class DeliveryService {
     private readonly yallowService: YallowService,
   ) {}
   async create(order: OrderDocument) {
-    await order.populate([{ path: 'restaurantId' }, { path: 'customerId' }]);
+    await order.populate([
+      { path: 'supplierId' },
+      { path: 'restaurantId' },
+      { path: 'customerId' },
+    ]);
     if (
       order.deliveryAddress?.latitude &&
       order.deliveryAddress?.longitude &&
@@ -31,7 +35,7 @@ export class DeliveryService {
       order.restaurantId?.location?.longitude
     ) {
       const payload: AddOrder = {
-        pickup_id: order.restaurantId?.pickupId,
+        //pickup_id: order.restaurantId?.pickupId,
         // pickup_lat: order.restaurantId.location.latitude,
         // pickup_lng: order.restaurantId.location.longitude,
         lat: order.deliveryAddress.latitude,
@@ -40,6 +44,14 @@ export class DeliveryService {
         customer_name: order.name ?? order.customerId?.name,
         customer_phone: order.contactNumber ?? order.customerId?.phoneNumber,
         client_order_id: order._id.toString(),
+        ingr_shop_id: order.supplierId?._id.toString(),
+        ingr_shop_name: order.supplierId?.name,
+        ingr_branch_id: order.restaurantId?._id.toString(),
+        ingr_branch_name: order.restaurantId?.name,
+        ingr_branch_lat: order.restaurantId?.location.latitude,
+        ingr_branch_lng: order.restaurantId?.location.longitude,
+        ingr_branch_phone: order.restaurantId?.whatsappNumber,
+        Ingr_logo: order.supplierId?.logo,
       };
       const response = await this.yallowService.addOrder(payload);
       await this.deliveryModel.create({
