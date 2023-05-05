@@ -174,23 +174,26 @@ export class TransactionService {
               : OrderStatus.Closed;
             dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
             dataToUpdate.paymentTime = new Date();
-
-            await this.invoiceService.create(req, {
-              orderId: order._id,
-              type: InvoiceType.Invoice,
-            });
-
-            if (order.orderType == OrderType.Delivery)
-              this.deliveryService.create(order);
+          }
+          order.set(dataToUpdate);
+          await order.save();
+          if (order.paymentStatus == OrderPaymentStatus.Paid) {
+            try {
+              await this.invoiceService.create(req, {
+                orderId: order._id,
+                type: InvoiceType.Invoice,
+              });
+            } catch (err) {
+              console.log(err);
+            }
 
             this.orderNotificationService.triggerOrderNotification(
               OrderEvents.OrderPaid,
               order,
             );
+            if (order.orderType == OrderType.Delivery)
+              this.deliveryService.create(order);
           }
-          order.set(dataToUpdate);
-          await order.save();
-
           this.orderHelperService.postOrderUpdate(order, dataToUpdate);
 
           // update table log
