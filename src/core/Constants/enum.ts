@@ -349,6 +349,7 @@ export enum VehicleTypes {
 }
 export enum ListType {
   TableRegion = 'Table Region',
+  MaterialCategory = 'Material Category',
 }
 export enum ListStatus {
   Active = 'Active',
