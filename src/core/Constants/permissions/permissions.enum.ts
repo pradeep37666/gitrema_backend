@@ -1,3 +1,4 @@
+import { UnitOfMeasure } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 export enum PermissionSubject {
   ALL = 'ALL',
   Admin = 'Admin',
@@ -35,6 +36,11 @@ export enum PermissionSubject {
   GlobalConfig = 'Global Config',
   Report = 'Report',
   Delivery = 'Delivery',
+  Vendor = 'Vendor',
+  Material = 'Material',
+  PurchaseOrder = 'Purchase Order',
+  GoodsReceipt = 'Goods Receipt',
+  UnitOfMeasure = 'Units Of Measure',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
@@ -42,6 +48,7 @@ export enum SubjectsRestrictedForSupplier {
   ScreenDisplay = 'Screen Display',
   Feature = 'Feature',
   Package = 'Package',
+  UnitOfMeasure = 'Units Of Measure',
 }
 export enum CommonPermissions {
   LIST = 'LIST',

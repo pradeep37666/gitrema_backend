@@ -18,7 +18,7 @@ import { SupplierModule } from './supplier/Supplier.module';
 import { RoleModule } from './role/role.module';
 import { EnumModule } from './enum/enum.module';
 import { TransactionModule } from './transaction/transaction.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionGuard } from './permission/permission.guard';
 
@@ -60,6 +60,21 @@ import { DeliveryModule } from './delivery/delivery.module';
 import taqnyatSmsConfiguration from './config/taqnyat-sms.configuration';
 import yallowDeliveryConfiguration from './config/yallow-delivery.configuration';
 import { NotificationModule } from './notification/notification.module';
+import { GooglePlacesModule } from './google-places/google-places.module';
+import * as path from 'path';
+import {
+  AcceptLanguageResolver,
+  I18nJsonLoader,
+  I18nModule,
+  HeaderResolver,
+} from 'nestjs-i18n';
+import { AllExceptionsFilter } from './core/Filters/all-exception.filter';
+import { VendorModule } from './vendor/vendor.module';
+import { MaterialModule } from './material/material.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { PurchaseOrderModule } from './purchase-order/purchase-order.module';
+import { UnitOfMeasureModule } from './unit-of-measure/unit-of-measure.module';
+import { GoodsReceiptModule } from './goods-receipt/goods-receipt.module';
 
 @Module({
   imports: [
@@ -86,6 +101,17 @@ import { NotificationModule } from './notification/notification.module';
     PuppeteerModule.forRoot({
       isGlobal: true,
       executablePath: '/usr/bin/google-chrome',
+    }),
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+      resolvers: [
+        { use: HeaderResolver, options: ['lang'] },
+        AcceptLanguageResolver,
+      ],
     }),
     AuthModule,
     UserModule,
@@ -127,6 +153,14 @@ import { NotificationModule } from './notification/notification.module';
     AdminModule,
     DeliveryModule,
     NotificationModule,
+    GooglePlacesModule,
+    VendorModule,
+    MaterialModule,
+
+    InventoryModule,
+    PurchaseOrderModule,
+    GoodsReceiptModule,
+    UnitOfMeasureModule,
   ],
   controllers: [AppController],
   providers: [
@@ -137,6 +171,10 @@ import { NotificationModule } from './notification/notification.module';
     },
     { provide: APP_GUARD, useClass: PermissionGuard },
     Logger,
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
   ],
 })
 export class AppModule {}

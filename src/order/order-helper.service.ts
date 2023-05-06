@@ -55,6 +55,7 @@ import { CustomerService } from 'src/customer/customer.service';
 import { OrderEvents } from 'src/notification/enum/en.enum';
 import { DeliveryService } from 'src/delivery/delivery.service';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { InventoryHelperService } from 'src/inventory/inventory-helper.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -84,6 +85,7 @@ export class OrderHelperService {
     private readonly orderNotificationService: OrderNotificationService,
     private readonly customerService: CustomerService,
     private readonly deliveryService: DeliveryService,
+    private readonly inventoryHelperService: InventoryHelperService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -506,6 +508,12 @@ export class OrderHelperService {
         menuItem.quantities[index].quantity -= items[i].quantity;
         if (menuItem.quantities[index].quantity == 0) menuItem.soldOut = true;
         menuItem.save();
+
+        this.inventoryHelperService.handlePostSale({
+          restaurantId: order.restaurantId.toString(),
+          menuItemId: menuItem._id.toString(),
+          quantitiesSold: items[i].quantity,
+        });
       }
     }
   }
