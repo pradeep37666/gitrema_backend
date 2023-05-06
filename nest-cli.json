@@ -3,7 +3,11 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "assets": ["**/*.hbs", "**/*.html"],
+    "assets": [
+      "**/*.hbs",
+      "**/*.html",
+      { "include": "i18n/**/*", "watchAssets": true }
+    ],
     "watchAssets": true
   }
 }
