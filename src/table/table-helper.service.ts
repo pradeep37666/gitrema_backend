@@ -11,6 +11,7 @@ import { Order, OrderDocument } from 'src/order/schemas/order.schema';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { TableStatus } from './enum/en.enum';
+import { OrderStatus } from 'src/order/enum/en.enum';
 
 @Injectable()
 export class TableHelperService {
@@ -37,6 +38,13 @@ export class TableHelperService {
         {
           $match: {
             _id: { $in: tableLog.orders },
+            status: {
+              $nin: [
+                OrderStatus.Cancelled,
+                OrderStatus.CancelledWihPaymentFailed,
+                OrderStatus.Closed,
+              ],
+            },
           },
         },
         {
