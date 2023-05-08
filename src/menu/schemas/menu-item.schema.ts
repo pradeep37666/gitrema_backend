@@ -131,10 +131,13 @@ export class MenuItem {
   })
   additions: MenuAdditionDocument[];
 
-  @Prop({ type: String, enum: MenuSticker })
+  @Prop({ type: String, enum: Object.values(MenuSticker).concat([null]) })
   sticker: MenuSticker;
 
-  @Prop({ type: [String], enum: MenuStickerStyle })
+  @Prop({
+    type: [String],
+    enum: Object.values(MenuStickerStyle).concat([null]),
+  })
   stickerStyle: MenuStickerStyle[];
 
   @Prop({ default: true })
