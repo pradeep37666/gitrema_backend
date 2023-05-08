@@ -14,12 +14,16 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
+import { QueryMenuCategoryDto } from '../dto/query-menu-category.dto';
+import { MenuItem, MenuItemDocument } from '../schemas/menu-item.schema';
 
 @Injectable()
 export class MenuCategoryService {
   constructor(
     @InjectModel(MenuCategory.name)
     private readonly menuCategoryModel: Model<MenuCategoryDocument>,
+    @InjectModel(MenuItem.name)
+    private readonly menuItemModel: Model<MenuItemDocument>,
     @InjectModel(MenuCategory.name)
     private readonly menuCategoryModelPag: PaginateModel<MenuCategoryDocument>,
   ) {}
@@ -45,12 +49,33 @@ export class MenuCategoryService {
 
   async findAll(
     req: any,
+    query: QueryMenuCategoryDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<MenuCategoryDocument>> {
+    let idFilter = {};
+    if (query.fetchCategoriesHavingItems) {
+      const menuItems = await this.menuItemModel.find(
+        {
+          supplierId: req.user.supplierId,
+          deletedAt: null,
+          active: true,
+        },
+        { categoryId: 1 },
+      );
+      if (menuItems.length > 0)
+        idFilter = {
+          _id: {
+            $in: menuItems.map((mi) => {
+              return mi.categoryId;
+            }),
+          },
+        };
+    }
     const menuCategorys = await this.menuCategoryModelPag.paginate(
       {
         supplierId: req.user.supplierId,
         deletedAt: null,
+        ...idFilter,
       },
       {
         sort: paginateOptions.sortBy
