@@ -53,6 +53,7 @@ export class MenuCategoryService {
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<MenuCategoryDocument>> {
     let idFilter = {};
+
     if (query.fetchCategoriesHavingItems) {
       const menuItems = await this.menuItemModel.find(
         {
@@ -62,15 +63,16 @@ export class MenuCategoryService {
         },
         { categoryId: 1 },
       );
-      if (menuItems.length > 0)
-        idFilter = {
-          _id: {
-            $in: menuItems.map((mi) => {
-              return mi.categoryId;
-            }),
-          },
-        };
+
+      idFilter = {
+        _id: {
+          $in: menuItems.map((mi) => {
+            return mi.categoryId;
+          }),
+        },
+      };
     }
+
     const menuCategorys = await this.menuCategoryModelPag.paginate(
       {
         supplierId: req.user.supplierId,
