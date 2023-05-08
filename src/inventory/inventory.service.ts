@@ -97,7 +97,7 @@ export class InventoryService {
     const inventories = await this.inventoryModelPag.paginate(
       {
         ...queryToApply,
-        //supplierId: req.user.supplierId,
+        supplierId: req.user.supplierId,
       },
       {
         sort: DefaultSort,
