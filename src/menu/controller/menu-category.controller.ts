@@ -22,6 +22,7 @@ import {
 } from '../dto/menu-category.dto';
 import { MenuCategoryDocument } from '../schemas/menu-category.schema';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { QueryMenuCategoryDto } from '../dto/query-menu-category.dto';
 
 @Controller('menu-category')
 @ApiTags('Menu Categories')
@@ -43,9 +44,10 @@ export class MenuCategoryController {
   @PermissionGuard(PermissionSubject.MenuCategory, Permission.Common.LIST)
   async findAll(
     @Req() req,
+    @Query() query: QueryMenuCategoryDto,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<MenuCategoryDocument>> {
-    return await this.menuCategoryService.findAll(req, paginateOptions);
+    return await this.menuCategoryService.findAll(req, query, paginateOptions);
   }
 
   @Get(':menuCategoryId')
