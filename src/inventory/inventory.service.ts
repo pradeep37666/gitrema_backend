@@ -97,7 +97,7 @@ export class InventoryService {
     const inventories = await this.inventoryModelPag.paginate(
       {
         ...queryToApply,
-        supplierId: req.user.supplierId,
+        //supplierId: req.user.supplierId,
       },
       {
         sort: DefaultSort,
@@ -110,10 +110,12 @@ export class InventoryService {
     for (const i in inventories.docs) {
       const docObject: any = inventories.docs[i];
       docObject.convertedUomInventory = [];
+      const uomBase = docObject.uomBase;
+
       for (const j in docObject.uomInventory) {
         const convert =
           await this.unitOfMeasureHelperService.getConversionFactor(
-            docObject.uomBase,
+            uomBase,
             docObject.uomInventory[j],
           );
 

@@ -34,8 +34,7 @@ export class UnitOfMeasureHelperService {
       AllMeasuresSystems,
       AllMeasuresUnits
     >(allMeasures);
-    console.log('12', sourceUomId);
-    console.log('34', targetUomId);
+
     const unitOfMeasures = await this.unitOfMeasureModel
       .find(
         { _id: { $in: [sourceUomId, targetUomId] } },
@@ -49,27 +48,34 @@ export class UnitOfMeasureHelperService {
         },
       )
       .populate([{ path: 'baseUnit' }]);
-    console.log(unitOfMeasures);
+    // console.log(unitOfMeasures);
     const sourceUom = unitOfMeasures.find((uom) => {
-      return uom._id.toString() == sourceUomId;
+      return uom._id.toString() == sourceUomId?.toString();
     });
-    console.log(sourceUom);
+    // console.log(sourceUom);
     const targetUom = unitOfMeasures.find((uom) => {
-      return uom._id.toString() == targetUomId;
+      return uom._id.toString() == targetUomId?.toString();
     });
-    console.log(targetUom);
+    // console.log(targetUom);
 
+    if (!sourceUom || !targetUom) {
+      return {
+        conversionFactor: 1,
+        sourceUom,
+        targetUom,
+      };
+    }
     const sourceUomAbbr = sourceUom.baseUnit
-      ? sourceUom.baseUnit.abbr
+      ? sourceUom.baseUnit?.abbr
       : sourceUom.abbr;
     const targetUomAbbr = targetUom.baseUnit
-      ? targetUom.baseUnit.abbr
+      ? targetUom.baseUnit?.abbr
       : targetUom.abbr;
     const sourceBaseValue = sourceUom.baseUnit
-      ? sourceUom.baseUnit.baseConversionRate
+      ? sourceUom.baseUnit?.baseConversionRate
       : 1;
     const targetBaseValue = targetUom.baseUnit
-      ? targetUom.baseUnit.baseConversionRate
+      ? targetUom.baseUnit?.baseConversionRate
       : 1;
 
     const conversionFactor: number =
