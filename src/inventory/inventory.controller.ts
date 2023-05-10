@@ -22,6 +22,8 @@ import { PaginateResult } from 'mongoose';
 import { InventoryDocument } from './schemas/inventory.schema';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { QueryInventoryHistoryDto } from './dto/query-inventory-history.dto';
+import { TransferInventoryDto } from './dto/transfer-inventory.dto';
 
 @Controller('inventory')
 @ApiTags('Inventory')
@@ -34,6 +36,16 @@ export class InventoryController {
   @PermissionGuard(PermissionSubject.Material, Permission.Common.CREATE)
   async create(@Req() req, @Body() dto: CreateInventoryDto) {
     return await this.inventoryService.create(req, dto);
+  }
+
+  @Post('transfer')
+  @PermissionGuard(PermissionSubject.Material, Permission.Common.CREATE)
+  async transfer(
+    @Req() req,
+    @Body() dto: TransferInventoryDto,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.inventoryService.transferInventory(req, dto, i18n);
   }
 
   @Get()
@@ -53,6 +65,20 @@ export class InventoryController {
     @I18n() i18n: I18nContext,
   ) {
     return await this.inventoryService.findOne(inventoryId, i18n);
+  }
+
+  @Get('history')
+  @PermissionGuard(PermissionSubject.Material, Permission.Common.FETCH)
+  async history(
+    @Req() req,
+    @Query() query: QueryInventoryHistoryDto,
+    @Query() paginateOptions: PaginationDto,
+  ) {
+    return await this.inventoryService.fetchHistory(
+      req,
+      query,
+      paginateOptions,
+    );
   }
 
   @Patch(':inventoryId')

@@ -20,6 +20,12 @@ import {
 } from 'src/material/schemas/material.schema';
 import { CalculatedInventory } from './interface/calculated-inventory.interface';
 import { UnitOfMeasureHelperService } from '../unit-of-measure/unit-of-measure-helper.service';
+import { GoodsReceiptDocument } from 'src/goods-receipt/schemas/goods-receipt.schema';
+import {
+  InventoryHistory,
+  InventoryHistoryDocument,
+} from './schemas/inventory-history.schema';
+import { TransferInventoryDto } from './dto/transfer-inventory.dto';
 
 @Injectable()
 export class InventoryHelperService {
@@ -32,42 +38,50 @@ export class InventoryHelperService {
     private readonly menuItemModel: Model<MenuItemDocument>,
     @InjectModel(Material.name)
     private readonly materialModel: Model<MaterialDocument>,
+    @InjectModel(InventoryHistory.name)
+    private readonly inventoryHistoryModel: Model<InventoryHistoryDocument>,
     @Inject(forwardRef(() => UnitOfMeasureHelperService))
     private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
   ) {}
 
-  async processInventoryChanges(
-    req,
-    restaurantId: string,
-    items: MaterialItemDocument[],
-  ) {
-    for (const i in items) {
-      let inventoryItem: InventoryDocument = await this.inventoryModel.findOne({
-        restaurantId,
-        materialId: items[i].materialId,
-      });
+  async processInventoryChanges(req, goodsReceipt: GoodsReceiptDocument) {
+    for (const i in goodsReceipt.items) {
+      let inventoryItem: InventoryDocument = await this.inventoryModel
+        .findOne({
+          restaurantId: goodsReceipt.restaurantId,
+          materialId: goodsReceipt.items[i].materialId,
+        })
+        .populate([{ path: 'materialId' }]);
       if (!inventoryItem) {
         inventoryItem = await this.inventoryService.create(req, {
-          restaurantId,
-          averageCost: items[i].cost,
-          ...items[i].toObject(),
+          restaurantId: goodsReceipt.restaurantId,
+          averageCost: goodsReceipt.items[i].cost,
+          ...goodsReceipt.items[i].toObject(),
           isFirstGoodsReceipt: true,
         });
-      } else {
-        await inventoryItem.populate([{ path: 'materialId' }]);
-        const calculatedInventory = await this.calculateInventoryItem(
-          inventoryItem,
-          items[i].toObject(),
-          InventoryAction.GoodsReceipt,
-        );
-        inventoryItem = await this.saveInventory(
-          inventoryItem,
-          calculatedInventory,
-          InventoryAction.GoodsReceipt,
-        );
-        this.applyToMenuItem(inventoryItem);
       }
+      const calculatedInventory = await this.calculateInventoryItem(
+        inventoryItem,
+        goodsReceipt.items[i].toObject(),
+        InventoryAction.GoodsReceipt,
+      );
+      inventoryItem = await this.saveInventory(
+        inventoryItem,
+        calculatedInventory,
+        InventoryAction.GoodsReceipt,
+      );
+      goodsReceipt.items[i].baseUom = inventoryItem.materialId.uomBase;
+      goodsReceipt.items[i].baseUomStock =
+        goodsReceipt.items[i].stock * calculatedInventory.conversionFactor;
+      goodsReceipt.items[i].baseUomCost =
+        goodsReceipt.items[i].cost * calculatedInventory.conversionFactor;
+
+      this.applyToMenuItem(inventoryItem);
+      this.applyToMenuItem(inventoryItem);
+      this.applyToMenuItem(inventoryItem);
     }
+    await goodsReceipt.save();
+    return goodsReceipt;
   }
 
   async calculateInventoryItem(
@@ -84,12 +98,17 @@ export class InventoryHelperService {
       stock: inventoryItem.stock,
       averageCost: inventoryItem.averageCost,
       stockValue: inventoryItem.stockValue,
+      conversionFactor: 1,
     };
     const convert = await this.unitOfMeasureHelperService.getConversionFactor(
       item.uom,
       inventoryItem.materialId.uomBase,
     );
+    if (action == InventoryAction.ReceivedWithTransfer) {
+      item.cost = item.cost * convert.conversionFactor;
+    }
     switch (action) {
+      case InventoryAction.ReceivedWithTransfer:
       case InventoryAction.GoodsReceipt:
         calculatedInventory.stock =
           inventoryItem.stock + item.stock * convert.conversionFactor;
@@ -99,6 +118,14 @@ export class InventoryHelperService {
             item.cost * item.stock) /
           calculatedInventory.stock;
         break;
+
+      case InventoryAction.SentWithTransfer:
+        calculatedInventory.stock =
+          inventoryItem.stock - item.stock * convert.conversionFactor;
+        console.log(calculatedInventory);
+
+        break;
+
       case InventoryAction.ItemSold:
         calculatedInventory.stock =
           inventoryItem.stock - item.stock * convert.conversionFactor;
@@ -114,7 +141,69 @@ export class InventoryHelperService {
     calculatedInventory.stockValue = roundOffNumber(
       calculatedInventory.stock * calculatedInventory.averageCost,
     );
+    calculatedInventory.conversionFactor = convert.conversionFactor;
     return calculatedInventory;
+  }
+
+  async applyTransferRequest(
+    req,
+    sourceInventoryItem: InventoryDocument,
+    transferDetails: TransferInventoryDto,
+  ) {
+    let targetInventoryItem: InventoryDocument = await this.inventoryModel
+      .findOne({
+        restaurantId: transferDetails.targetRestaurantId,
+        materialId: transferDetails.materialId,
+      })
+      .populate([{ path: 'materialId' }]);
+
+    if (!targetInventoryItem) {
+      targetInventoryItem = await this.inventoryService.create(req, {
+        restaurantId: transferDetails.targetRestaurantId,
+        materialId: transferDetails.materialId,
+        stock: 0,
+        averageCost: 0,
+        storageArea: null,
+        uom: transferDetails.uom,
+      });
+    }
+    const calculatedInventory = await this.calculateInventoryItem(
+      targetInventoryItem,
+      {
+        ...transferDetails,
+        cost: sourceInventoryItem.averageCost,
+      },
+      InventoryAction.ReceivedWithTransfer,
+    );
+
+    console.log('########', calculatedInventory);
+
+    targetInventoryItem = await this.saveInventory(
+      targetInventoryItem,
+      calculatedInventory,
+      InventoryAction.ReceivedWithTransfer,
+    );
+
+    this.applyToMenuItem(targetInventoryItem);
+
+    const sourceCalculatedInventory = await this.calculateInventoryItem(
+      sourceInventoryItem,
+      {
+        ...transferDetails,
+        cost: sourceInventoryItem.averageCost,
+      },
+      InventoryAction.SentWithTransfer,
+    );
+
+    sourceInventoryItem = await this.saveInventory(
+      sourceInventoryItem,
+      sourceCalculatedInventory,
+      InventoryAction.SentWithTransfer,
+    );
+
+    this.applyToMenuItem(sourceInventoryItem);
+
+    return { sourceInventoryItem, targetInventoryItem };
   }
 
   async applyToMenuItem(inventoryItem: InventoryDocument) {
@@ -193,7 +282,23 @@ export class InventoryHelperService {
       stockValue: calculatedInventory.stockValue,
     });
     await inventory.save();
-    console.log('After Save', inventory);
+    this.saveHistory(inventory, calculatedInventory, action);
     return inventory;
+  }
+
+  async saveHistory(
+    inventory: InventoryDocument,
+    calculatedInventory: CalculatedInventory,
+    action: InventoryAction,
+  ) {
+    await this.inventoryHistoryModel.create({
+      supplierId: inventory.supplierId,
+      restaurantId: inventory.restaurantId,
+      materialId: inventory.materialId,
+      uomBase: inventory.uomBase,
+      uomInventory: inventory.uomInventory,
+      ...calculatedInventory,
+      action,
+    });
   }
 }

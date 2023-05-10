@@ -30,10 +30,9 @@ export class GoodsReceiptHelperService {
   ) {}
 
   async postGoodsReceiptCreate(req, goodsReceipt: GoodsReceiptDocument) {
-    this.inventoryHelperService.processInventoryChanges(
+    return await this.inventoryHelperService.processInventoryChanges(
       req,
-      goodsReceipt.restaurantId.toString(),
-      goodsReceipt.items,
+      goodsReceipt,
     );
   }
 

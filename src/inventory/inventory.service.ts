@@ -24,6 +24,12 @@ import {
 import { UnitOfMeasureHelperService } from 'src/unit-of-measure/unit-of-measure-helper.service';
 import { InventoryHelperService } from './inventory-helper.service';
 import { InventoryAction } from './enum/en';
+import { QueryInventoryHistoryDto } from './dto/query-inventory-history.dto';
+import {
+  InventoryHistory,
+  InventoryHistoryDocument,
+} from './schemas/inventory-history.schema';
+import { TransferInventoryDto } from './dto/transfer-inventory.dto';
 
 @Injectable()
 export class InventoryService {
@@ -32,6 +38,8 @@ export class InventoryService {
     private readonly inventoryModel: Model<InventoryDocument>,
     @InjectModel(Inventory.name)
     private readonly inventoryModelPag: PaginateModel<InventoryDocument>,
+    @InjectModel(InventoryHistory.name)
+    private readonly inventoryHistoryModelPag: PaginateModel<InventoryHistoryDocument>,
     @InjectModel(Material.name)
     private readonly materialModel: Model<MaterialDocument>,
     @Inject(forwardRef(() => InventoryHelperService))
@@ -58,27 +66,6 @@ export class InventoryService {
     });
     inventory.materialId = material;
 
-    const calculatedInventory =
-      await this.inventoryHelperService.calculateInventoryItem(
-        inventory,
-        {
-          stock: dto.stock,
-          cost: dto.averageCost,
-          uom: dto.uom,
-        },
-        dto.isFirstGoodsReceipt
-          ? InventoryAction.GoodsReceipt
-          : InventoryAction.ManualCount,
-      );
-
-    inventory = await this.inventoryHelperService.saveInventory(
-      inventory,
-      calculatedInventory,
-      dto.isFirstGoodsReceipt
-        ? InventoryAction.GoodsReceipt
-        : InventoryAction.ManualCount,
-    );
-    this.inventoryHelperService.applyToMenuItem(inventory);
     return inventory;
   }
 
@@ -131,6 +118,60 @@ export class InventoryService {
     }
     inventories.docs = response;
     return inventories;
+  }
+
+  async fetchHistory(
+    req: any,
+    query: QueryInventoryHistoryDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<InventoryHistoryDocument>> {
+    let queryToApply: any = query;
+    if (query.filter) {
+      //delete queryToApply.filter;
+      const parser = new MongooseQueryParser();
+      const parsed = parser.parse(`${query.filter}`);
+      queryToApply = { ...queryToApply, ...parsed.filter };
+    }
+    const records = await this.inventoryHistoryModelPag.paginate(
+      {
+        ...queryToApply,
+        supplierId: req.user.supplierId,
+      },
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+
+    return records;
+  }
+
+  async transferInventory(req, dto: TransferInventoryDto, i18n: I18nContext) {
+    const inventory = await this.inventoryModel
+      .findOne({
+        restaurantId: dto.sourceRestaurantId,
+        materialId: dto.materialId,
+      })
+      .populate([{ path: 'materialId' }]);
+    if (!inventory) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+
+    const convert = await this.unitOfMeasureHelperService.getConversionFactor(
+      inventory.uomBase,
+      dto.uom,
+    );
+    if (convert.conversionFactor * inventory.stock < dto.stock) {
+      throw new NotFoundException(`Not enough stock to transfer`);
+    }
+
+    return await this.inventoryHelperService.applyTransferRequest(
+      req,
+      inventory,
+      dto,
+    );
   }
 
   async findOne(
