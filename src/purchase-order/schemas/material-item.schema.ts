@@ -36,6 +36,19 @@ export class MaterialItem {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
+    ref: 'UnitOfMeasure',
+    index: true,
+  })
+  baseUom: UnitOfMeasureDocument;
+
+  @Prop({})
+  baseUomStock: number;
+
+  @Prop({})
+  baseUomCost: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
     ref: 'List',
     index: true,
     default: null,

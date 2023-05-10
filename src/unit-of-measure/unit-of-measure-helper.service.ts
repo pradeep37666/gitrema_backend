@@ -48,15 +48,15 @@ export class UnitOfMeasureHelperService {
         },
       )
       .populate([{ path: 'baseUnit' }]);
-    // console.log(unitOfMeasures);
+    console.log(unitOfMeasures);
     const sourceUom = unitOfMeasures.find((uom) => {
       return uom._id.toString() == sourceUomId?.toString();
     });
-    // console.log(sourceUom);
+    console.log(sourceUom);
     const targetUom = unitOfMeasures.find((uom) => {
       return uom._id.toString() == targetUomId?.toString();
     });
-    // console.log(targetUom);
+    console.log(targetUom);
 
     if (!sourceUom || !targetUom) {
       return {
@@ -72,14 +72,14 @@ export class UnitOfMeasureHelperService {
       ? targetUom.baseUnit?.abbr
       : targetUom.abbr;
     const sourceBaseValue = sourceUom.baseUnit
-      ? sourceUom.baseUnit?.baseConversionRate
+      ? sourceUom.baseConversionRate
       : 1;
     const targetBaseValue = targetUom.baseUnit
-      ? targetUom.baseUnit?.baseConversionRate
+      ? targetUom.baseConversionRate
       : 1;
 
     const conversionFactor: number =
-      convert(sourceBaseValue).from(sourceUomAbbr).to(targetUomAbbr) *
+      convert(sourceBaseValue).from(sourceUomAbbr).to(targetUomAbbr) /
       targetBaseValue;
     console.log('########', sourceUomAbbr, targetUomAbbr, conversionFactor);
     return { conversionFactor, targetUom, sourceUom };

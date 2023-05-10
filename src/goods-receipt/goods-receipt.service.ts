@@ -33,12 +33,16 @@ export class GoodsReceiptService {
     i18n: I18nContext,
   ): Promise<GoodsReceiptDocument> {
     await this.goodReceiptHelperService.validateGoodsReceipt(dto, i18n);
-    const goodsReceipt = await this.goodsReceiptModel.create({
-      ...dto,
-      addedBy: req.user.userId,
-      supplierId: req.user.supplierId,
-    });
-    this.goodReceiptHelperService.postGoodsReceiptCreate(req, goodsReceipt);
+    let goodsReceipt: GoodsReceiptDocument =
+      await this.goodsReceiptModel.create({
+        ...dto,
+        addedBy: req.user.userId,
+        supplierId: req.user.supplierId,
+      });
+    goodsReceipt = await this.goodReceiptHelperService.postGoodsReceiptCreate(
+      req,
+      goodsReceipt,
+    );
     return goodsReceipt;
   }
 
