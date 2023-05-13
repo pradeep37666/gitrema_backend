@@ -41,6 +41,9 @@ export enum PermissionSubject {
   PurchaseOrder = 'Purchase Order',
   GoodsReceipt = 'Goods Receipt',
   UnitOfMeasure = 'Units Of Measure',
+  Inventory = 'Inventory',
+  Recipe = 'Recipe',
+  ProductionEvent = 'ProductionEvent',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',

@@ -3,4 +3,9 @@ export interface CalculatedInventory {
   averageCost: number;
   stockValue: number;
   conversionFactor: number;
+  sourceItemWithBase?: {
+    stock?: number;
+    cost?: number;
+    stockValue?: number;
+  };
 }

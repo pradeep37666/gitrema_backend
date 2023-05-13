@@ -11,7 +11,7 @@ import mongoConfiguration from './config/mongo.configuration';
 import awsConfiguration from './config/aws.configuration';
 import arbPgConfiguration from './config/arb-pg.configuration';
 import mailConfiguration from './config/mail.configuration';
-import asmscSmsConfiguration from './config/asmsc-sms.configuration';
+import firebaseConfiguration from './config/firebase.configuration';
 
 import { UserModule } from './users/users.module';
 import { SupplierModule } from './supplier/Supplier.module';
@@ -75,6 +75,8 @@ import { InventoryModule } from './inventory/inventory.module';
 import { PurchaseOrderModule } from './purchase-order/purchase-order.module';
 import { UnitOfMeasureModule } from './unit-of-measure/unit-of-measure.module';
 import { GoodsReceiptModule } from './goods-receipt/goods-receipt.module';
+import { RecipeModule } from './recipe/recipe.module';
+import { ProductionEventModule } from './production-event/production-event.module';
 
 @Module({
   imports: [
@@ -89,6 +91,7 @@ import { GoodsReceiptModule } from './goods-receipt/goods-receipt.module';
         //asmscSmsConfiguration,
         taqnyatSmsConfiguration,
         yallowDeliveryConfiguration,
+        firebaseConfiguration,
       ],
     }),
     MongooseModule.forRootAsync({
@@ -161,6 +164,8 @@ import { GoodsReceiptModule } from './goods-receipt/goods-receipt.module';
     PurchaseOrderModule,
     GoodsReceiptModule,
     UnitOfMeasureModule,
+    RecipeModule,
+    ProductionEventModule,
   ],
   controllers: [AppController],
   providers: [

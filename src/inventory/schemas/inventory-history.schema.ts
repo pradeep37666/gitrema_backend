@@ -72,7 +72,7 @@ export class InventoryHistory {
   stockValue: number;
 
   @Prop({ default: 0 })
-  averageCost: number;
+  cost: number;
 
   @Prop({ required: true, type: String, enum: InventoryAction })
   action: InventoryAction;
