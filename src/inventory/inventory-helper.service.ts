@@ -26,6 +26,9 @@ import {
   InventoryHistoryDocument,
 } from './schemas/inventory-history.schema';
 import { TransferInventoryDto } from './dto/transfer-inventory.dto';
+import { Recipe, RecipeDocument } from 'src/recipe/schema/recipe.schema';
+import { MaterialType, ProcurementType } from 'src/material/enum/en';
+import { RecipeService } from 'src/recipe/recipe.service';
 
 @Injectable()
 export class InventoryHelperService {
@@ -40,8 +43,11 @@ export class InventoryHelperService {
     private readonly materialModel: Model<MaterialDocument>,
     @InjectModel(InventoryHistory.name)
     private readonly inventoryHistoryModel: Model<InventoryHistoryDocument>,
+    @InjectModel(Recipe.name)
+    private readonly recipeModel: Model<RecipeDocument>,
     @Inject(forwardRef(() => UnitOfMeasureHelperService))
     private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
+    private readonly recipeService: RecipeService,
   ) {}
 
   async processInventoryChanges(req, goodsReceipt: GoodsReceiptDocument) {
@@ -74,10 +80,8 @@ export class InventoryHelperService {
       goodsReceipt.items[i].baseUomStock =
         goodsReceipt.items[i].stock * calculatedInventory.conversionFactor;
       goodsReceipt.items[i].baseUomCost =
-        goodsReceipt.items[i].cost * calculatedInventory.conversionFactor;
+        goodsReceipt.items[i].cost / calculatedInventory.conversionFactor;
 
-      this.applyToMenuItem(inventoryItem);
-      this.applyToMenuItem(inventoryItem);
       this.applyToMenuItem(inventoryItem);
     }
     await goodsReceipt.save();
@@ -94,7 +98,7 @@ export class InventoryHelperService {
     action: InventoryAction,
   ): Promise<CalculatedInventory> {
     console.log('Testing', inventoryItem, item, action);
-    const calculatedInventory = {
+    const calculatedInventory: CalculatedInventory = {
       stock: inventoryItem.stock,
       averageCost: inventoryItem.averageCost,
       stockValue: inventoryItem.stockValue,
@@ -109,6 +113,7 @@ export class InventoryHelperService {
     }
     switch (action) {
       case InventoryAction.ReceivedWithTransfer:
+      case InventoryAction.ProductionEvent:
       case InventoryAction.GoodsReceipt:
         calculatedInventory.stock =
           inventoryItem.stock + item.stock * convert.conversionFactor;
@@ -135,12 +140,19 @@ export class InventoryHelperService {
           calculatedInventory.stock = item.stock * convert.conversionFactor;
         if (item.cost)
           calculatedInventory.averageCost =
-            item.cost * convert.conversionFactor;
+            item.cost / convert.conversionFactor;
         break;
     }
+
     calculatedInventory.stockValue = roundOffNumber(
       calculatedInventory.stock * calculatedInventory.averageCost,
     );
+
+    calculatedInventory.sourceItemWithBase = {
+      stock: item.stock ? item.stock * convert.conversionFactor : null,
+      cost: item.cost ? item.cost / convert.conversionFactor : null,
+      stockValue: item.stock && item.cost ? item.stock * item.cost : null,
+    };
     calculatedInventory.conversionFactor = convert.conversionFactor;
     return calculatedInventory;
   }
@@ -247,27 +259,185 @@ export class InventoryHelperService {
       menuItemId: options.menuItemId,
     });
     if (material) {
-      let inventory: InventoryDocument = await this.inventoryModel.findOne({
+      if (
+        material.materialType == MaterialType.Finished &&
+        material.procurementType == ProcurementType.Purchased
+      )
+        await this.handleFinishedMaterialPostSale(material, options);
+      else if (
+        material.materialType == MaterialType.SemiFinished ||
+        (material.materialType == MaterialType.Finished &&
+          material.procurementType == ProcurementType.Made)
+      )
+        await this.handleSemiFinishedMaterialPostSale(material, options);
+    }
+  }
+
+  async handleFinishedMaterialPostSale(
+    material: MaterialDocument,
+    options: {
+      restaurantId: string;
+
+      quantitiesSold: number;
+    },
+  ) {
+    let inventory: InventoryDocument = await this.inventoryModel.findOne({
+      restaurantId: options.restaurantId,
+      materialId: material._id,
+    });
+    inventory.materialId = material;
+    if (inventory) {
+      const calculatedInventory = await this.calculateInventoryItem(
+        inventory,
+        {
+          stock: options.quantitiesSold,
+          uom: inventory?.materialId?.uomSell?.toString(),
+        },
+        InventoryAction.ItemSold,
+      );
+      await this.saveInventory(
+        inventory,
+        calculatedInventory,
+        InventoryAction.ItemSold,
+      );
+    }
+  }
+
+  async handleSemiFinishedMaterialPostSale(
+    material: MaterialDocument,
+    options: {
+      restaurantId: string;
+
+      quantitiesSold: number;
+      uom?: string;
+    },
+    isProductionEvent = false,
+  ) {
+    const recipe = await this.recipeModel
+      .findOne({
+        masterMaterialId: material._id,
+      })
+      .populate([{ path: 'components.materialId' }]);
+
+    for (const i in recipe.components) {
+      let inventoryItem: InventoryDocument = await this.inventoryModel.findOne({
         restaurantId: options.restaurantId,
-        materialId: material._id,
+        materialId: recipe.components[i].materialId._id,
       });
-      inventory.materialId = material;
-      if (inventory) {
-        const calculatedInventory = await this.calculateInventoryItem(
-          inventory,
+      if (!inventoryItem) {
+        inventoryItem = await this.inventoryService.create(
           {
-            stock: options.quantitiesSold,
-            uom: inventory?.materialId?.uomSell?.toString(),
+            user: {
+              userId: null,
+              supplierId: recipe.components[i].materialId.supplierId,
+            },
           },
-          InventoryAction.ItemSold,
-        );
-        await this.saveInventory(
-          inventory,
-          calculatedInventory,
-          InventoryAction.ItemSold,
+          {
+            restaurantId: options.restaurantId,
+            materialId: recipe.components[i].materialId._id.toString(),
+            stock: 0,
+            averageCost: 0,
+            storageArea: null,
+            uom: recipe.components[i].uom.toString(),
+          },
         );
       }
+      inventoryItem.materialId = recipe.components[i].materialId;
+      let stock =
+        (recipe.components[i].stock * options.quantitiesSold) / recipe.quantity;
+      if (options.uom != recipe.uom.toString()) {
+        const convert =
+          await this.unitOfMeasureHelperService.getConversionFactor(
+            options.uom,
+            recipe.uom,
+          );
+
+        stock *= convert.conversionFactor;
+      }
+      const calculatedInventory = await this.calculateInventoryItem(
+        inventoryItem,
+        {
+          stock,
+          uom: recipe.components[i].uom.toString(),
+        },
+        InventoryAction.ItemSold,
+      );
+
+      console.log('########', calculatedInventory);
+
+      inventoryItem = await this.saveInventory(
+        inventoryItem,
+        calculatedInventory,
+        InventoryAction.ItemSold,
+      );
+
+      this.applyToMenuItem(inventoryItem);
     }
+    if (isProductionEvent) {
+      this.handleSemiFinishedMaterialPostProductionEvent(material, {
+        restaurantId: options.restaurantId,
+        uom: options.uom,
+        stock: options.quantitiesSold,
+      });
+    }
+  }
+
+  async handleSemiFinishedMaterialPostProductionEvent(
+    material: MaterialDocument,
+    options: {
+      stock: number;
+      uom: string;
+      restaurantId: string;
+    },
+  ) {
+    let inventoryItem: InventoryDocument = await this.inventoryModel.findOne({
+      restaurantId: options.restaurantId,
+      materialId: material._id,
+    });
+    if (!inventoryItem) {
+      inventoryItem = await this.inventoryService.create(
+        {
+          user: {
+            userId: null,
+            supplierId: material.supplierId,
+          },
+        },
+        {
+          restaurantId: options.restaurantId,
+          materialId: material._id.toString(),
+          stock: 0,
+          averageCost: 0,
+          storageArea: null,
+          uom: options.uom.toString(),
+        },
+      );
+    }
+    inventoryItem.materialId = material;
+
+    const cost = await this.recipeService.previewPrice({
+      restaurantId: options.restaurantId,
+      materialId: material._id,
+    });
+    console.log('Cost', cost);
+    const calculatedInventory = await this.calculateInventoryItem(
+      inventoryItem,
+      {
+        stock: options.stock,
+        cost: cost,
+        uom: options.uom.toString(),
+      },
+      InventoryAction.ProductionEvent,
+    );
+
+    console.log('########', calculatedInventory);
+
+    inventoryItem = await this.saveInventory(
+      inventoryItem,
+      calculatedInventory,
+      InventoryAction.ProductionEvent,
+    );
+
+    this.applyToMenuItem(inventoryItem);
   }
 
   async saveInventory(
@@ -297,7 +467,8 @@ export class InventoryHelperService {
       materialId: inventory.materialId,
       uomBase: inventory.uomBase,
       uomInventory: inventory.uomInventory,
-      ...calculatedInventory,
+      ...calculatedInventory.sourceItemWithBase,
+      conversionFactor: calculatedInventory.conversionFactor,
       action,
     });
   }

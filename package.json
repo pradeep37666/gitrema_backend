@@ -64,6 +64,8 @@
     "extract-zip": "^2.0.1",
     "fastify-file-interceptor": "^1.0.8",
     "fastify-multer": "^2.0.3",
+    "firebase": "^9.21.0",
+    "firebase-admin": "^11.8.0",
     "handlebars": "^4.7.7",
     "handlebars.moment": "^1.0.4",
     "html2thermal": "^1.0.7",

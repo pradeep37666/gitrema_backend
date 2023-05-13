@@ -508,13 +508,12 @@ export class OrderHelperService {
         menuItem.quantities[index].quantity -= items[i].quantity;
         if (menuItem.quantities[index].quantity == 0) menuItem.soldOut = true;
         menuItem.save();
-
-        this.inventoryHelperService.handlePostSale({
-          restaurantId: order.restaurantId.toString(),
-          menuItemId: menuItem._id.toString(),
-          quantitiesSold: items[i].quantity,
-        });
       }
+      this.inventoryHelperService.handlePostSale({
+        restaurantId: order.restaurantId.toString(),
+        menuItemId: menuItem._id.toString(),
+        quantitiesSold: items[i].quantity,
+      });
     }
   }
 

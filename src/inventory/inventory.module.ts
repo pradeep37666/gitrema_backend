@@ -8,7 +8,12 @@ import { MenuItem, MenuItemSchema } from 'src/menu/schemas/menu-item.schema';
 import { Material, MaterialSchema } from 'src/material/schemas/material.schema';
 import { I18nModule } from 'nestjs-i18n';
 import { UnitOfMeasureModule } from 'src/unit-of-measure/unit-of-measure.module';
-import { InventoryHistory, InventoryHistorySchema } from './schemas/inventory-history.schema';
+import {
+  InventoryHistory,
+  InventoryHistorySchema,
+} from './schemas/inventory-history.schema';
+import { Recipe, RecipeSchema } from 'src/recipe/schema/recipe.schema';
+import { RecipeModule } from 'src/recipe/recipe.module';
 
 @Module({
   imports: [
@@ -17,8 +22,10 @@ import { InventoryHistory, InventoryHistorySchema } from './schemas/inventory-hi
       { name: MenuItem.name, schema: MenuItemSchema },
       { name: Material.name, schema: MaterialSchema },
       { name: InventoryHistory.name, schema: InventoryHistorySchema },
+      { name: Recipe.name, schema: RecipeSchema },
     ]),
     forwardRef(() => UnitOfMeasureModule),
+    RecipeModule,
   ],
   controllers: [InventoryController],
   providers: [InventoryService, InventoryHelperService],

@@ -33,13 +33,13 @@ export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
   @Post()
-  @PermissionGuard(PermissionSubject.Material, Permission.Common.CREATE)
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.CREATE)
   async create(@Req() req, @Body() dto: CreateInventoryDto) {
     return await this.inventoryService.create(req, dto);
   }
 
   @Post('transfer')
-  @PermissionGuard(PermissionSubject.Material, Permission.Common.CREATE)
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.CREATE)
   async transfer(
     @Req() req,
     @Body() dto: TransferInventoryDto,
@@ -49,7 +49,7 @@ export class InventoryController {
   }
 
   @Get()
-  @PermissionGuard(PermissionSubject.Material, Permission.Common.LIST)
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.LIST)
   async findAll(
     @Req() req,
     @Query() query: QueryInventoryDto,
@@ -59,7 +59,7 @@ export class InventoryController {
   }
 
   @Get(':inventoryId')
-  @PermissionGuard(PermissionSubject.Material, Permission.Common.FETCH)
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.FETCH)
   async findOne(
     @Param('inventoryId') inventoryId: string,
     @I18n() i18n: I18nContext,
@@ -68,7 +68,7 @@ export class InventoryController {
   }
 
   @Get('history')
-  @PermissionGuard(PermissionSubject.Material, Permission.Common.FETCH)
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.FETCH)
   async history(
     @Req() req,
     @Query() query: QueryInventoryHistoryDto,
@@ -82,7 +82,7 @@ export class InventoryController {
   }
 
   @Patch(':inventoryId')
-  @PermissionGuard(PermissionSubject.Material, Permission.Common.UPDATE)
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.UPDATE)
   async update(
     @Param('inventoryId') inventoryId: string,
     @Body() dto: UpdateInventoryDto,
@@ -92,7 +92,7 @@ export class InventoryController {
   }
 
   @Delete(':inventoryId')
-  @PermissionGuard(PermissionSubject.Material, Permission.Common.DELETE)
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.DELETE)
   async remove(
     @Param('inventoryId') inventoryId: string,
     @I18n() i18n: I18nContext,
