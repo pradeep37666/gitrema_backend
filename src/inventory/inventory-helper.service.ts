@@ -258,18 +258,21 @@ export class InventoryHelperService {
     const material = await this.materialModel.findOne({
       menuItemId: options.menuItemId,
     });
-    if (material) {
-      if (
-        material.materialType == MaterialType.Finished &&
-        material.procurementType == ProcurementType.Purchased
-      )
+    if (material && material.isQuantityManaged) {
+      const recipe = await this.recipeModel
+        .findOne({
+          masterMaterialId: material._id,
+        })
+        .populate([{ path: 'components.materialId' }]);
+      if (recipe) {
+        await this.handleSemiFinishedMaterialPostSale(
+          material,
+          recipe,
+          options,
+        );
+      } else {
         await this.handleFinishedMaterialPostSale(material, options);
-      else if (
-        material.materialType == MaterialType.SemiFinished ||
-        (material.materialType == MaterialType.Finished &&
-          material.procurementType == ProcurementType.Made)
-      )
-        await this.handleSemiFinishedMaterialPostSale(material, options);
+      }
     }
   }
 
@@ -305,6 +308,7 @@ export class InventoryHelperService {
 
   async handleSemiFinishedMaterialPostSale(
     material: MaterialDocument,
+    recipe: RecipeDocument,
     options: {
       restaurantId: string;
 
@@ -313,12 +317,6 @@ export class InventoryHelperService {
     },
     isProductionEvent = false,
   ) {
-    const recipe = await this.recipeModel
-      .findOne({
-        masterMaterialId: material._id,
-      })
-      .populate([{ path: 'components.materialId' }]);
-
     for (const i in recipe.components) {
       let inventoryItem: InventoryDocument = await this.inventoryModel.findOne({
         restaurantId: options.restaurantId,
