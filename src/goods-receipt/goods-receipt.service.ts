@@ -33,9 +33,17 @@ export class GoodsReceiptService {
     i18n: I18nContext,
   ): Promise<GoodsReceiptDocument> {
     await this.goodReceiptHelperService.validateGoodsReceipt(dto, i18n);
+    const items: any = dto.items;
+    let totalCost = 0;
+    items.forEach((i) => {
+      i.stockValue = i.stock * i.cost;
+      totalCost += i.stockValue;
+    });
     let goodsReceipt: GoodsReceiptDocument =
       await this.goodsReceiptModel.create({
         ...dto,
+        items,
+        totalCost,
         addedBy: req.user.userId,
         supplierId: req.user.supplierId,
       });

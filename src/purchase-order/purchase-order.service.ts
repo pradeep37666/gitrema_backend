@@ -51,8 +51,16 @@ export class PurchaseOrderService {
     if (material != dto.items.length) {
       throw new BadRequestException(i18n.t(`SOME_ITEMS_NOT_FOUND`));
     }
+    const items: any = dto.items;
+    let totalCost = 0;
+    items.forEach((i) => {
+      i.stockValue = i.stock * i.cost;
+      totalCost += i.stockValue;
+    });
     return await this.purchaseOrderModel.create({
       ...dto,
+      items,
+      totalCost,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
     });

@@ -12,10 +12,11 @@ import { RecipeDocument } from 'src/recipe/schema/recipe.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 import { InventoryCountStatus } from '../enum/en';
+import * as paginate from 'mongoose-paginate-v2';
 
 export type InventoryCountDocument = InventoryCount & Document;
 
-@Schema({})
+@Schema({ _id: false })
 class ManualCount {
   @Prop({ required: true })
   quantity: number;
@@ -100,3 +101,5 @@ export class InventoryCount {
 
 export const InventoryCountSchema =
   SchemaFactory.createForClass(InventoryCount);
+
+InventoryCountSchema.plugin(paginate);

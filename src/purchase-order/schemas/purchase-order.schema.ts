@@ -47,6 +47,9 @@ export class PurchaseOrder {
   @Prop({ type: [MaterialItemSchema], required: true })
   items: MaterialItemDocument[];
 
+  @Prop({ default: null })
+  totalCost: number;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,

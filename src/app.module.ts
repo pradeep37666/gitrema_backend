@@ -77,6 +77,8 @@ import { UnitOfMeasureModule } from './unit-of-measure/unit-of-measure.module';
 import { GoodsReceiptModule } from './goods-receipt/goods-receipt.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { ProductionEventModule } from './production-event/production-event.module';
+import { WasteEventModule } from './waste-event/waste-event.module';
+import { InventoryCountModule } from './inventory-count/inventory-count.module';
 
 @Module({
   imports: [
@@ -166,6 +168,8 @@ import { ProductionEventModule } from './production-event/production-event.modul
     UnitOfMeasureModule,
     RecipeModule,
     ProductionEventModule,
+    WasteEventModule,
+    InventoryCountModule,
   ],
   controllers: [AppController],
   providers: [
