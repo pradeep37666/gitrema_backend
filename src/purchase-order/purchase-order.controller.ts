@@ -31,8 +31,12 @@ export class PurchaseOrderController {
 
   @Post()
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.CREATE)
-  async create(@Req() req, @Body() dto: CreatePurchaseOrderDto) {
-    return await this.purchaseOrderService.create(req, dto);
+  async create(
+    @Req() req,
+    @Body() dto: CreatePurchaseOrderDto,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.purchaseOrderService.create(req, dto, i18n);
   }
 
   @Get()

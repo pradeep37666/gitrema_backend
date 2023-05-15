@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
 import { UpdatePurchaseOrderDto } from './dto/update-purchase-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -15,6 +19,10 @@ import {
 } from 'src/core/Constants/pagination';
 import { MongooseQueryParser } from 'mongoose-query-parser';
 import { I18nContext } from 'nestjs-i18n';
+import {
+  Material,
+  MaterialDocument,
+} from 'src/material/schemas/material.schema';
 
 @Injectable()
 export class PurchaseOrderService {
@@ -23,12 +31,26 @@ export class PurchaseOrderService {
     private readonly purchaseOrderModel: Model<PurchaseOrderDocument>,
     @InjectModel(PurchaseOrder.name)
     private readonly purchaseOrderModelPag: PaginateModel<PurchaseOrderDocument>,
+    @InjectModel(Material.name)
+    private readonly materialModel: Model<MaterialDocument>,
   ) {}
 
   async create(
     req: any,
     dto: CreatePurchaseOrderDto,
+    i18n: I18nContext,
   ): Promise<PurchaseOrderDocument> {
+    const material = await this.materialModel.count({
+      _id: {
+        $in: dto.items.map((i) => {
+          return i.materialId;
+        }),
+      },
+      supplierId: req.user.supplierId,
+    });
+    if (material != dto.items.length) {
+      throw new BadRequestException(i18n.t(`SOME_ITEMS_NOT_FOUND`));
+    }
     return await this.purchaseOrderModel.create({
       ...dto,
       addedBy: req.user.userId,

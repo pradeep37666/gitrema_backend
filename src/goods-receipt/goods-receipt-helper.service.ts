@@ -60,7 +60,7 @@ export class GoodsReceiptHelperService {
     for (const i in dto.items) {
       if (!allowedItems[dto.items[i].materialId]) {
         throw new BadRequestException(
-          `${dto.items[i].materialId} ${i18n.t('error.NOT_FOUND')}`,
+          `${dto.items[i].materialId} ${i18n.t('NOT_ALLOWED')}`,
         );
       }
       const totalAfterLoad = loadedItems[dto.items[i].materialId]

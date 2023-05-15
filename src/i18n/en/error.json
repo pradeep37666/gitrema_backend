@@ -1,3 +1,4 @@
 {
-  "SERVER_ERROR": "Something went wrong"
+  "SERVER_ERROR": "Something went wrong",
+  "SOME_ITEMS_NOT_FOUND": "Some Items Not Found"
 }
