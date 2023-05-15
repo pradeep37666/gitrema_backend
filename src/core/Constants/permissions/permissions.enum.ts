@@ -44,6 +44,8 @@ export enum PermissionSubject {
   Inventory = 'Inventory',
   Recipe = 'Recipe',
   ProductionEvent = 'ProductionEvent',
+  WasteEvent = 'WasteEvent',
+  InventoryCount = 'Inventory Count',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',

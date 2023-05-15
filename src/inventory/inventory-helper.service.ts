@@ -7,7 +7,7 @@ import {
 
 import { Inventory, InventoryDocument } from './schemas/inventory.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import { Document, Model, PaginateModel, PaginateResult } from 'mongoose';
 import { MaterialItemDocument } from 'src/purchase-order/schemas/material-item.schema';
 import { InventoryService } from './inventory.service';
 import { GoodsReceiptMaterialItemDto } from 'src/goods-receipt/dto/create-goods-receipt.dto';
@@ -29,6 +29,11 @@ import { TransferInventoryDto } from './dto/transfer-inventory.dto';
 import { Recipe, RecipeDocument } from 'src/recipe/schema/recipe.schema';
 import { MaterialType, ProcurementType } from 'src/material/enum/en';
 import { RecipeService } from 'src/recipe/recipe.service';
+import { WasteEventDocument } from 'src/waste-event/schema/waste-event.schema';
+import {
+  InventoryCount,
+  InventoryCountDocument,
+} from 'src/inventory-count/schema/inventory-count.schema';
 
 @Injectable()
 export class InventoryHelperService {
@@ -75,6 +80,7 @@ export class InventoryHelperService {
         inventoryItem,
         calculatedInventory,
         InventoryAction.GoodsReceipt,
+        goodsReceipt,
       );
       goodsReceipt.items[i].baseUom = inventoryItem.materialId.uomBase;
       goodsReceipt.items[i].baseUomStock =
@@ -104,10 +110,14 @@ export class InventoryHelperService {
       stockValue: inventoryItem.stockValue,
       conversionFactor: 1,
     };
-    const convert = await this.unitOfMeasureHelperService.getConversionFactor(
-      item.uom,
-      inventoryItem.materialId.uomBase,
-    );
+    let convert = { conversionFactor: 1 };
+    if (item.uom.toString() != inventoryItem.materialId.uomBase.toString()) {
+      convert = await this.unitOfMeasureHelperService.getConversionFactor(
+        item.uom,
+        inventoryItem.materialId.uomBase,
+      );
+    }
+
     if (action == InventoryAction.ReceivedWithTransfer) {
       item.cost = item.cost * convert.conversionFactor;
     }
@@ -132,10 +142,11 @@ export class InventoryHelperService {
         break;
 
       case InventoryAction.ItemSold:
+      case InventoryAction.WasteEvent:
         calculatedInventory.stock =
           inventoryItem.stock - item.stock * convert.conversionFactor;
         break;
-      case InventoryAction.ManualCount:
+      case InventoryAction.InventoryCount:
         if (item.stock)
           calculatedInventory.stock = item.stock * convert.conversionFactor;
         if (item.cost)
@@ -216,6 +227,75 @@ export class InventoryHelperService {
     this.applyToMenuItem(sourceInventoryItem);
 
     return { sourceInventoryItem, targetInventoryItem };
+  }
+
+  async applyWasteEvent(wasteEvent: WasteEventDocument) {
+    await wasteEvent.populate([{ path: 'materialId' }]);
+    let inventory: InventoryDocument = await this.inventoryModel.findOne({
+      restaurantId: wasteEvent.restaurantId,
+      materialId: wasteEvent.materialId._id,
+    });
+
+    if (inventory) {
+      inventory.materialId = wasteEvent.materialId;
+      const calculatedInventory = await this.calculateInventoryItem(
+        inventory,
+        {
+          stock: wasteEvent.quantity,
+          uom: wasteEvent.uom.toString(),
+        },
+        InventoryAction.WasteEvent,
+      );
+      await this.saveInventory(
+        inventory,
+        calculatedInventory,
+        InventoryAction.WasteEvent,
+      );
+    }
+  }
+
+  async applyManualCount(inventoryCount: InventoryCountDocument) {
+    await inventoryCount.populate([
+      {
+        path: 'materialId',
+      },
+    ]);
+    let count = 0;
+    for (const i in inventoryCount.count) {
+      let conversionFactor = 1;
+      if (
+        inventoryCount.count[i].uom.toString() !=
+        inventoryCount.materialId.uomBase.toString()
+      ) {
+        const convert =
+          await this.unitOfMeasureHelperService.getConversionFactor(
+            inventoryCount.count[i].uom,
+            inventoryCount.materialId.uomBase,
+          );
+        conversionFactor = convert.conversionFactor;
+        count += inventoryCount.count[i].quantity * conversionFactor;
+      }
+    }
+    let inventory: InventoryDocument = await this.inventoryModel.findOne({
+      materialId: inventoryCount.materialId._id,
+      restaurantId: inventoryCount.restaurantId,
+    });
+    inventory.materialId = inventoryCount.materialId;
+    const calculatedInventory = await this.calculateInventoryItem(
+      inventory,
+      {
+        stock: count,
+        uom: inventory.materialId.uomBase.toString(),
+      },
+      InventoryAction.InventoryCount,
+    );
+
+    inventory = await this.saveInventory(
+      inventory,
+      calculatedInventory,
+      InventoryAction.InventoryCount,
+    );
+    this.applyToMenuItem(inventory);
   }
 
   async applyToMenuItem(inventoryItem: InventoryDocument) {
@@ -442,6 +522,7 @@ export class InventoryHelperService {
     inventory: InventoryDocument,
     calculatedInventory: CalculatedInventory,
     action: InventoryAction,
+    entity: Document = null,
   ): Promise<InventoryDocument> {
     console.log('For Saving', calculatedInventory);
     inventory.set({
@@ -450,7 +531,7 @@ export class InventoryHelperService {
       stockValue: calculatedInventory.stockValue,
     });
     await inventory.save();
-    this.saveHistory(inventory, calculatedInventory, action);
+    this.saveHistory(inventory, calculatedInventory, action, entity);
     return inventory;
   }
 
@@ -458,6 +539,7 @@ export class InventoryHelperService {
     inventory: InventoryDocument,
     calculatedInventory: CalculatedInventory,
     action: InventoryAction,
+    entity: Document,
   ) {
     await this.inventoryHistoryModel.create({
       supplierId: inventory.supplierId,
@@ -468,6 +550,7 @@ export class InventoryHelperService {
       ...calculatedInventory.sourceItemWithBase,
       conversionFactor: calculatedInventory.conversionFactor,
       action,
+      dataId: entity ? entity._id : null,
     });
   }
 }

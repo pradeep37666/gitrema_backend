@@ -225,13 +225,13 @@ export class InventoryService {
           cost: dto.averageCost ?? null,
           uom: dto.uom,
         },
-        InventoryAction.ManualCount,
+        InventoryAction.InventoryCount,
       );
 
     inventory = await this.inventoryHelperService.saveInventory(
       inventory,
       calculatedInventory,
-      InventoryAction.ManualCount,
+      InventoryAction.InventoryCount,
     );
     this.inventoryHelperService.applyToMenuItem(inventory);
 
