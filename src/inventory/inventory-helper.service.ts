@@ -205,6 +205,7 @@ export class InventoryHelperService {
       targetInventoryItem,
       calculatedInventory,
       InventoryAction.ReceivedWithTransfer,
+      sourceInventoryItem,
     );
 
     this.applyToMenuItem(targetInventoryItem);
@@ -222,6 +223,7 @@ export class InventoryHelperService {
       sourceInventoryItem,
       sourceCalculatedInventory,
       InventoryAction.SentWithTransfer,
+      targetInventoryItem,
     );
 
     this.applyToMenuItem(sourceInventoryItem);
@@ -250,6 +252,7 @@ export class InventoryHelperService {
         inventory,
         calculatedInventory,
         InventoryAction.WasteEvent,
+        wasteEvent,
       );
     }
   }
@@ -294,6 +297,7 @@ export class InventoryHelperService {
       inventory,
       calculatedInventory,
       InventoryAction.InventoryCount,
+      inventoryCount,
     );
     this.applyToMenuItem(inventory);
   }

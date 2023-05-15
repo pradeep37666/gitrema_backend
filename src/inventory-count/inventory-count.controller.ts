@@ -33,8 +33,12 @@ export class InventoryCountController {
 
   @Post()
   @PermissionGuard(PermissionSubject.InventoryCount, Permission.Common.CREATE)
-  async create(@Req() req, @Body() dto: CreateInventoryCountDto) {
-    return await this.inventoryCountService.create(req, dto);
+  async create(
+    @Req() req,
+    @Body() dto: CreateInventoryCountDto,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.inventoryCountService.create(req, dto, i18n);
   }
 
   @Get()
@@ -83,15 +87,28 @@ export class InventoryCountController {
     );
   }
 
+  @Post(':inventoryCountId/remove-lock')
+  @PermissionGuard(PermissionSubject.InventoryCount, Permission.Common.UPDATE)
+  async removeLock(
+    @Param('inventoryCountId') inventoryCountId: string,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.inventoryCountService.changeStatus(
+      inventoryCountId,
+      InventoryCountStatus.New,
+      i18n,
+    );
+  }
+
   @Post(':inventoryCountId/accept')
   @PermissionGuard(PermissionSubject.InventoryCount, Permission.Common.UPDATE)
   async accept(
     @Param('inventoryCountId') inventoryCountId: string,
     @I18n() i18n: I18nContext,
   ) {
-    return await this.inventoryCountService.applyInventoryCount(
+    return await this.inventoryCountService.changeStatus(
       inventoryCountId,
-
+      InventoryCountStatus.Applied,
       i18n,
     );
   }

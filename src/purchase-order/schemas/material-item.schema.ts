@@ -26,6 +26,9 @@ export class MaterialItem {
   @Prop({ required: true })
   cost: number;
 
+  @Prop({ default: null })
+  stockValue: number;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'UnitOfMeasure',

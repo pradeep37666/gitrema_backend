@@ -18,23 +18,48 @@ import { PaginateResult } from 'mongoose';
 import { MongooseQueryParser } from 'mongoose-query-parser';
 import { I18nContext } from 'nestjs-i18n';
 import { InventoryCountStatus } from './enum/en';
+import { InventoryCountHelperService } from './inventory-count-helper.service';
+import {
+  Inventory,
+  InventoryDocument,
+} from 'src/inventory/schemas/inventory.schema';
 
 @Injectable()
 export class InventoryCountService {
   constructor(
     @InjectModel(InventoryCount.name)
     private readonly inventoryCountModel: Model<InventoryCountDocument>,
+    @InjectModel(Inventory.name)
+    private readonly inventoryModel: Model<InventoryDocument>,
     @InjectModel(InventoryCount.name)
     private readonly inventoryCountModelPag: PaginateModel<InventoryCountDocument>,
     private readonly inventoryHelperService: InventoryHelperService,
+    private readonly inventoryCountHelperService: InventoryCountHelperService,
   ) {}
 
   async create(
     req: any,
     dto: CreateInventoryCountDto,
+    i18n: I18nContext,
   ): Promise<InventoryCountDocument> {
+    const inventory = await this.inventoryModel
+      .findOne({
+        restaurantId: dto.restaurantId,
+        materialId: dto.materialId,
+      })
+      .populate([{ path: 'materialId' }]);
+    if (!inventory) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+    const inventoryCountPreparedData =
+      await this.inventoryCountHelperService.prepareInventoryCountData(
+        dto,
+        inventory,
+      );
     const inventoryCount = await this.inventoryCountModel.create({
       ...dto,
+      ...inventoryCountPreparedData,
+      uomBase: inventory.uomBase,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
     });
@@ -87,17 +112,43 @@ export class InventoryCountService {
     dto: UpdateInventoryCountDto,
     i18n: I18nContext,
   ): Promise<InventoryCountDocument> {
-    const inventoryCount = await this.inventoryCountModel.findByIdAndUpdate(
+    const inventoryCount = await this.inventoryCountModel.findById(
       inventoryCountId,
-      dto,
-      {
-        new: true,
-      },
     );
 
     if (!inventoryCount) {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
     }
+
+    if (
+      inventoryCount.status == InventoryCountStatus.Rejected ||
+      inventoryCount.status == InventoryCountStatus.Applied
+    ) {
+      throw new NotFoundException(i18n.t('error.CHANGES_NOT_ALLOWED'));
+    }
+
+    if (inventoryCount.status == InventoryCountStatus.Locked) {
+      throw new NotFoundException(i18n.t('error.ITEM_LOCKED'));
+    }
+
+    let inventoryCountPreparedData = {};
+    if (dto.count) {
+      const inventory = await this.inventoryModel
+        .findOne({
+          restaurantId: inventoryCount.restaurantId,
+          materialId: inventoryCount.materialId,
+        })
+        .populate([{ path: 'materialId' }]);
+
+      inventoryCountPreparedData =
+        await this.inventoryCountHelperService.prepareInventoryCountData(
+          dto,
+          inventory,
+        );
+    }
+    inventoryCount.set({ ...dto, ...inventoryCountPreparedData });
+
+    await inventoryCount.save();
 
     return inventoryCount;
   }
@@ -107,26 +158,6 @@ export class InventoryCountService {
     status: InventoryCountStatus,
     i18n: I18nContext,
   ): Promise<InventoryCountDocument> {
-    const inventoryCount = await this.inventoryCountModel.findByIdAndUpdate(
-      inventoryCountId,
-      { status },
-      {
-        new: true,
-      },
-    );
-
-    if (!inventoryCount) {
-      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
-    }
-
-    return inventoryCount;
-  }
-
-  async applyInventoryCount(
-    inventoryCountId: string,
-
-    i18n: I18nContext,
-  ): Promise<InventoryCountDocument> {
     const inventoryCount = await this.inventoryCountModel.findById(
       inventoryCountId,
     );
@@ -134,10 +165,17 @@ export class InventoryCountService {
     if (!inventoryCount) {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
     }
+    if (
+      inventoryCount.status == InventoryCountStatus.Rejected ||
+      inventoryCount.status == InventoryCountStatus.Applied
+    ) {
+      throw new NotFoundException(i18n.t('error.CHANGES_NOT_ALLOWED'));
+    }
 
-    await this.inventoryHelperService.applyManualCount(inventoryCount);
-
-    inventoryCount.status = InventoryCountStatus.Applied;
+    if (status == InventoryCountStatus.Applied) {
+      await this.inventoryHelperService.applyManualCount(inventoryCount);
+    }
+    inventoryCount.status = status;
 
     await inventoryCount.save();
 
