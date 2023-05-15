@@ -47,7 +47,15 @@ export class UnitOfMeasureHelperService {
           supplierId: 0,
         },
       )
-      .populate([{ path: 'baseUnit' }]);
+      .populate([
+        {
+          path: 'baseUnit',
+          populate: {
+            path: 'baseUnit',
+            model: 'UnitOfMeasure',
+          },
+        },
+      ]);
     console.log(unitOfMeasures);
     const sourceUom = unitOfMeasures.find((uom) => {
       return uom._id.toString() == sourceUomId?.toString();
@@ -65,18 +73,30 @@ export class UnitOfMeasureHelperService {
         targetUom,
       };
     }
-    const sourceUomAbbr = sourceUom.baseUnit
-      ? sourceUom.baseUnit?.abbr
-      : sourceUom.abbr;
-    const targetUomAbbr = targetUom.baseUnit
-      ? targetUom.baseUnit?.abbr
-      : targetUom.abbr;
-    const sourceBaseValue = sourceUom.baseUnit
-      ? sourceUom.baseConversionRate
-      : 1;
-    const targetBaseValue = targetUom.baseUnit
-      ? targetUom.baseConversionRate
-      : 1;
+    let refSourceUom: UnitOfMeasureDocument = sourceUom;
+    let sourceUomAbbr = null;
+    let sourceBaseValue = 1;
+    while (refSourceUom) {
+      sourceUomAbbr = refSourceUom.abbr ?? null;
+      if (refSourceUom.baseUnit) {
+        sourceBaseValue *= refSourceUom.baseConversionRate ?? 1;
+        refSourceUom = refSourceUom.baseUnit;
+      } else {
+        refSourceUom = null;
+      }
+    }
+    let refTargetUom: UnitOfMeasureDocument = targetUom;
+    let targetUomAbbr = null;
+    let targetBaseValue = 1;
+    while (refTargetUom) {
+      targetUomAbbr = refTargetUom.abbr ?? null;
+      if (refTargetUom.baseUnit) {
+        targetBaseValue *= refTargetUom.baseConversionRate ?? 1;
+        refTargetUom = refTargetUom.baseUnit;
+      } else {
+        refTargetUom = null;
+      }
+    }
 
     const conversionFactor: number =
       convert(sourceBaseValue).from(sourceUomAbbr).to(targetUomAbbr) /
