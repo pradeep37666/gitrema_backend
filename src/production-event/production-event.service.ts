@@ -31,14 +31,16 @@ export class ProductionEventService {
     req: any,
     dto: CreateProductionEventDto,
   ): Promise<ProductionEventDocument> {
+    const preparedData = await this.productionEventHelperService.executeRecipe(
+      dto,
+    );
     const productionEvent = await this.productionEventModel.create({
       ...dto,
+      ...preparedData,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
     });
-    this.productionEventHelperService.postProductionEventCreate(
-      productionEvent,
-    );
+
     return productionEvent;
   }
 

@@ -30,6 +30,7 @@ import { Recipe, RecipeDocument } from 'src/recipe/schema/recipe.schema';
 import { MaterialType, ProcurementType } from 'src/material/enum/en';
 import { RecipeService } from 'src/recipe/recipe.service';
 import { WasteEventDocument } from 'src/waste-event/schema/waste-event.schema';
+
 import {
   InventoryCount,
   InventoryCountDocument,
@@ -158,11 +159,16 @@ export class InventoryHelperService {
     calculatedInventory.stockValue = roundOffNumber(
       calculatedInventory.stock * calculatedInventory.averageCost,
     );
+    const stock = item.stock ? item.stock * convert.conversionFactor : null;
+    const cost = item.cost
+      ? item.cost / convert.conversionFactor
+      : inventoryItem.averageCost;
+    const stockValue = stock && cost ? stock * cost : null;
 
     calculatedInventory.sourceItemWithBase = {
-      stock: item.stock ? item.stock * convert.conversionFactor : null,
-      cost: item.cost ? item.cost / convert.conversionFactor : null,
-      stockValue: item.stock && item.cost ? item.stock * item.cost : null,
+      stock,
+      cost,
+      stockValue,
     };
     calculatedInventory.conversionFactor = convert.conversionFactor;
     return calculatedInventory;
@@ -342,12 +348,10 @@ export class InventoryHelperService {
     const material = await this.materialModel.findOne({
       menuItemId: options.menuItemId,
     });
-    if (material && material.isQuantityManaged) {
-      const recipe = await this.recipeModel
-        .findOne({
-          masterMaterialId: material._id,
-        })
-        .populate([{ path: 'components.materialId' }]);
+    if (material) {
+      const recipe = await this.recipeModel.findOne({
+        masterMaterialId: material._id,
+      });
       if (recipe) {
         await this.handleSemiFinishedMaterialPostSale(
           material,
@@ -401,30 +405,40 @@ export class InventoryHelperService {
     },
     isProductionEvent = false,
   ) {
+    console.log('Recipe', JSON.parse(JSON.stringify(recipe)));
+    const preparedData = {
+      items: [],
+      totalCost: 0,
+    };
+    const inventoriesToSave = [];
     for (const i in recipe.components) {
-      let inventoryItem: InventoryDocument = await this.inventoryModel.findOne({
-        restaurantId: options.restaurantId,
-        materialId: recipe.components[i].materialId._id,
-      });
+      let inventoryItem: InventoryDocument = await this.inventoryModel
+        .findOne({
+          restaurantId: options.restaurantId,
+          materialId: recipe.components[i].materialId,
+        })
+        .populate([{ path: 'materialId' }]);
       if (!inventoryItem) {
         inventoryItem = await this.inventoryService.create(
           {
             user: {
               userId: null,
-              supplierId: recipe.components[i].materialId.supplierId,
+              supplierId: recipe.supplierId,
             },
           },
           {
             restaurantId: options.restaurantId,
-            materialId: recipe.components[i].materialId._id.toString(),
+            materialId: recipe.components[i].materialId.toString(),
             stock: 0,
             averageCost: 0,
             storageArea: null,
             uom: recipe.components[i].uom.toString(),
           },
         );
+        await inventoryItem.populate([{ path: 'materialId' }]);
       }
-      inventoryItem.materialId = recipe.components[i].materialId;
+
+      console.log('Material at Inventory Level', inventoryItem.materialId);
       let stock =
         (recipe.components[i].stock * options.quantitiesSold) / recipe.quantity;
       if (options.uom != recipe.uom.toString()) {
@@ -446,22 +460,39 @@ export class InventoryHelperService {
       );
 
       console.log('########', calculatedInventory);
-
-      inventoryItem = await this.saveInventory(
+      inventoriesToSave.push({
         inventoryItem,
         calculatedInventory,
-        InventoryAction.ItemSold,
+      });
+
+      preparedData.items.push({
+        ...recipe.components[i],
+        baseUomStock: calculatedInventory.sourceItemWithBase.stock,
+        stockValue: calculatedInventory.sourceItemWithBase.stockValue,
+        baseUomCost: calculatedInventory.sourceItemWithBase.cost,
+        baseUom: inventoryItem.materialId.uomBase,
+      });
+      preparedData.totalCost +=
+        calculatedInventory.sourceItemWithBase.stockValue;
+    }
+    for (const i in inventoriesToSave) {
+      const inventory = await this.saveInventory(
+        inventoriesToSave[i].inventoryItem,
+        inventoriesToSave[i].calculatedInventory,
+        InventoryAction.ProductionEvent,
       );
 
-      this.applyToMenuItem(inventoryItem);
+      this.applyToMenuItem(inventory);
     }
     if (isProductionEvent) {
-      this.handleSemiFinishedMaterialPostProductionEvent(material, {
+      await this.handleSemiFinishedMaterialPostProductionEvent(material, {
         restaurantId: options.restaurantId,
         uom: options.uom,
         stock: options.quantitiesSold,
+        totalCost: preparedData.totalCost,
       });
     }
+    return preparedData;
   }
 
   async handleSemiFinishedMaterialPostProductionEvent(
@@ -470,6 +501,7 @@ export class InventoryHelperService {
       stock: number;
       uom: string;
       restaurantId: string;
+      totalCost: number;
     },
   ) {
     let inventoryItem: InventoryDocument = await this.inventoryModel.findOne({
@@ -496,16 +528,11 @@ export class InventoryHelperService {
     }
     inventoryItem.materialId = material;
 
-    const cost = await this.recipeService.previewPrice({
-      restaurantId: options.restaurantId,
-      materialId: material._id,
-    });
-    console.log('Cost', cost);
     const calculatedInventory = await this.calculateInventoryItem(
       inventoryItem,
       {
         stock: options.stock,
-        cost: cost,
+        cost: options.totalCost,
         uom: options.uom.toString(),
       },
       InventoryAction.ProductionEvent,

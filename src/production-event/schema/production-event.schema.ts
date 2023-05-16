@@ -11,6 +11,11 @@ import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { RecipeDocument } from 'src/recipe/schema/recipe.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
+import {
+  MaterialItemDocument,
+  MaterialItemSchema,
+} from 'src/purchase-order/schemas/material-item.schema';
+import * as paginate from 'mongoose-paginate-v2';
 
 export type ProductionEventDocument = ProductionEvent & Document;
 
@@ -51,6 +56,12 @@ export class ProductionEvent {
   })
   uom: UnitOfMeasureDocument;
 
+  @Prop({ type: [MaterialItemSchema], default: [] })
+  items: MaterialItemDocument[];
+
+  @Prop({ default: null })
+  totalCost: number;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
@@ -61,3 +72,5 @@ export class ProductionEvent {
 
 export const ProductionEventSchema =
   SchemaFactory.createForClass(ProductionEvent);
+
+ProductionEventSchema.plugin(paginate);

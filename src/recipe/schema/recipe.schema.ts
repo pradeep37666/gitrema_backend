@@ -9,6 +9,7 @@ import { RecipeMaterial, RecipeMaterialSchema } from './recipe-material.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
+import * as paginate from 'mongoose-paginate-v2';
 
 import { RecipeType } from '../enum/en';
 
@@ -73,3 +74,4 @@ export class Recipe {
 }
 
 export const RecipeSchema = SchemaFactory.createForClass(Recipe);
+RecipeSchema.plugin(paginate);
