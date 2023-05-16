@@ -49,7 +49,7 @@ export class RecipeController {
 
   @Get('preview-price')
   @PermissionGuard(PermissionSubject.Recipe, Permission.Common.FETCH)
-  async previewPrice(@Query() query: RecipePricePreviewDto): Promise<number> {
+  async previewPrice(@Query() query: RecipePricePreviewDto): Promise<any> {
     return await this.recipeService.previewPrice(query);
   }
 

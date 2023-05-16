@@ -40,7 +40,7 @@ export class RecipeService {
     });
   }
 
-  async previewPrice(query: RecipePricePreviewDto): Promise<number> {
+  async previewPrice(query: RecipePricePreviewDto): Promise<any> {
     const orQuery = {
       $or: [
         {
@@ -51,7 +51,7 @@ export class RecipeService {
         },
       ],
     };
-    const recipe = await this.recipeModel.findOne(orQuery);
+    const recipe = await this.recipeModel.findOne(orQuery).lean();
 
     if (!recipe) return 0;
 
@@ -64,7 +64,8 @@ export class RecipeService {
       },
     });
 
-    let cost = 0;
+    let totalCost = 0;
+    const items = [];
     for (const i in inventories) {
       const component = recipe.components.find((c) => {
         return c.materialId.toString() == inventories[i].materialId.toString();
@@ -79,10 +80,18 @@ export class RecipeService {
             );
           conversionFactor = convert.conversionFactor;
         }
-        cost += component.stock * conversionFactor * inventories[i].averageCost;
+        const item = {
+          ...component,
+          uomBase: inventories[i].uomBase,
+          baseUnitCost: inventories[i].averageCost,
+          baseTotalCost:
+            component.stock * conversionFactor * inventories[i].averageCost,
+        };
+        items.push(item);
+        totalCost += item.baseTotalCost;
       }
     }
-    return cost;
+    return { items, totalCost };
   }
 
   async findAll(

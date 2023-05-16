@@ -3,6 +3,7 @@ import {
   Material,
   MaterialDocument,
 } from 'src/material/schemas/material.schema';
+import * as paginate from 'mongoose-paginate-v2';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 
@@ -60,3 +61,4 @@ export class WasteEvent {
 }
 
 export const WasteEventSchema = SchemaFactory.createForClass(WasteEvent);
+WasteEventSchema.plugin(paginate);

@@ -23,7 +23,7 @@ export class MaterialItem {
   @Prop({ required: true })
   stock: number;
 
-  @Prop({ required: true })
+  @Prop({})
   cost: number;
 
   @Prop({ default: null })

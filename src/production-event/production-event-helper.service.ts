@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -8,6 +8,11 @@ import {
 import { Model } from 'mongoose';
 import { InventoryHelperService } from '../inventory/inventory-helper.service';
 import { Recipe, RecipeDocument } from 'src/recipe/schema/recipe.schema';
+import {
+  Material,
+  MaterialDocument,
+} from 'src/material/schemas/material.schema';
+import { CreateProductionEventDto } from './dto/create-production-event.dto';
 
 @Injectable()
 export class ProductionEventHelperService {
@@ -19,27 +24,31 @@ export class ProductionEventHelperService {
     private readonly inventoryHelperService: InventoryHelperService,
   ) {}
 
-  async postProductionEventCreate(productionEvent: ProductionEventDocument) {
-    await productionEvent.populate([
-      {
-        path: 'materialId',
-      },
-    ]);
+  async executeRecipe(dto: CreateProductionEventDto) {
     const recipe = await this.recipeModel
       .findOne({
-        masterMaterialId: productionEvent.materialId._id,
+        masterMaterialId: dto.materialId,
       })
-      .populate([{ path: 'components.materialId' }]);
-    if (recipe)
-      await this.inventoryHelperService.handleSemiFinishedMaterialPostSale(
-        productionEvent.materialId,
-        recipe,
+      .populate([
         {
-          restaurantId: productionEvent.restaurantId.toString(),
-          quantitiesSold: productionEvent.quantity,
-          uom: productionEvent.uom.toString(),
+          path: 'masterMaterialId',
         },
-        true,
-      );
+      ]);
+
+    if (recipe) {
+      const preparedData =
+        await this.inventoryHelperService.handleSemiFinishedMaterialPostSale(
+          recipe.masterMaterialId,
+          recipe,
+          {
+            restaurantId: dto.restaurantId,
+            quantitiesSold: dto.quantity,
+            uom: dto.uom,
+          },
+          true,
+        );
+      return preparedData;
+    }
+    throw new BadRequestException(`No Recipe found`);
   }
 }
