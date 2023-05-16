@@ -14,6 +14,10 @@ import {
 } from './schemas/inventory-history.schema';
 import { Recipe, RecipeSchema } from 'src/recipe/schema/recipe.schema';
 import { RecipeModule } from 'src/recipe/recipe.module';
+import {
+  ProfitDetail,
+  ProfitDetailSchema,
+} from 'src/profit-detail/schema/profit-detail.schema';
 
 @Module({
   imports: [
@@ -23,6 +27,7 @@ import { RecipeModule } from 'src/recipe/recipe.module';
       { name: Material.name, schema: MaterialSchema },
       { name: InventoryHistory.name, schema: InventoryHistorySchema },
       { name: Recipe.name, schema: RecipeSchema },
+      { name: ProfitDetail.name, schema: ProfitDetailSchema },
     ]),
     forwardRef(() => UnitOfMeasureModule),
     RecipeModule,

@@ -35,6 +35,10 @@ import {
   InventoryCount,
   InventoryCountDocument,
 } from 'src/inventory-count/schema/inventory-count.schema';
+import {
+  ProfitDetail,
+  ProfitDetailDocument,
+} from 'src/profit-detail/schema/profit-detail.schema';
 
 @Injectable()
 export class InventoryHelperService {
@@ -51,6 +55,8 @@ export class InventoryHelperService {
     private readonly inventoryHistoryModel: Model<InventoryHistoryDocument>,
     @InjectModel(Recipe.name)
     private readonly recipeModel: Model<RecipeDocument>,
+    @InjectModel(ProfitDetail.name)
+    private readonly profitDetailModel: Model<ProfitDetailDocument>,
     @Inject(forwardRef(() => UnitOfMeasureHelperService))
     private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
     private readonly recipeService: RecipeService,
@@ -344,6 +350,8 @@ export class InventoryHelperService {
     restaurantId: string;
     menuItemId: string;
     quantitiesSold: number;
+    price: number;
+    orderId: string;
   }) {
     const material = await this.materialModel.findOne({
       menuItemId: options.menuItemId,
@@ -352,14 +360,37 @@ export class InventoryHelperService {
       const recipe = await this.recipeModel.findOne({
         masterMaterialId: material._id,
       });
+      let totalCost = 0;
       if (recipe) {
-        await this.handleSemiFinishedMaterialPostSale(
+        const preparedData = await this.handleSemiFinishedMaterialPostSale(
           material,
           recipe,
           options,
         );
+        if (preparedData) totalCost = preparedData.totalCost;
       } else {
-        await this.handleFinishedMaterialPostSale(material, options);
+        const inventory = await this.handleFinishedMaterialPostSale(
+          material,
+          options,
+        );
+        if (inventory) {
+          totalCost = inventory.averageCost * options.quantitiesSold;
+        }
+      }
+      if (totalCost) {
+        await this.profitDetailModel.create({
+          supplierId: material.supplierId,
+          restaurantId: options.restaurantId,
+          materialId: material._id,
+          orderId: options.orderId,
+          menuItemId: options.menuItemId,
+          quantity: options.quantitiesSold,
+          unitPrice: options.price,
+          totalPrice: options.price * options.quantitiesSold,
+          unitCost: totalCost / options.quantitiesSold,
+          totalCost: totalCost,
+          profit: options.price * options.quantitiesSold - totalCost,
+        });
       }
     }
   }
@@ -391,6 +422,7 @@ export class InventoryHelperService {
         calculatedInventory,
         InventoryAction.ItemSold,
       );
+      return inventory;
     }
   }
 
@@ -410,6 +442,9 @@ export class InventoryHelperService {
       items: [],
       totalCost: 0,
     };
+    if (!options.uom) {
+      options.uom = recipe.uom.toString();
+    }
     const inventoriesToSave = [];
     for (const i in recipe.components) {
       let inventoryItem: InventoryDocument = await this.inventoryModel
@@ -532,7 +567,7 @@ export class InventoryHelperService {
       inventoryItem,
       {
         stock: options.stock,
-        cost: options.totalCost,
+        cost: options.totalCost / options.stock,
         uom: options.uom.toString(),
       },
       InventoryAction.ProductionEvent,

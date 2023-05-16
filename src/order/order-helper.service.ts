@@ -513,6 +513,8 @@ export class OrderHelperService {
         restaurantId: order.restaurantId.toString(),
         menuItemId: menuItem._id.toString(),
         quantitiesSold: items[i].quantity,
+        orderId: order._id.toString(),
+        price: items[i].unitPriceAfterDiscount,
       });
     }
   }

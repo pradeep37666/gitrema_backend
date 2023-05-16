@@ -79,6 +79,7 @@ import { RecipeModule } from './recipe/recipe.module';
 import { ProductionEventModule } from './production-event/production-event.module';
 import { WasteEventModule } from './waste-event/waste-event.module';
 import { InventoryCountModule } from './inventory-count/inventory-count.module';
+import { ProfitDetailModule } from './profit-detail/profit-detail.module';
 
 @Module({
   imports: [
@@ -170,6 +171,7 @@ import { InventoryCountModule } from './inventory-count/inventory-count.module';
     ProductionEventModule,
     WasteEventModule,
     InventoryCountModule,
+    ProfitDetailModule,
   ],
   controllers: [AppController],
   providers: [
