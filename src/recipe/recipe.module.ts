@@ -8,12 +8,19 @@ import {
   InventorySchema,
 } from 'src/inventory/schemas/inventory.schema';
 import { UnitOfMeasureModule } from 'src/unit-of-measure/unit-of-measure.module';
+import { Material, MaterialSchema } from 'src/material/schemas/material.schema';
+import {
+  UnitOfMeasure,
+  UnitOfMeasureSchema,
+} from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Recipe.name, schema: RecipeSchema }]),
     MongooseModule.forFeature([
+      { name: Recipe.name, schema: RecipeSchema },
       { name: Inventory.name, schema: InventorySchema },
+      { name: Material.name, schema: MaterialSchema },
+      { name: UnitOfMeasure.name, schema: UnitOfMeasureSchema },
     ]),
     UnitOfMeasureModule,
   ],
