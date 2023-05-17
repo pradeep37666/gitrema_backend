@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -18,6 +22,14 @@ import {
 } from 'src/inventory/schemas/inventory.schema';
 import { UnitOfMeasureHelperService } from 'src/unit-of-measure/unit-of-measure-helper.service';
 import { RecipePricePreviewDto } from './dto/recipe-price-preview.dto';
+import {
+  Material,
+  MaterialDocument,
+} from 'src/material/schemas/material.schema';
+import {
+  UnitOfMeasure,
+  UnitOfMeasureDocument,
+} from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 
 @Injectable()
 export class RecipeService {
@@ -28,11 +40,86 @@ export class RecipeService {
     private readonly recipeModelPag: PaginateModel<RecipeDocument>,
     @InjectModel(Inventory.name)
     private readonly inventoryModel: Model<InventoryDocument>,
-
+    @InjectModel(Material.name)
+    private readonly materialModel: Model<MaterialDocument>,
+    @InjectModel(UnitOfMeasure.name)
+    private readonly unitOfMeasureModel: Model<UnitOfMeasureDocument>,
     private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
   ) {}
 
   async create(req: any, dto: CreateRecipeDto): Promise<RecipeDocument> {
+    let materials = await this.materialModel
+      .find({
+        _id: {
+          $in: dto.components.map((c) => {
+            return c.materialId;
+          }),
+        },
+      })
+      .populate([
+        {
+          path: 'uomBase',
+          populate: {
+            path: 'baseUnit',
+            populate: {
+              path: 'baseUnit',
+            },
+          },
+        },
+      ]);
+
+    let uoms = await this.unitOfMeasureModel
+      .find({
+        _id: {
+          $in: dto.components.map((c) => {
+            return c.uom;
+          }),
+        },
+      })
+      .populate([
+        {
+          path: 'baseUnit',
+          populate: {
+            path: 'baseUnit',
+          },
+        },
+      ]);
+    materials = materials.reduce((acc, d) => {
+      acc[d._id.toString()] = d;
+      return acc;
+    }, []);
+
+    uoms = uoms.reduce((acc, d) => {
+      acc[d._id.toString()] = d;
+      return acc;
+    }, []);
+    for (const i in dto.components) {
+      let materialUomMeasure = null;
+      let refMaterialUom = materials[dto.components[i].materialId].uomBase;
+      while (refMaterialUom) {
+        materialUomMeasure = refMaterialUom.measure ?? null;
+        if (refMaterialUom.baseUnit) {
+          refMaterialUom = refMaterialUom.baseUnit;
+        } else {
+          refMaterialUom = null;
+        }
+      }
+      let uomMeasure = null;
+      let refUom = uoms[dto.components[i].uom];
+      while (refUom) {
+        uomMeasure = refUom.measure ?? null;
+        if (refUom.baseUnit) {
+          refUom = refUom.baseUnit;
+        } else {
+          refUom = null;
+        }
+      }
+      if (materialUomMeasure != uomMeasure) {
+        throw new BadRequestException(
+          `Material ${dto.components[i].materialId} needs ${materialUomMeasure} type of UOM`,
+        );
+      }
+    }
     return await this.recipeModel.create({
       ...dto,
       supplierId: req.user.supplierId,
