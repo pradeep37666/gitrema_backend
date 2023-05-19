@@ -12,6 +12,11 @@ import {
 } from 'src/core/Constants/pagination';
 import { I18nContext } from 'nestjs-i18n';
 import { MongooseQueryParser } from 'mongoose-query-parser';
+import { RestaurantMaterialDto } from './dto/restaurant-material.dto';
+import {
+  RestaurantMaterial,
+  RestaurantMaterialDocument,
+} from './schemas/restaurant-material.schema';
 
 @Injectable()
 export class MaterialService {
@@ -20,6 +25,10 @@ export class MaterialService {
     private readonly materialModel: Model<MaterialDocument>,
     @InjectModel(Material.name)
     private readonly materialModelPag: PaginateModel<MaterialDocument>,
+    @InjectModel(RestaurantMaterial.name)
+    private readonly restaurantMaterialModel: Model<RestaurantMaterialDocument>,
+    @InjectModel(RestaurantMaterial.name)
+    private readonly restaurantMaterialModelPag: PaginateModel<RestaurantMaterialDocument>,
   ) {}
 
   async create(req: any, dto: CreateMaterialDto): Promise<MaterialDocument> {
@@ -28,6 +37,51 @@ export class MaterialService {
       supplierId: req.user.supplierId,
       addedBy: req.user.userId,
     });
+  }
+
+  async additionalMaterialDetails(
+    req: any,
+    dto: RestaurantMaterialDto,
+  ): Promise<RestaurantMaterialDocument> {
+    return await this.restaurantMaterialModel.findOneAndUpdate(
+      {
+        restaurantId: dto.restaurantId,
+        materialId: dto.materialId,
+      },
+      {
+        ...dto,
+        supplierId: req.user.supplierId,
+        addedBy: req.user.userId,
+      },
+      { upsert: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async findRestaurantMaterials(
+    req: any,
+    query: QueryMaterialDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<RestaurantMaterialDocument>> {
+    let queryToApply: any = query;
+    if (query.filter) {
+      //delete queryToApply.filter;
+      const parser = new MongooseQueryParser();
+      const parsed = parser.parse(`${query.filter}`);
+      queryToApply = { ...queryToApply, ...parsed.filter };
+    }
+    const records = await this.restaurantMaterialModelPag.paginate(
+      {
+        ...queryToApply,
+        supplierId: req.user.supplierId,
+      },
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+    return records;
   }
 
   async findAll(

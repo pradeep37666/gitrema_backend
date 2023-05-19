@@ -21,6 +21,8 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { MaterialDocument } from './schemas/material.schema';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { RestaurantMaterialDto } from './dto/restaurant-material.dto';
+import { RestaurantMaterialDocument } from './schemas/restaurant-material.schema';
 
 @Controller('material')
 @ApiTags('Materials')
@@ -35,6 +37,12 @@ export class MaterialController {
     return await this.materialService.create(req, dto);
   }
 
+  @Post('addition-details')
+  @PermissionGuard(PermissionSubject.Material, Permission.Common.CREATE)
+  async additionalDetails(@Req() req, @Body() dto: RestaurantMaterialDto) {
+    return await this.materialService.additionalMaterialDetails(req, dto);
+  }
+
   @Get()
   @PermissionGuard(PermissionSubject.Material, Permission.Common.LIST)
   async findAll(
@@ -43,6 +51,20 @@ export class MaterialController {
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<MaterialDocument>> {
     return await this.materialService.findAll(req, query, paginateOptions);
+  }
+
+  @Get('additional-details')
+  @PermissionGuard(PermissionSubject.Material, Permission.Common.LIST)
+  async findRestaurantMaterials(
+    @Req() req,
+    @Query() query: QueryMaterialDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<RestaurantMaterialDocument>> {
+    return await this.materialService.findRestaurantMaterials(
+      req,
+      query,
+      paginateOptions,
+    );
   }
 
   @Get(':materialId')
