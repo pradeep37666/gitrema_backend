@@ -7,6 +7,7 @@ export enum MaterialType {
 export enum ProcurementType {
   Purchased = 'Purchased',
   Made = 'Made',
+  Both = 'Both',
 }
 
 export enum UnitOfMeasure {
