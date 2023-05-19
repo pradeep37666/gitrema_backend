@@ -515,6 +515,7 @@ export class OrderHelperService {
         quantitiesSold: items[i].quantity,
         orderId: order._id.toString(),
         price: items[i].unitPriceAfterDiscount,
+        paymentStatus: order.paymentStatus,
       });
     }
   }

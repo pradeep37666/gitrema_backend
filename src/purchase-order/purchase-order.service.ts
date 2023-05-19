@@ -23,6 +23,8 @@ import {
   Material,
   MaterialDocument,
 } from 'src/material/schemas/material.schema';
+import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import { Tax } from 'src/core/Constants/tax-rate.constant';
 
 @Injectable()
 export class PurchaseOrderService {
@@ -54,13 +56,18 @@ export class PurchaseOrderService {
     const items: any = dto.items;
     let totalCost = 0;
     items.forEach((i) => {
+      const itemTaxableAmount = roundOffNumber(i.cost / (1 + Tax.rate / 100));
+      i.tax = (itemTaxableAmount * Tax.rate) / 100;
       i.stockValue = i.stock * i.cost;
       totalCost += i.stockValue;
     });
+    const totalTaxableAmount = roundOffNumber(totalCost / (1 + Tax.rate / 100));
+    const tax = (totalTaxableAmount * Tax.rate) / 100;
     return await this.purchaseOrderModel.create({
       ...dto,
       items,
       totalCost,
+      tax,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
     });
@@ -108,13 +115,44 @@ export class PurchaseOrderService {
   }
 
   async update(
+    req,
     purchaseOrderId: string,
     dto: UpdatePurchaseOrderDto,
     i18n: I18nContext,
   ): Promise<PurchaseOrderDocument> {
+    let additionalDetails = {};
+    if (dto.items) {
+      const material = await this.materialModel.count({
+        _id: {
+          $in: dto.items.map((i) => {
+            return i.materialId;
+          }),
+        },
+        supplierId: req.user.supplierId,
+      });
+      if (material != dto.items.length) {
+        throw new BadRequestException(i18n.t(`SOME_ITEMS_NOT_FOUND`));
+      }
+      const items: any = dto.items;
+      let totalCost = 0;
+      items.forEach((i) => {
+        const itemTaxableAmount = roundOffNumber(i.cost / (1 + Tax.rate / 100));
+        i.tax = (itemTaxableAmount * Tax.rate) / 100;
+        i.stockValue = i.stock * i.cost;
+        totalCost += i.stockValue;
+      });
+      const totalTaxableAmount = roundOffNumber(
+        totalCost / (1 + Tax.rate / 100),
+      );
+      const tax = (totalTaxableAmount * Tax.rate) / 100;
+      additionalDetails = {
+        totalCost,
+        tax,
+      };
+    }
     const purchaseOrder = await this.purchaseOrderModel.findByIdAndUpdate(
       purchaseOrderId,
-      dto,
+      { ...dto, ...additionalDetails },
       {
         new: true,
       },

@@ -13,10 +13,10 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
-export type GoodsReceiptDocument = GoodsReceipt & Document;
+export type InvoiceReceiptDocument = InvoiceReceipt & Document;
 
 @Schema({ timestamps: true })
-export class GoodsReceipt {
+export class InvoiceReceipt {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Supplier',
@@ -59,11 +59,9 @@ export class GoodsReceipt {
     ref: 'User',
   })
   addedBy: UserDocument;
-
-  @Prop({ default: null })
-  deletedAt: Date;
 }
 
-export const GoodsReceiptSchema = SchemaFactory.createForClass(GoodsReceipt);
+export const InvoiceReceiptSchema =
+  SchemaFactory.createForClass(InvoiceReceipt);
 
-GoodsReceiptSchema.plugin(paginate);
+InvoiceReceiptSchema.plugin(paginate);

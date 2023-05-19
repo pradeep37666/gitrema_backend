@@ -61,11 +61,17 @@ export class PurchaseOrderController {
   @Patch(':purchaseOrderId')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.UPDATE)
   async update(
+    @Req() req,
     @Param('purchaseOrderId') purchaseOrderId: string,
     @Body() dto: UpdatePurchaseOrderDto,
     @I18n() i18n: I18nContext,
   ) {
-    return await this.purchaseOrderService.update(purchaseOrderId, dto, i18n);
+    return await this.purchaseOrderService.update(
+      req,
+      purchaseOrderId,
+      dto,
+      i18n,
+    );
   }
 
   @Delete(':purchaseOrderId')

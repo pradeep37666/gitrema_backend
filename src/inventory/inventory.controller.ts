@@ -11,7 +11,10 @@ import {
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
-import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import {
+  UpdateInventoryDto,
+  UpdateInventoryIdentifierDto,
+} from './dto/update-inventory.dto';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
@@ -81,14 +84,14 @@ export class InventoryController {
     );
   }
 
-  @Patch(':inventoryId')
+  @Patch('update')
   @PermissionGuard(PermissionSubject.Inventory, Permission.Common.UPDATE)
   async update(
-    @Param('inventoryId') inventoryId: string,
+    @Body() identifier: UpdateInventoryIdentifierDto,
     @Body() dto: UpdateInventoryDto,
     @I18n() i18n: I18nContext,
   ) {
-    return await this.inventoryService.update(inventoryId, dto, i18n);
+    return await this.inventoryService.update(identifier, dto, i18n);
   }
 
   @Delete(':inventoryId')

@@ -5,7 +5,10 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { CreateInventoryDto } from './dto/create-inventory.dto';
-import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import {
+  UpdateInventoryDto,
+  UpdateInventoryIdentifierDto,
+} from './dto/update-inventory.dto';
 import {
   DefaultSort,
   PaginationDto,
@@ -205,12 +208,14 @@ export class InventoryService {
   }
 
   async update(
-    inventoryId: string,
+    identifier: UpdateInventoryIdentifierDto,
     dto: UpdateInventoryDto,
     i18n: I18nContext,
   ): Promise<InventoryDocument> {
     let inventory: InventoryDocument = await this.inventoryModel
-      .findById(inventoryId)
+      .findOne({
+        ...identifier,
+      })
       .populate([{ path: 'materialId' }]);
 
     if (!inventory) {
@@ -225,7 +230,7 @@ export class InventoryService {
           cost: dto.averageCost ?? null,
           uom: dto.uom,
         },
-        InventoryAction.InventoryCount,
+        InventoryAction.ManualCount,
       );
 
     inventory = await this.inventoryHelperService.saveInventory(

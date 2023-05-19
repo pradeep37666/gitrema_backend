@@ -69,6 +69,9 @@ export class ProfitDetail {
 
   @Prop({ default: null })
   profit: number;
+
+  @Prop({ default: null })
+  paymentStatus: string;
 }
 
 export const ProfitDetailSchema = SchemaFactory.createForClass(ProfitDetail);

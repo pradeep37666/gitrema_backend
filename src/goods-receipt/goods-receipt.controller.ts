@@ -58,22 +58,22 @@ export class GoodsReceiptController {
     return await this.goodsReceiptService.findOne(goodsReceiptId, i18n);
   }
 
-  @Patch(':goodsReceiptId')
-  @PermissionGuard(PermissionSubject.GoodsReceipt, Permission.Common.UPDATE)
-  async update(
-    @Param('goodsReceiptId') goodsReceiptId: string,
-    @Body() dto: UpdateGoodsReceiptDto,
-    @I18n() i18n: I18nContext,
-  ) {
-    return await this.goodsReceiptService.update(goodsReceiptId, dto, i18n);
-  }
+  // @Patch(':goodsReceiptId')
+  // @PermissionGuard(PermissionSubject.GoodsReceipt, Permission.Common.UPDATE)
+  // async update(
+  //   @Param('goodsReceiptId') goodsReceiptId: string,
+  //   @Body() dto: UpdateGoodsReceiptDto,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.goodsReceiptService.update(goodsReceiptId, dto, i18n);
+  // }
 
-  @Delete(':goodsReceiptId')
-  @PermissionGuard(PermissionSubject.GoodsReceipt, Permission.Common.DELETE)
-  async remove(
-    @Param('goodsReceiptId') goodsReceiptId: string,
-    @I18n() i18n: I18nContext,
-  ) {
-    return await this.goodsReceiptService.remove(goodsReceiptId, i18n);
-  }
+  // @Delete(':goodsReceiptId')
+  // @PermissionGuard(PermissionSubject.GoodsReceipt, Permission.Common.DELETE)
+  // async remove(
+  //   @Param('goodsReceiptId') goodsReceiptId: string,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.goodsReceiptService.remove(goodsReceiptId, i18n);
+  // }
 }

@@ -16,6 +16,8 @@ import { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { MongooseQueryParser } from 'mongoose-query-parser';
 import { I18nContext } from 'nestjs-i18n';
 import { GoodsReceiptHelperService } from './goods-receipt-helper.service';
+import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import { Tax } from 'src/core/Constants/tax-rate.constant';
 
 @Injectable()
 export class GoodsReceiptService {
@@ -36,14 +38,19 @@ export class GoodsReceiptService {
     const items: any = dto.items;
     let totalCost = 0;
     items.forEach((i) => {
+      const itemTaxableAmount = roundOffNumber(i.cost / (1 + Tax.rate / 100));
+      i.tax = (itemTaxableAmount * Tax.rate) / 100;
       i.stockValue = i.stock * i.cost;
       totalCost += i.stockValue;
     });
+    const totalTaxableAmount = roundOffNumber(totalCost / (1 + Tax.rate / 100));
+    const tax = (totalTaxableAmount * Tax.rate) / 100;
     let goodsReceipt: GoodsReceiptDocument =
       await this.goodsReceiptModel.create({
         ...dto,
         items,
         totalCost,
+        tax,
         addedBy: req.user.userId,
         supplierId: req.user.supplierId,
       });

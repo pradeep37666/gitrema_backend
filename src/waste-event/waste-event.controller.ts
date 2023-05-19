@@ -54,22 +54,22 @@ export class WasteEventController {
     return await this.wasteEventService.findOne(wasteEventId, i18n);
   }
 
-  @Patch(':wasteEventId')
-  @PermissionGuard(PermissionSubject.WasteEvent, Permission.Common.UPDATE)
-  async update(
-    @Param('wasteEventId') wasteEventId: string,
-    @Body() dto: UpdateWasteEventDto,
-    @I18n() i18n: I18nContext,
-  ) {
-    return await this.wasteEventService.update(wasteEventId, dto, i18n);
-  }
+  // @Patch(':wasteEventId')
+  // @PermissionGuard(PermissionSubject.WasteEvent, Permission.Common.UPDATE)
+  // async update(
+  //   @Param('wasteEventId') wasteEventId: string,
+  //   @Body() dto: UpdateWasteEventDto,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.wasteEventService.update(wasteEventId, dto, i18n);
+  // }
 
-  @Delete(':wasteEventId')
-  @PermissionGuard(PermissionSubject.WasteEvent, Permission.Common.DELETE)
-  async remove(
-    @Param('wasteEventId') wasteEventId: string,
-    @I18n() i18n: I18nContext,
-  ) {
-    return await this.wasteEventService.remove(wasteEventId, i18n);
-  }
+  // @Delete(':wasteEventId')
+  // @PermissionGuard(PermissionSubject.WasteEvent, Permission.Common.DELETE)
+  // async remove(
+  //   @Param('wasteEventId') wasteEventId: string,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.wasteEventService.remove(wasteEventId, i18n);
+  // }
 }

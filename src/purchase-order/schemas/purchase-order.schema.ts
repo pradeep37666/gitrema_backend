@@ -50,6 +50,9 @@ export class PurchaseOrder {
   @Prop({ default: null })
   totalCost: number;
 
+  @Prop({ default: null })
+  tax: number;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,

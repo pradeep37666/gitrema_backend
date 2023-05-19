@@ -15,5 +15,6 @@ import {
   ],
   controllers: [ProfitDetailController],
   providers: [ProfitDetailService],
+  exports: [ProfitDetailService],
 })
 export class ProfitDetailModule {}
