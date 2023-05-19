@@ -5,45 +5,22 @@ import {
   IsMongoId,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
-  IsString,
   ValidateNested,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
-import { InventoryCountItemDto } from './inventory-count-item.dto';
 
-export class CreateInventoryCountDto {
-  @ApiProperty()
+class ManualCountDto {
+  @ApiProperty({ example: 1 })
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
-  @IsString({
-    message: i18nValidationMessage('validation.MUST_BE_STRING'),
-  })
-  name: string;
-
-  @ApiProperty()
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.NOT_EMPTY'),
-  })
-  @IsString({
-    message: i18nValidationMessage('validation.MUST_BE_STRING'),
-  })
-  nameAr: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString({
-    message: i18nValidationMessage('validation.MUST_BE_STRING'),
-  })
-  description: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString({
-    message: i18nValidationMessage('validation.MUST_BE_STRING'),
-  })
-  descriptionAr: string;
+  @IsNumber(
+    {},
+    {
+      message: i18nValidationMessage('validation.MUST_BE_NUMBER'),
+    },
+  )
+  quantity: number;
 
   @ApiProperty()
   @IsNotEmpty({
@@ -52,16 +29,43 @@ export class CreateInventoryCountDto {
   @IsMongoId({
     message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
-  restaurantId: string;
+  uom: string;
 
-  @ApiProperty({ type: [InventoryCountItemDto] })
+  @ApiProperty()
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.NOT_EMPTY'),
+  })
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
+  })
+  storage: string;
+}
+
+export class InventoryCountItemDto {
+  @ApiProperty()
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.NOT_EMPTY'),
+  })
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
+  })
+  materialId: string;
+
+  @ApiProperty({ type: [ManualCountDto] })
   @IsArray({
     message: i18nValidationMessage('validation.MUST_BE_ARRAY'),
   })
   @ValidateNested({ each: true })
-  @Type(() => InventoryCountItemDto)
+  @Type(() => ManualCountDto)
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
-  items: InventoryCountItemDto[];
+  count: ManualCountDto[];
+
+  countValue?: number;
+  onHandCount?: number;
+  onHandCountValue?: number;
+  differentialCount?: number;
+  differentialCountValue?: number;
+  uomBase?: string;
 }

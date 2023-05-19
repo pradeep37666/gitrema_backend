@@ -350,6 +350,7 @@ export enum VehicleTypes {
 export enum ListType {
   TableRegion = 'Table Region',
   MaterialCategory = 'Material Category',
+  StorageArea = 'Storage Area',
 }
 export enum ListStatus {
   Active = 'Active',

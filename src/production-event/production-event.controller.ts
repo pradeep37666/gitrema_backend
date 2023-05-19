@@ -60,26 +60,26 @@ export class ProductionEventController {
     return await this.productionEventService.findOne(productionEventId, i18n);
   }
 
-  @Patch(':productionEventId')
-  @PermissionGuard(PermissionSubject.ProductionEvent, Permission.Common.UPDATE)
-  async update(
-    @Param('productionEventId') productionEventId: string,
-    @Body() dto: UpdateProductionEventDto,
-    @I18n() i18n: I18nContext,
-  ) {
-    return await this.productionEventService.update(
-      productionEventId,
-      dto,
-      i18n,
-    );
-  }
+  // @Patch(':productionEventId')
+  // @PermissionGuard(PermissionSubject.ProductionEvent, Permission.Common.UPDATE)
+  // async update(
+  //   @Param('productionEventId') productionEventId: string,
+  //   @Body() dto: UpdateProductionEventDto,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.productionEventService.update(
+  //     productionEventId,
+  //     dto,
+  //     i18n,
+  //   );
+  // }
 
-  @Delete(':productionEventId')
-  @PermissionGuard(PermissionSubject.ProductionEvent, Permission.Common.DELETE)
-  async remove(
-    @Param('productionEventId') productionEventId: string,
-    @I18n() i18n: I18nContext,
-  ) {
-    return await this.productionEventService.remove(productionEventId, i18n);
-  }
+  // @Delete(':productionEventId')
+  // @PermissionGuard(PermissionSubject.ProductionEvent, Permission.Common.DELETE)
+  // async remove(
+  //   @Param('productionEventId') productionEventId: string,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.productionEventService.remove(productionEventId, i18n);
+  // }
 }

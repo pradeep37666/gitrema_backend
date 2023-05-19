@@ -42,24 +42,12 @@ export class InventoryCountService {
     dto: CreateInventoryCountDto,
     i18n: I18nContext,
   ): Promise<InventoryCountDocument> {
-    const inventory = await this.inventoryModel
-      .findOne({
-        restaurantId: dto.restaurantId,
-        materialId: dto.materialId,
-      })
-      .populate([{ path: 'materialId' }]);
-    if (!inventory) {
-      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
-    }
-    const inventoryCountPreparedData =
-      await this.inventoryCountHelperService.prepareInventoryCountData(
-        dto,
-        inventory,
-      );
+    dto = await this.inventoryCountHelperService.prepareInventoryCountData(
+      dto,
+      i18n,
+    );
     const inventoryCount = await this.inventoryCountModel.create({
       ...dto,
-      ...inventoryCountPreparedData,
-      uomBase: inventory.uomBase,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
     });
@@ -131,22 +119,11 @@ export class InventoryCountService {
       throw new NotFoundException(i18n.t('error.ITEM_LOCKED'));
     }
 
-    let inventoryCountPreparedData = {};
-    if (dto.count) {
-      const inventory = await this.inventoryModel
-        .findOne({
-          restaurantId: inventoryCount.restaurantId,
-          materialId: inventoryCount.materialId,
-        })
-        .populate([{ path: 'materialId' }]);
-
-      inventoryCountPreparedData =
-        await this.inventoryCountHelperService.prepareInventoryCountData(
-          dto,
-          inventory,
-        );
-    }
-    inventoryCount.set({ ...dto, ...inventoryCountPreparedData });
+    dto = await this.inventoryCountHelperService.prepareInventoryCountData(
+      dto,
+      i18n,
+    );
+    inventoryCount.set({ ...dto });
 
     await inventoryCount.save();
 
@@ -173,7 +150,7 @@ export class InventoryCountService {
     }
 
     if (status == InventoryCountStatus.Applied) {
-      await this.inventoryHelperService.applyManualCount(inventoryCount);
+      await this.inventoryHelperService.applyInventoryCount(inventoryCount);
     }
     inventoryCount.status = status;
 

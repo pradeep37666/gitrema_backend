@@ -52,6 +52,9 @@ export class WasteEvent {
   })
   uom: UnitOfMeasureDocument;
 
+  @Prop({ required: true })
+  reason: string;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,

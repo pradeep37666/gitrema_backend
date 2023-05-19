@@ -14,62 +14,67 @@ import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measu
 import { InventoryCountStatus } from '../enum/en';
 import * as paginate from 'mongoose-paginate-v2';
 import { ListDocument } from 'src/list/schemas/list.schema';
-import {
-  InventoryCountItem,
-  InventoryCountItemSchema,
-} from './inventory-count-item.schema';
 
-export type InventoryCountDocument = InventoryCount & Document;
+@Schema({ _id: false })
+export class ManualCount {
+  @Prop({ required: true })
+  quantity: number;
 
-@Schema({ timestamps: true })
-export class InventoryCount {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Supplier',
     index: true,
+    ref: 'UnitOfMeasure',
     required: true,
   })
-  supplierId: SupplierDocument;
-
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Restaurant',
-    index: true,
-    required: true,
-  })
-  restaurantId: RestaurantDocument;
-
-  @Prop({ required: true })
-  name: string;
-
-  @Prop({ required: true })
-  nameAr: string;
-
-  @Prop({ default: null })
-  description: string;
-
-  @Prop({ default: null })
-  descriptionAr: string;
-
-  @Prop({ type: [InventoryCountItemSchema], default: [] })
-  items: InventoryCountItem[];
-
-  @Prop({
-    type: String,
-    enum: InventoryCountStatus,
-    default: InventoryCountStatus.New,
-  })
-  status: InventoryCountStatus;
+  uom: UnitOfMeasureDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
-    ref: 'User',
+    ref: 'List',
+    default: null,
   })
-  addedBy: UserDocument;
+  storage: ListDocument;
 }
 
-export const InventoryCountSchema =
-  SchemaFactory.createForClass(InventoryCount);
+export const ManualCountSchema = SchemaFactory.createForClass(ManualCount);
 
-InventoryCountSchema.plugin(paginate);
+@Schema({ timestamps: true })
+export class InventoryCountItem {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Material',
+    index: true,
+    required: true,
+  })
+  materialId: MaterialDocument;
+
+  @Prop({ type: [ManualCountSchema], default: [] })
+  count: ManualCount[];
+
+  @Prop({ default: null })
+  countValue: number;
+
+  @Prop({ default: null })
+  onHandCount: number;
+
+  @Prop({ default: null })
+  onHandCountValue: number;
+
+  @Prop({ default: null })
+  differentialCount: number;
+
+  @Prop({ default: null })
+  differentialCountValue: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'UnitOfMeasure',
+    required: true,
+  })
+  uomBase: UnitOfMeasureDocument;
+}
+
+export const InventoryCountItemSchema =
+  SchemaFactory.createForClass(InventoryCountItem);

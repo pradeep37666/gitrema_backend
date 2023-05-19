@@ -24,6 +24,12 @@ export class MaterialItem {
   stock: number;
 
   @Prop({})
+  appliedStock: number;
+
+  @Prop({})
+  tax: number;
+
+  @Prop({})
   cost: number;
 
   @Prop({ default: null })

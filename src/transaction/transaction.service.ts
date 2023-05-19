@@ -38,6 +38,7 @@ import { DeliveryService } from 'src/delivery/delivery.service';
 import { OrderNotificationService } from 'src/order/order-notification.service';
 import { OrderEvents } from 'src/notification/enum/en.enum';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { ProfitDetailService } from 'src/profit-detail/profit-detail.service';
 
 @Injectable()
 export class TransactionService {
@@ -57,6 +58,7 @@ export class TransactionService {
     private invoiceService: InvoiceService,
     private deliveryService: DeliveryService,
     private readonly orderNotificationService: OrderNotificationService,
+    private readonly profitDetailService: ProfitDetailService,
   ) {}
 
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
@@ -193,6 +195,11 @@ export class TransactionService {
             );
             if (order.orderType == OrderType.Delivery)
               this.deliveryService.create(order);
+
+            this.profitDetailService.updatePaymentStatus(
+              order._id,
+              order.paymentStatus,
+            );
           }
           this.orderHelperService.postOrderUpdate(order, dataToUpdate);
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsMongoId, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class CreateWasteEventDto {
@@ -43,4 +43,13 @@ export class CreateWasteEventDto {
     message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
   uom: string;
+
+  @ApiProperty()
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.NOT_EMPTY'),
+  })
+  @IsString({
+    message: i18nValidationMessage('validation.MUST_BE_STRING'),
+  })
+  reason: string;
 }

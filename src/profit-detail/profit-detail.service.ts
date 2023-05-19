@@ -50,4 +50,8 @@ export class ProfitDetailService {
     );
     return records;
   }
+
+  async updatePaymentStatus(orderId: string, paymentStatus: string) {
+    await this.profitdetailModel.updateMany({ orderId }, { paymentStatus });
+  }
 }

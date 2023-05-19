@@ -2,6 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
 import * as paginate from 'mongoose-paginate-v2';
+import {
+  ManualCount,
+  ManualCountSchema,
+} from 'src/inventory-count/schema/inventory-count-item.schema';
 import { ListDocument } from 'src/list/schemas/list.schema';
 import { MaterialDocument } from 'src/material/schemas/material.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
@@ -54,12 +58,10 @@ export class Inventory {
   uomBase: UnitOfMeasureDocument;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'List',
-    index: true,
-    default: null,
+    type: [ManualCountSchema],
+    default: [],
   })
-  storageArea: ListDocument;
+  storage: ManualCount[];
 
   @Prop({ default: 0 })
   stock: number;
