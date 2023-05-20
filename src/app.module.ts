@@ -81,6 +81,7 @@ import { WasteEventModule } from './waste-event/waste-event.module';
 import { InventoryCountModule } from './inventory-count/inventory-count.module';
 import { ProfitDetailModule } from './profit-detail/profit-detail.module';
 import { InvoiceReceiptModule } from './invoice-receipt/invoice-receipt.module';
+import { SelectedVendorModule } from './selected-vendor/selected-vendor.module';
 
 @Module({
   imports: [
@@ -174,6 +175,7 @@ import { InvoiceReceiptModule } from './invoice-receipt/invoice-receipt.module';
     InventoryCountModule,
     ProfitDetailModule,
     InvoiceReceiptModule,
+    SelectedVendorModule,
   ],
   controllers: [AppController],
   providers: [

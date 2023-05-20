@@ -53,7 +53,7 @@ export class MaterialService {
         supplierId: req.user.supplierId,
         addedBy: req.user.userId,
       },
-      { upsert: true, setDefaultsOnInsert: true },
+      { upsert: true, setDefaultsOnInsert: true, new: true },
     );
   }
 
