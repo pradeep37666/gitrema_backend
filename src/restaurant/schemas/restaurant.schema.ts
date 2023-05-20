@@ -5,7 +5,6 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { ImportDocument } from 'src/import/schemas/import.schema';
-import { ProductFeatures } from 'src/supplier/enum/en';
 
 export type RestaurantDocument = Restaurant & Document;
 
