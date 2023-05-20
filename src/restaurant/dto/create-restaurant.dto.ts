@@ -3,6 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsEmail,
   IsEnum,
   IsMobilePhone,
   IsNotEmpty,
@@ -134,6 +135,11 @@ export class CreateRestaurantDto {
   @IsString()
   @IsNotEmpty()
   whatsappNumber: string;
+
+  @ApiProperty({ required: false })
+  @IsEmail()
+  @IsOptional()
+  email?: string;
 
   @ApiProperty()
   @IsBoolean()
