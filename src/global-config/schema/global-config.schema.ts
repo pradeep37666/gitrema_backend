@@ -11,6 +11,12 @@ export class GlobalConfig {
 
   @Prop({})
   payoutDay: number;
+
+  @Prop({})
+  lowInventoryNotificationTime: string;
+
+  @Prop({})
+  lastLowInventoryNotificationSentAt: Date;
 }
 export const GlobalConfigSchema = SchemaFactory.createForClass(GlobalConfig);
 GlobalConfigSchema.plugin(paginate);

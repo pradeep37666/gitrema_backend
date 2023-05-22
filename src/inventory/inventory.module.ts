@@ -18,6 +18,18 @@ import {
   ProfitDetail,
   ProfitDetailSchema,
 } from 'src/profit-detail/schema/profit-detail.schema';
+import {
+  RestaurantMaterial,
+  RestaurantMaterialSchema,
+} from 'src/material/schemas/restaurant-material.schema';
+import { InventorySchedulerService } from './inventory-scheduler.service';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MailModule } from 'src/notification/mail/mail.module';
+import { GlobalConfigModule } from 'src/global-config/global-config.module';
+import {
+  Restaurant,
+  RestaurantSchema,
+} from 'src/restaurant/schemas/restaurant.schema';
 
 @Module({
   imports: [
@@ -28,12 +40,20 @@ import {
       { name: InventoryHistory.name, schema: InventoryHistorySchema },
       { name: Recipe.name, schema: RecipeSchema },
       { name: ProfitDetail.name, schema: ProfitDetailSchema },
+      { name: RestaurantMaterial.name, schema: RestaurantMaterialSchema },
+      { name: Restaurant.name, schema: RestaurantSchema },
     ]),
     forwardRef(() => UnitOfMeasureModule),
     RecipeModule,
+    MailModule,
+    GlobalConfigModule,
   ],
   controllers: [InventoryController],
-  providers: [InventoryService, InventoryHelperService],
+  providers: [
+    InventoryService,
+    InventoryHelperService,
+    InventorySchedulerService,
+  ],
   exports: [InventoryHelperService, InventoryService],
 })
 export class InventoryModule {}
