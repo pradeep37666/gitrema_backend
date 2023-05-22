@@ -20,8 +20,12 @@ import { QuerySelectedVendorDto } from './dto/query-selected-vendor.dto';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 import { SelectedVendorDocument } from './schema/selected-vendor.schema';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('selected-vendor')
+@ApiTags('Selected Vendor')
+@ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class SelectedVendorController {
   constructor(private readonly selectedVendorService: SelectedVendorService) {}
 

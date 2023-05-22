@@ -328,12 +328,22 @@ export class InventoryHelperService {
             r.restaurantId.toString() == inventoryItem.restaurantId.toString()
           );
         });
-        const convert =
-          await this.unitOfMeasureHelperService.getConversionFactor(
-            inventoryItem.materialId.uomBase,
-            inventoryItem.materialId.uomSell,
-          );
-        const stockInSellType = inventoryItem.stock * convert.conversionFactor;
+        let conversionFactor = 1;
+        if (
+          inventoryItem.materialId.uomBase &&
+          inventoryItem.materialId.uomSell &&
+          inventoryItem.materialId.uomBase.toString() !=
+            inventoryItem.materialId.uomSell.toString()
+        ) {
+          const convert =
+            await this.unitOfMeasureHelperService.getConversionFactor(
+              inventoryItem.materialId.uomBase,
+              inventoryItem.materialId.uomSell,
+            );
+          conversionFactor = convert.conversionFactor;
+        }
+
+        const stockInSellType = inventoryItem.stock * conversionFactor;
         if (index > -1) {
           menuItem.quantities[index].quantity = stockInSellType;
         } else {

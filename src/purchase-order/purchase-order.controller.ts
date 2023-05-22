@@ -21,6 +21,7 @@ import { PurchaseOrderDocument } from './schemas/purchase-order.schema';
 import { PaginateResult } from 'mongoose';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { QueryPurchaseOrderPreviewDto } from './dto/query-purchase-order-preview.dto';
 
 @Controller('purchase-order')
 @ApiTags('Purchase Orders')
@@ -47,6 +48,20 @@ export class PurchaseOrderController {
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<PurchaseOrderDocument>> {
     return await this.purchaseOrderService.findAll(req, query, paginateOptions);
+  }
+
+  @Get('preview')
+  @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.FETCH)
+  async preview(
+    @Req() req,
+    @Query() query: QueryPurchaseOrderPreviewDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<any> {
+    return await this.purchaseOrderService.poPreview(
+      req,
+      query,
+      paginateOptions,
+    );
   }
 
   @Get(':purchaseOrderId')
