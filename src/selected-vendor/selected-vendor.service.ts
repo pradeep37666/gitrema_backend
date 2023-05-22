@@ -32,11 +32,22 @@ export class SelectedVendorService {
     dto: CreateSelectedVendorDto,
     i18n: I18nContext,
   ): Promise<SelectedVendorDocument> {
-    return await this.selectedVendorModel.create({
+    const selectedVendor = await this.selectedVendorModel.create({
       ...dto,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
     });
+    if (dto.isDefault == true) {
+      await this.selectedVendorModel.updateMany(
+        {
+          restaurantId: selectedVendor.restaurantId,
+          _id: { $ne: selectedVendor._id },
+          materialId: selectedVendor.materialId,
+        },
+        { isDefault: false },
+      );
+    }
+    return selectedVendor;
   }
 
   async findAll(
@@ -95,6 +106,16 @@ export class SelectedVendorService {
 
     if (!selectedVendor) {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+    if (dto.isDefault == true) {
+      await this.selectedVendorModel.updateMany(
+        {
+          restaurantId: selectedVendor.restaurantId,
+          _id: { $ne: selectedVendor._id },
+          materialId: selectedVendor.materialId,
+        },
+        { isDefault: false },
+      );
     }
 
     return selectedVendor;

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 
 import * as paginate from 'mongoose-paginate-v2';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { MaterialType, UnitOfMeasure, ProcurementType } from '../enum/en';
 import { ListDocument } from 'src/list/schemas/list.schema';
@@ -57,3 +58,4 @@ export const RestaurantMaterialSchema =
   SchemaFactory.createForClass(RestaurantMaterial);
 
 RestaurantMaterialSchema.plugin(paginate);
+RestaurantMaterialSchema.plugin(mongooseAggregatePaginate);
