@@ -544,6 +544,22 @@ export class PurchaseOrderService {
     return exists;
   }
 
+  async confirm(req, purchaseOrderId: string, i18n: I18nContext) {
+    const purchaseOrder = await this.purchaseOrderModel.findOneAndUpdate(
+      { _id: purchaseOrderId, status: PurchaseOrderStatus.New },
+      { status: PurchaseOrderStatus.Draft },
+      {
+        new: true,
+      },
+    );
+
+    if (!purchaseOrder) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+
+    return purchaseOrder;
+  }
+
   async update(
     req,
     purchaseOrderId: string,

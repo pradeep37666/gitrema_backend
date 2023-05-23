@@ -122,6 +122,16 @@ export class PurchaseOrderController {
     );
   }
 
+  @Patch(':purchaseOrderId/confirm')
+  @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.UPDATE)
+  async confirm(
+    @Req() req,
+    @Param('purchaseOrderId') purchaseOrderId: string,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.purchaseOrderService.confirm(req, purchaseOrderId, i18n);
+  }
+
   @Delete(':purchaseOrderId')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.DELETE)
   async remove(
