@@ -427,7 +427,9 @@ export class InventoryHelperService {
         inventory,
         {
           stock: options.quantitiesSold,
-          uom: inventory?.materialId?.uomSell?.toString(),
+          uom: inventory.materialId.uomSell
+            ? inventory.materialId.uomSell.toString()
+            : material.uomBase.toString(),
         },
         InventoryAction.ItemSold,
       );

@@ -54,6 +54,7 @@ export class InvoiceReceiptService {
     items.forEach((i) => {
       const itemTaxableAmount = roundOffNumber(i.cost / (1 + Tax.rate / 100));
       i.tax = (itemTaxableAmount * Tax.rate) / 100;
+      i.netPrice = itemTaxableAmount;
       i.stockValue = i.stock * i.cost;
       totalCost += i.stockValue;
     });

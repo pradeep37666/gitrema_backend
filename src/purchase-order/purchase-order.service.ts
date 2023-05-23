@@ -44,6 +44,8 @@ import {
   UnitOfMeasure,
   UnitOfMeasureDocument,
 } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
+import { PurchaseOrderStatus } from './enum/en';
+import { FillToParDto } from './dto/fill-to-par.dto';
 
 @Injectable()
 export class PurchaseOrderService {
@@ -86,11 +88,25 @@ export class PurchaseOrderService {
     items.forEach((i) => {
       const itemTaxableAmount = roundOffNumber(i.cost / (1 + Tax.rate / 100));
       i.tax = (itemTaxableAmount * Tax.rate) / 100;
+      i.netPrice = itemTaxableAmount;
       i.stockValue = i.stock * i.cost;
       totalCost += i.stockValue;
     });
     const totalTaxableAmount = roundOffNumber(totalCost / (1 + Tax.rate / 100));
     const tax = (totalTaxableAmount * Tax.rate) / 100;
+    let poNumber = 100001;
+    const lastPurchaseOrder = await this.purchaseOrderModel.findOne(
+      { supplierId: req.user.supplierId },
+      {},
+      {
+        sort: {
+          poNumber: -1,
+        },
+      },
+    );
+    if (lastPurchaseOrder) {
+      poNumber = lastPurchaseOrder.poNumber + 1;
+    }
     return await this.purchaseOrderModel.create({
       ...dto,
       items,
@@ -98,13 +114,172 @@ export class PurchaseOrderService {
       tax,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
+      poNumber,
     });
+  }
+
+  async createDraft(
+    req: any,
+    dto: CreatePurchaseOrderDto,
+    i18n: I18nContext,
+  ): Promise<PurchaseOrderDocument> {
+    const items: any = dto.items;
+    let totalCost = 0;
+    items.forEach((i) => {
+      const itemTaxableAmount = roundOffNumber(i.cost / (1 + Tax.rate / 100));
+      i.tax = (itemTaxableAmount * Tax.rate) / 100;
+      i.netPrice = itemTaxableAmount;
+      i.stockValue = i.stock * i.cost;
+      totalCost += i.stockValue;
+    });
+    const totalTaxableAmount = roundOffNumber(totalCost / (1 + Tax.rate / 100));
+    const tax = (totalTaxableAmount * Tax.rate) / 100;
+    return await this.purchaseOrderModel.findOneAndUpdate(
+      {
+        restaurantId: dto.restaurantId,
+        vendorId: dto.vendorId,
+        status: PurchaseOrderStatus.Draft,
+      },
+      {
+        ...dto,
+        items,
+        totalCost,
+        tax,
+        addedBy: req.user.userId,
+        supplierId: req.user.supplierId,
+        status: PurchaseOrderStatus.Draft,
+      },
+      { upsert: true, setDefaultsOnInsert: true, new: true },
+    );
+  }
+
+  async fillToPar(req: any, query: FillToParDto, i18n: I18nContext) {
+    const inventory = await this.restaurantMaterialModel.aggregate(
+      [
+        {
+          $match: {
+            materialId: new mongoose.Types.ObjectId(query.materialId),
+            restaurantId: new mongoose.Types.ObjectId(query.restaurantId),
+            supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          },
+        },
+        {
+          $lookup: {
+            from: 'inventories',
+            let: {
+              restaurantId: '$restaurantId',
+              materialId: '$materialId',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$restaurantId', '$$restaurantId'],
+                  },
+                },
+              },
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$materialId', '$$materialId'],
+                  },
+                },
+              },
+            ],
+            as: 'inventory',
+          },
+        },
+        {
+          $lookup: {
+            from: 'selectedvendors',
+            let: {
+              restaurantId: '$restaurantId',
+              materialId: '$materialId',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$restaurantId', '$$restaurantId'],
+                  },
+                },
+              },
+              {
+                $match: {
+                  $expr: {
+                    $eq: ['$materialId', '$$materialId'],
+                  },
+                },
+              },
+              {
+                $match: {
+                  vendorId: new mongoose.Types.ObjectId(query.vendorId),
+                },
+              },
+            ],
+            as: 'selectedVendor',
+          },
+        },
+        {
+          $match: {
+            selectedVendor: { $ne: [] },
+          },
+        },
+      ],
+      { allowDiskUse: true },
+    );
+    console.log(inventory);
+
+    if (inventory.length == 0) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+    const uom = await this.unitOfMeasureModel.findOne(
+      {
+        _id: inventory[0].selectedVendor[0]?.uom,
+      },
+      { name: 1, nameAr: 1, _id: 1 },
+    );
+    const material = await this.materialModel.findOne(
+      {
+        _id: inventory[0].materialId,
+      },
+      {
+        name: 1,
+        nameAr: 1,
+        _id: 1,
+        description: 1,
+        descriptionAr: 1,
+        uomBase: 1,
+        materialType: 1,
+        procurementType: 1,
+      },
+    );
+    let conversionFactor = 1;
+    if (
+      inventory[0].selectedVendor[0].uom.toString() !=
+      material.uomBase.toString()
+    ) {
+      const convert = await this.unitOfMeasureHelperService.getConversionFactor(
+        inventory[0].selectedVendor[0].uom,
+        material.uomBase,
+      );
+      conversionFactor = convert.conversionFactor;
+    }
+    return {
+      cost: inventory[0].selectedVendor[0]?.cost,
+      quantity: inventory[0].selectedVendor[0]?.quantity,
+      uom: uom,
+      poQuantity:
+        (inventory[0].parLevel - inventory[0].inventory[0]?.stock) /
+        conversionFactor,
+    };
   }
 
   async findAll(
     req: any,
     query: QueryPurchaseOrderDto,
     paginateOptions: PaginationDto,
+    status = PurchaseOrderStatus.New,
   ): Promise<PaginateResult<PurchaseOrderDocument>> {
     let queryToApply: any = query;
     if (query.filter) {
@@ -113,11 +288,13 @@ export class PurchaseOrderService {
       const parsed = parser.parse(`${query.filter}`);
       queryToApply = { ...queryToApply, ...parsed.filter };
     }
+
     const records = await this.purchaseOrderModelPag.paginate(
       {
         ...queryToApply,
         supplierId: req.user.supplierId,
         deletedAt: null,
+        status,
       },
       {
         sort: DefaultSort,
@@ -129,7 +306,7 @@ export class PurchaseOrderService {
     return records;
   }
 
-  async poPreview(
+  async sheet(
     req: any,
     query: QueryPurchaseOrderPreviewDto,
     paginateOptions: PaginationDto,
