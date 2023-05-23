@@ -12,6 +12,7 @@ import {
   MaterialItemSchema,
 } from './material-item.schema';
 import { VendorDocument } from 'src/vendor/schemas/vendor.schema';
+import { PurchaseOrderStatus } from '../enum/en';
 
 export type PurchaseOrderDocument = PurchaseOrder & Document;
 
@@ -42,6 +43,9 @@ export class PurchaseOrder {
   restaurantId: RestaurantDocument;
 
   @Prop({ default: null })
+  poNumber: number;
+
+  @Prop({ default: null })
   url: string;
 
   @Prop({ type: [MaterialItemSchema], required: true })
@@ -52,6 +56,13 @@ export class PurchaseOrder {
 
   @Prop({ default: null })
   tax: number;
+
+  @Prop({
+    type: String,
+    enum: PurchaseOrderStatus,
+    default: PurchaseOrderStatus.New,
+  })
+  status: PurchaseOrderStatus;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

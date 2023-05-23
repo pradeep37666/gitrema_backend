@@ -32,6 +32,9 @@ export class MaterialItem {
   @Prop({})
   cost: number;
 
+  @Prop({})
+  netPrice: number;
+
   @Prop({ default: null })
   stockValue: number;
 
