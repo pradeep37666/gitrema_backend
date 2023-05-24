@@ -107,6 +107,40 @@ export class MaterialService {
         lean: true,
         ...paginateOptions,
         ...pagination,
+        populate: [
+          {
+            path: 'uomBase',
+            select: {
+              name: 1,
+              nameAr: 1,
+              _id: 1,
+            },
+          },
+          {
+            path: 'uomSell',
+            select: {
+              name: 1,
+              nameAr: 1,
+              _id: 1,
+            },
+          },
+          {
+            path: 'uomBuy',
+            select: {
+              name: 1,
+              nameAr: 1,
+              _id: 1,
+            },
+          },
+          {
+            path: 'uomRecipe',
+            select: {
+              name: 1,
+              nameAr: 1,
+              _id: 1,
+            },
+          },
+        ],
       },
     );
     return materials;

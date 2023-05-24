@@ -122,6 +122,20 @@ export class PurchaseOrderController {
     );
   }
 
+  @Patch(':purchaseOrderId/approve-preview')
+  @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.UPDATE)
+  async approvePreview(
+    @Req() req,
+    @Param('purchaseOrderId') purchaseOrderId: string,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.purchaseOrderService.approvePreview(
+      req,
+      purchaseOrderId,
+      i18n,
+    );
+  }
+
   @Patch(':purchaseOrderId/confirm')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.UPDATE)
   async confirm(

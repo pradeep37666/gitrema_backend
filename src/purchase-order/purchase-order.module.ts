@@ -21,6 +21,11 @@ import {
   UnitOfMeasure,
   UnitOfMeasureSchema,
 } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
+import { PurchaseOrderHelperService } from './purchase-order-helper.service';
+import {
+  SelectedVendor,
+  SelectedVendorSchema,
+} from 'src/selected-vendor/schema/selected-vendor.schema';
 
 @Module({
   imports: [
@@ -31,10 +36,11 @@ import {
       { name: Restaurant.name, schema: RestaurantSchema },
       { name: Vendor.name, schema: VendorSchema },
       { name: UnitOfMeasure.name, schema: UnitOfMeasureSchema },
+      { name: SelectedVendor.name, schema: SelectedVendorSchema },
     ]),
     UnitOfMeasureModule,
   ],
   controllers: [PurchaseOrderController],
-  providers: [PurchaseOrderService],
+  providers: [PurchaseOrderService, PurchaseOrderHelperService],
 })
 export class PurchaseOrderModule {}

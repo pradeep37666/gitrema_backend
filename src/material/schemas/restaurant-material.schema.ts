@@ -40,10 +40,10 @@ export class RestaurantMaterial {
   })
   materialId: MaterialDocument;
 
-  @Prop({ default: null })
+  @Prop({ default: 0 })
   minStockLevel: number;
 
-  @Prop({ default: null })
+  @Prop({ default: 0 })
   parLevel: number;
 
   @Prop({

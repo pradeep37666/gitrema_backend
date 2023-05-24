@@ -99,6 +99,13 @@ export class CreateMaterialDto {
   })
   menuItemId: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
+  })
+  category: string;
+
   @ApiProperty({ type: String, enum: MaterialType, enumName: 'MaterialType' })
   @IsEnum(MaterialType, {
     message: i18nValidationMessage('validation.MUST_BE_ENUM'),
