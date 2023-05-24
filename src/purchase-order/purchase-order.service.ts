@@ -46,6 +46,7 @@ import {
 } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 import { PurchaseOrderStatus } from './enum/en';
 import { FillToParDto } from './dto/fill-to-par.dto';
+import { PurchaseOrderHelperService } from './purchase-order-helper.service';
 
 @Injectable()
 export class PurchaseOrderService {
@@ -65,6 +66,7 @@ export class PurchaseOrderService {
     private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
     @InjectModel(UnitOfMeasure.name)
     private readonly unitOfMeasureModel: Model<UnitOfMeasureDocument>,
+    private readonly purchaseOrderHelperService: PurchaseOrderHelperService,
   ) {}
 
   async create(
@@ -104,10 +106,11 @@ export class PurchaseOrderService {
         },
       },
     );
-    if (lastPurchaseOrder) {
+    if (lastPurchaseOrder && lastPurchaseOrder.poNumber) {
       poNumber = lastPurchaseOrder.poNumber + 1;
     }
-    return await this.purchaseOrderModel.create({
+
+    const purchaseOrder = await this.purchaseOrderModel.create({
       ...dto,
       items,
       totalCost,
@@ -116,6 +119,8 @@ export class PurchaseOrderService {
       supplierId: req.user.supplierId,
       poNumber,
     });
+    this.purchaseOrderHelperService.postPurchaseOrderCreate(purchaseOrder);
+    return purchaseOrder;
   }
 
   async createDraft(
@@ -544,10 +549,10 @@ export class PurchaseOrderService {
     return exists;
   }
 
-  async confirm(req, purchaseOrderId: string, i18n: I18nContext) {
+  async approvePreview(req, purchaseOrderId: string, i18n: I18nContext) {
     const purchaseOrder = await this.purchaseOrderModel.findOneAndUpdate(
-      { _id: purchaseOrderId, status: PurchaseOrderStatus.New },
-      { status: PurchaseOrderStatus.Draft },
+      { _id: purchaseOrderId, status: PurchaseOrderStatus.Draft },
+      { status: PurchaseOrderStatus.New },
       {
         new: true,
       },
@@ -556,7 +561,23 @@ export class PurchaseOrderService {
     if (!purchaseOrder) {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
     }
+    this.purchaseOrderHelperService.postPurchaseOrderCreate(purchaseOrder);
+    return purchaseOrder;
+  }
 
+  async confirm(req, purchaseOrderId: string, i18n: I18nContext) {
+    const purchaseOrder = await this.purchaseOrderModel.findOneAndUpdate(
+      { _id: purchaseOrderId, status: PurchaseOrderStatus.New },
+      { status: PurchaseOrderStatus.Confirmed },
+      {
+        new: true,
+      },
+    );
+
+    if (!purchaseOrder) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+    this.purchaseOrderHelperService.postPurchaseOrderConfirmed(purchaseOrder);
     return purchaseOrder;
   }
 

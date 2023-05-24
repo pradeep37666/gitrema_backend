@@ -29,6 +29,14 @@ export class Material {
   })
   menuItemId: MenuItemDocument;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Category',
+    index: true,
+    default: null,
+  })
+  category: ListDocument;
+
   @Prop({ required: true })
   name: string;
 
