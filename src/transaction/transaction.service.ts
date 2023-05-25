@@ -64,8 +64,7 @@ export class TransactionService {
   async create(req: any, transactionDetail: any): Promise<TransactionDocument> {
     return await this.transactionModel.create({
       ...transactionDetail,
-      supplierId: req.type != PaymentTarget.Spn ? req.user.supplierId : null,
-      addedBy: req.user.userId,
+      addedBy: req ? req.user.userId : null,
     });
   }
 

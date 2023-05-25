@@ -48,8 +48,8 @@ export class CreateWasteEventDto {
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
-  @IsString({
-    message: i18nValidationMessage('validation.MUST_BE_STRING'),
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
   reason: string;
 }
