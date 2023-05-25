@@ -351,6 +351,7 @@ export enum ListType {
   TableRegion = 'Table Region',
   MaterialCategory = 'Material Category',
   StorageArea = 'Storage Area',
+  WasteReason = 'Waste Reason',
 }
 export enum ListStatus {
   Active = 'Active',

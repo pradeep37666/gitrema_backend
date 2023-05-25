@@ -20,6 +20,7 @@ import { Redirect } from '@nestjsplus/redirect';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
 @Public()
+@ApiTags('Alrajhi Payment Gateway')
 @Controller('arb-pg-webhook')
 export class ArbPgController {
   constructor(

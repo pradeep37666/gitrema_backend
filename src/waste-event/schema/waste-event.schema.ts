@@ -12,6 +12,7 @@ import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { RecipeDocument } from 'src/recipe/schema/recipe.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
+import { ListDocument } from 'src/list/schemas/list.schema';
 
 export type WasteEventDocument = WasteEvent & Document;
 
@@ -52,8 +53,13 @@ export class WasteEvent {
   })
   uom: UnitOfMeasureDocument;
 
-  @Prop({ required: true })
-  reason: string;
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'List',
+    required: true,
+  })
+  reason: ListDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
