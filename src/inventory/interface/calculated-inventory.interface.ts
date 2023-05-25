@@ -1,3 +1,5 @@
+import { InventoryDirection } from '../enum/en';
+
 export interface CalculatedInventory {
   stock: number;
   averageCost: number;
@@ -8,4 +10,5 @@ export interface CalculatedInventory {
     cost?: number;
     stockValue?: number;
   };
+  direction: InventoryDirection;
 }

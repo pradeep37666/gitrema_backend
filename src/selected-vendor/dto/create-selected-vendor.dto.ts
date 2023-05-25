@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsMongoId, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsBoolean,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class CreateSelectedVendorDto {
@@ -29,6 +35,13 @@ export class CreateSelectedVendorDto {
     message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
   materialId: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
+  })
+  vendorMaterialId?: string;
 
   @ApiProperty()
   @IsNotEmpty({

@@ -82,6 +82,7 @@ import { InventoryCountModule } from './inventory-count/inventory-count.module';
 import { ProfitDetailModule } from './profit-detail/profit-detail.module';
 import { InvoiceReceiptModule } from './invoice-receipt/invoice-receipt.module';
 import { SelectedVendorModule } from './selected-vendor/selected-vendor.module';
+import { VendorMaterialModule } from './vendor-material/vendor-material.module';
 
 @Module({
   imports: [
@@ -176,6 +177,7 @@ import { SelectedVendorModule } from './selected-vendor/selected-vendor.module';
     ProfitDetailModule,
     InvoiceReceiptModule,
     SelectedVendorModule,
+    VendorMaterialModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,6 +7,7 @@ import {
   UnitOfMeasure,
   UnitOfMeasureDocument,
 } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
+import { VendorMaterialDocument } from 'src/vendor-material/schemas/vendor-material.schema';
 
 export type MaterialItemDocument = MaterialItem & Document;
 
@@ -19,6 +20,14 @@ export class MaterialItem {
     required: true,
   })
   materialId: MaterialDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'VendorMaterial',
+    index: true,
+    default: null,
+  })
+  vendorMaterialId: VendorMaterialDocument;
 
   @Prop({ required: true })
   stock: number;
