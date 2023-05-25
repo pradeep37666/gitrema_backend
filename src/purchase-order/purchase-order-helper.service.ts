@@ -56,6 +56,7 @@ export class PurchaseOrderHelperService {
         await this.selectedVendorModel.create({
           restaurantId: purchaseOrder.restaurantId,
           materialId: purchaseOrder.items[i].materialId,
+          vendorMaterialId: purchaseOrder.items[i].vendorMaterialId ?? null,
           supplierId: purchaseOrder.supplierId,
           vendorId: purchaseOrder.vendorId,
           quantity: purchaseOrder.items[i].stock,

@@ -9,3 +9,7 @@ export enum InventoryAction {
   ReceivedWithTransfer = 'Received With Transfer',
   SentWithTransfer = 'Sent With Transfer',
 }
+export enum InventoryDirection {
+  Positive = 'Positive',
+  Negataive = 'Negative',
+}

@@ -13,7 +13,7 @@ import { InventoryService } from './inventory.service';
 
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
-import { InventoryAction } from './enum/en';
+import { InventoryAction, InventoryDirection } from './enum/en';
 import {
   Material,
   MaterialDocument,
@@ -116,6 +116,7 @@ export class InventoryHelperService {
       averageCost: inventoryItem.averageCost,
       stockValue: inventoryItem.stockValue,
       conversionFactor: 1,
+      direction: InventoryDirection.Negataive,
     };
     let convert = { conversionFactor: 1 };
     if (item.uom.toString() != inventoryItem.materialId.uomBase.toString()) {
@@ -139,6 +140,7 @@ export class InventoryHelperService {
           (inventoryItem.stock * inventoryItem.averageCost +
             item.cost * item.stock) /
           calculatedInventory.stock;
+        calculatedInventory.direction = InventoryDirection.Positive;
         break;
 
       case InventoryAction.SentWithTransfer:
@@ -160,6 +162,8 @@ export class InventoryHelperService {
         if (item.cost)
           calculatedInventory.averageCost =
             item.cost / convert.conversionFactor;
+        if (calculatedInventory.stock > inventoryItem.stock)
+          calculatedInventory.direction = InventoryDirection.Positive;
         break;
     }
 
@@ -636,6 +640,7 @@ export class InventoryHelperService {
       conversionFactor: calculatedInventory.conversionFactor,
       action,
       dataId: entity ? entity._id : null,
+      direction: calculatedInventory.direction,
     });
   }
 }

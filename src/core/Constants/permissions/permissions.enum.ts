@@ -49,6 +49,7 @@ export enum PermissionSubject {
   ProfitDetails = 'Profit Details',
   InvoiceReceipt = 'Invoice Receipt',
   SelectedVendor = 'Selected Vendor',
+  VendorMaterial = 'VendorMaterial',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',

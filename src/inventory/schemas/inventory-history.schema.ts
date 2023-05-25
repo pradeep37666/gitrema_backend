@@ -8,7 +8,7 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
-import { InventoryAction } from '../enum/en';
+import { InventoryAction, InventoryDirection } from '../enum/en';
 
 export type InventoryHistoryDocument = InventoryHistory & Document;
 
@@ -76,6 +76,9 @@ export class InventoryHistory {
 
   @Prop({ required: true, type: String, enum: InventoryAction })
   action: InventoryAction;
+
+  @Prop({ type: String, enum: InventoryDirection })
+  direction: InventoryDirection;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

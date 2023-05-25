@@ -13,6 +13,13 @@ export class MaterialItemDto {
   })
   materialId: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
+  })
+  vendorMaterialId?: string;
+
   @ApiProperty()
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
