@@ -137,15 +137,17 @@ export class PaymentService {
         ...paymentStatus,
       });
     } else {
+      let paymentGateway = null;
+      if (paymentRequestDetails.paymentMethod == PaymentMethod.Online)
+        paymentGateway = this.arbPgService.config.name;
+      else if (paymentRequestDetails.paymentMethod == PaymentMethod.POS)
+        paymentGateway = 'Near Pay';
       transaction.set({
         status:
           paymentRequestDetails.paymentMethod == PaymentMethod.Cash
             ? PaymentStatus.Success
             : PaymentStatus.Pending,
-        paymentGateway:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Online
-            ? this.arbPgService.config.name
-            : null,
+        paymentGateway,
         paymentMethod: paymentRequestDetails.paymentMethod,
       });
 
@@ -185,8 +187,8 @@ export class PaymentService {
       this.transactionService.update(transaction._id, dataToUpdate);
       return res;
     }
-
-    this.transactionService.postTransactionProcess(req, transaction);
+    if (paymentRequestDetails.paymentMethod == PaymentMethod.Cash)
+      this.transactionService.postTransactionProcess(req, transaction);
 
     return true;
   }
