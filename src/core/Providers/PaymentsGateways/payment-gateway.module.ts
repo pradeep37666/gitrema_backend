@@ -8,6 +8,11 @@ import { SupplierModule } from 'src/supplier/Supplier.module';
 import { NearPayController } from './near-pay.controller';
 import { NearPayService } from './near-pay.service';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import {
+  Transaction,
+  TransactionSchema,
+} from 'src/transaction/schemas/transactions.schema';
 
 @Module({
   imports: [
@@ -15,6 +20,9 @@ import { SocketIoModule } from 'src/socket-io/socket-io.module';
     TransactionModule,
     forwardRef(() => SupplierModule),
     SocketIoModule,
+    MongooseModule.forFeature([
+      { name: Transaction.name, schema: TransactionSchema },
+    ]),
   ],
   providers: [ArbPgService, NearPayService],
   controllers: [ArbPgController, NearPayController],

@@ -73,6 +73,9 @@ export class Transaction {
   })
   supplierId: SupplierDocument;
 
+  @Prop({ default: null })
+  uuId: string;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
