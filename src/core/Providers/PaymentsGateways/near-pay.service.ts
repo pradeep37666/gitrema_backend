@@ -15,7 +15,7 @@ export class NearPayService {
 
   async approved(dto) {
     const transaction = await this.transactionService.update(
-      dto?.customer_reference_number,
+      dto?.transaction_uuid,
       {
         pgResponse: dto,
         status: PaymentStatus.Success,
@@ -36,7 +36,7 @@ export class NearPayService {
 
   async rejected(dto) {
     const transaction = await this.transactionService.update(
-      dto?.customer_reference_number,
+      dto?.transaction_uuid,
       {
         pgResponse: dto,
         status: PaymentStatus.Failed,
