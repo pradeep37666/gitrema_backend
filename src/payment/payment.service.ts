@@ -190,6 +190,11 @@ export class PaymentService {
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Cash)
       this.transactionService.postTransactionProcess(req, transaction);
 
+    this.socketGateway.emit(
+      transaction.supplierId.toString(),
+      SocketEvents.PosLaunched,
+      transaction,
+    );
     return transaction;
   }
 
