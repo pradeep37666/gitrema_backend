@@ -37,6 +37,8 @@ import { SupplierService } from 'src/supplier/Supplier.service';
 import { GlobalConfigService } from 'src/global-config/global-config.service';
 import * as moment from 'moment';
 
+import { v4 as uuidv4 } from 'uuid';
+
 import {
   DELIVERY_MARGIN,
   PAYOUT_DAY,
@@ -106,21 +108,24 @@ export class PaymentService {
       paymentRequestDetails.cashierId,
       true,
     );
+    let paymentGateway = null;
+    if (paymentRequestDetails.paymentMethod == PaymentMethod.Online)
+      paymentGateway = this.arbPgService.config.name;
+    else if (paymentRequestDetails.paymentMethod == PaymentMethod.POS)
+      paymentGateway = 'Near Pay';
     if (!paymentRequestDetails.transactionId) {
       transaction = await this.transactionService.create(req, {
         supplierId: order.supplierId,
         orderId: order._id,
         amount: amountToCollect,
-        paymentGateway:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Online
-            ? this.arbPgService.config.name
-            : null,
+        paymentGateway,
         paymentMethod: paymentRequestDetails.paymentMethod,
         status:
           paymentRequestDetails.paymentMethod == PaymentMethod.Online
             ? PaymentStatus.Pending
             : PaymentStatus.Success,
         cashierId,
+        uuId: uuidv4(),
       });
 
       let paymentStatus = {};
@@ -137,11 +142,6 @@ export class PaymentService {
         ...paymentStatus,
       });
     } else {
-      let paymentGateway = null;
-      if (paymentRequestDetails.paymentMethod == PaymentMethod.Online)
-        paymentGateway = this.arbPgService.config.name;
-      else if (paymentRequestDetails.paymentMethod == PaymentMethod.POS)
-        paymentGateway = 'Near Pay';
       transaction.set({
         status:
           paymentRequestDetails.paymentMethod == PaymentMethod.Cash

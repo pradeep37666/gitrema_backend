@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 import { PaymentStatus } from 'src/core/Constants/enum';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import {
+  Transaction,
+  TransactionDocument,
+} from 'src/transaction/schemas/transactions.schema';
 
 import { TransactionService } from 'src/transaction/transaction.service';
 
@@ -11,18 +17,21 @@ export class NearPayService {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly socketIoGateway: SocketIoGateway,
+    @InjectModel(Transaction.name)
+    private readonly transactionModel: Model<TransactionDocument>,
   ) {}
 
   async approved(dto) {
-    const transaction = await this.transactionService.update(
-      dto?.transaction_uuid,
-      {
-        pgResponse: dto,
-        status: PaymentStatus.Success,
-      },
-    );
+    const transaction = await this.transactionModel.findOne({
+      uuId: dto?.transaction_uuid,
+    });
 
     if (transaction) {
+      transaction.set({
+        pgResponse: dto,
+        status: PaymentStatus.Success,
+      });
+      transaction.save();
       await this.transactionService.postTransactionProcess(null, transaction);
       this.socketIoGateway.emit(
         transaction.supplierId.toString(),
@@ -35,14 +44,15 @@ export class NearPayService {
   }
 
   async rejected(dto) {
-    const transaction = await this.transactionService.update(
-      dto?.transaction_uuid,
-      {
+    const transaction = await this.transactionModel.findOne({
+      uuId: dto?.transaction_uuid,
+    });
+
+    if (transaction) {
+      transaction.set({
         pgResponse: dto,
         status: PaymentStatus.Failed,
-      },
-    );
-    if (transaction) {
+      });
       this.socketIoGateway.emit(
         transaction.supplierId.toString(),
         SocketEvents.PosTransaction,
