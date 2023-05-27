@@ -19,7 +19,7 @@ export class VendorMaterial {
     index: true,
     required: true,
   })
-  supplierId: SupplierDocument;
+  vendorId: SupplierDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

@@ -1,22 +1,33 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
 
 import * as paginate from 'mongoose-paginate-v2';
-import {
-  ManualCount,
-  ManualCountSchema,
-} from 'src/inventory-count/schema/inventory-count-item.schema';
-import { ListDocument } from 'src/list/schemas/list.schema';
+
 import { MaterialDocument } from 'src/material/schemas/material.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
-export type InventoryDocument = Inventory & Document;
+export type InventoryTransferDocument = InventoryTransfer & Document;
+
+@Schema({ _id: false })
+class Target {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Restaurant',
+    index: true,
+    required: true,
+  })
+  targetRestaurantId: RestaurantDocument;
+
+  @Prop({ required: true })
+  stock: number;
+}
+const TargetSchema = SchemaFactory.createForClass(Target);
 
 @Schema({ timestamps: true })
-export class Inventory {
+export class InventoryTransfer {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Supplier',
@@ -31,7 +42,7 @@ export class Inventory {
     index: true,
     required: true,
   })
-  restaurantId: RestaurantDocument;
+  sourceRestaurantId: RestaurantDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -47,33 +58,13 @@ export class Inventory {
     ref: 'UnitOfMeasure',
     required: true,
   })
-  uomInventory: UnitOfMeasureDocument[];
+  uom: UnitOfMeasureDocument[];
 
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    index: true,
-    ref: 'UnitOfMeasure',
-    required: true,
-  })
-  uomBase: UnitOfMeasureDocument;
-
-  @Prop({
-    type: [ManualCountSchema],
-    default: [],
-  })
-  storage: ManualCount[];
-
-  @Prop({ default: 0 })
+  @Prop({ required: true })
   stock: number;
 
-  @Prop({ default: 0 })
-  stockValue: number;
-
-  @Prop({ default: 0 })
-  averageCost: number;
-
-  @Prop()
-  expirationDate: Date;
+  @Prop({ type: [TargetSchema], required: true })
+  target: Target[];
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -83,6 +74,7 @@ export class Inventory {
   addedBy: UserDocument;
 }
 
-export const InventorySchema = SchemaFactory.createForClass(Inventory);
+export const InventoryTransferSchema =
+  SchemaFactory.createForClass(InventoryTransfer);
 
-InventorySchema.plugin(paginate);
+InventoryTransferSchema.plugin(paginate);

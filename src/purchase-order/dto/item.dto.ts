@@ -1,7 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsMongoId, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsDate,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
+import * as moment from 'moment';
 
 export class MaterialItemDto {
   @ApiProperty()
@@ -44,6 +51,14 @@ export class MaterialItemDto {
     },
   )
   cost: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Transform(
+    ({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD HH:MM')),
+  )
+  @IsDate()
+  expirationDate?: Date;
 
   @ApiProperty({})
   @IsNotEmpty({

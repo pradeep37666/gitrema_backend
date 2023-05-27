@@ -62,6 +62,9 @@ export class ProductionEvent {
   @Prop({ default: null })
   totalCost: number;
 
+  @Prop({ default: false })
+  isApplied: boolean;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,

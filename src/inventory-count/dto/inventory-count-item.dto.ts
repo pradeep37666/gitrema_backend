@@ -1,13 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsDate,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   ValidateNested,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
+import * as moment from 'moment';
 
 class ManualCountDto {
   @ApiProperty({ example: 1 })
@@ -61,6 +64,14 @@ export class InventoryCountItemDto {
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
   count: ManualCountDto[];
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Transform(
+    ({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD HH:MM')),
+  )
+  @IsDate()
+  expirationDate?: Date;
 
   countValue?: number;
   onHandCount?: number;

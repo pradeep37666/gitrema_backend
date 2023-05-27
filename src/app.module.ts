@@ -163,7 +163,7 @@ import { VendorMaterialModule } from './vendor-material/vendor-material.module';
     DeliveryModule,
     NotificationModule,
     GooglePlacesModule,
-    VendorModule,
+    // VendorModule,
     MaterialModule,
 
     InventoryModule,

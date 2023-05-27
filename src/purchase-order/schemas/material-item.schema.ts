@@ -75,6 +75,9 @@ export class MaterialItem {
     default: null,
   })
   storageArea: ListDocument;
+
+  @Prop()
+  expirationDate: Date;
 }
 
 export const MaterialItemSchema = SchemaFactory.createForClass(MaterialItem);

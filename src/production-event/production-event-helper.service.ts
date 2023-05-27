@@ -24,7 +24,10 @@ export class ProductionEventHelperService {
     private readonly inventoryHelperService: InventoryHelperService,
   ) {}
 
-  async executeRecipe(dto: CreateProductionEventDto) {
+  async executeRecipe(
+    productionEvent: ProductionEventDocument,
+    dto: CreateProductionEventDto,
+  ) {
     const recipe = await this.recipeModel
       .findOne({
         masterMaterialId: dto.materialId,
@@ -44,6 +47,7 @@ export class ProductionEventHelperService {
             restaurantId: dto.restaurantId,
             quantitiesSold: dto.quantity,
             uom: dto.uom,
+            entity: productionEvent,
           },
           true,
         );

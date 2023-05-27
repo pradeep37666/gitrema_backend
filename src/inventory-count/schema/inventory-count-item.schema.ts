@@ -74,6 +74,9 @@ export class InventoryCountItem {
     required: true,
   })
   uomBase: UnitOfMeasureDocument;
+
+  @Prop()
+  expirationDate: Date;
 }
 
 export const InventoryCountItemSchema =
