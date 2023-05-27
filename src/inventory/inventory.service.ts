@@ -33,6 +33,14 @@ import {
   InventoryHistoryDocument,
 } from './schemas/inventory-history.schema';
 import { TransferInventoryDto } from './dto/transfer-inventory.dto';
+import {
+  LowInventory,
+  LowInventoryDocument,
+} from './schemas/low-inventory.schema';
+import {
+  InventoryTransfer,
+  InventoryTransferDocument,
+} from './schemas/inventory-transfer.schema';
 
 @Injectable()
 export class InventoryService {
@@ -43,8 +51,14 @@ export class InventoryService {
     private readonly inventoryModelPag: PaginateModel<InventoryDocument>,
     @InjectModel(InventoryHistory.name)
     private readonly inventoryHistoryModelPag: PaginateModel<InventoryHistoryDocument>,
+    @InjectModel(LowInventory.name)
+    private readonly lowInventoryModelPag: PaginateModel<LowInventoryDocument>,
     @InjectModel(Material.name)
     private readonly materialModel: Model<MaterialDocument>,
+    @InjectModel(InventoryTransfer.name)
+    private readonly inventoryTransferModel: Model<InventoryTransferDocument>,
+    @InjectModel(InventoryTransfer.name)
+    private readonly inventoryTransferModelPag: PaginateModel<InventoryTransferDocument>,
     @Inject(forwardRef(() => InventoryHelperService))
     private readonly inventoryHelperService: InventoryHelperService,
     @Inject(forwardRef(() => UnitOfMeasureHelperService))
@@ -151,6 +165,34 @@ export class InventoryService {
     return records;
   }
 
+  async fetchLowInventory(
+    req: any,
+    query: QueryInventoryHistoryDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<LowInventoryDocument>> {
+    let queryToApply: any = query;
+    if (query.filter) {
+      //delete queryToApply.filter;
+      const parser = new MongooseQueryParser();
+      const parsed = parser.parse(`${query.filter}`);
+      queryToApply = { ...queryToApply, ...parsed.filter };
+    }
+    const records = await this.lowInventoryModelPag.paginate(
+      {
+        ...queryToApply,
+        supplierId: req.user.supplierId,
+      },
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+
+    return records;
+  }
+
   async transferInventory(req, dto: TransferInventoryDto, i18n: I18nContext) {
     const inventory = await this.inventoryModel
       .findOne({
@@ -169,12 +211,53 @@ export class InventoryService {
     if (convert.conversionFactor * inventory.stock < dto.stock) {
       throw new NotFoundException(`Not enough stock to transfer`);
     }
+    const totalTargetStock = dto.target.reduce((acc, d) => {
+      return acc + d.stock;
+    }, 0);
+    if (dto.stock != totalTargetStock) {
+      throw new NotFoundException(`Total target stock must be ${dto.stock}`);
+    }
+    const inventoryTransfer = await this.inventoryTransferModel.create({
+      ...dto,
+      supplierId: req.user.supplierId,
+      addedBy: req.user.userId,
+    });
+    if (inventoryTransfer) {
+      await this.inventoryHelperService.applyTransferRequest(
+        req,
+        inventory,
+        inventoryTransfer,
+      );
+    }
+    return inventoryTransfer;
+  }
 
-    return await this.inventoryHelperService.applyTransferRequest(
-      req,
-      inventory,
-      dto,
+  async fetchTransfers(
+    req: any,
+    query: QueryInventoryHistoryDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<InventoryTransferDocument>> {
+    let queryToApply: any = query;
+    if (query.filter) {
+      //delete queryToApply.filter;
+      const parser = new MongooseQueryParser();
+      const parsed = parser.parse(`${query.filter}`);
+      queryToApply = { ...queryToApply, ...parsed.filter };
+    }
+    const records = await this.inventoryTransferModelPag.paginate(
+      {
+        ...queryToApply,
+        supplierId: req.user.supplierId,
+      },
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
     );
+
+    return records;
   }
 
   async findOne(
@@ -237,6 +320,7 @@ export class InventoryService {
       inventory,
       calculatedInventory,
       InventoryAction.InventoryCount,
+      null,
     );
     this.inventoryHelperService.applyToMenuItem(inventory);
 

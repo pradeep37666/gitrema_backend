@@ -32,7 +32,7 @@ export class VendorMaterialService {
   ): Promise<VendorMaterialDocument> {
     return await this.vendorMaterialModel.create({
       ...dto,
-      supplierId: req.user.supplierId,
+      vendorId: req.user.supplierId,
       addedBy: req.user.userId,
     });
   }
@@ -52,7 +52,7 @@ export class VendorMaterialService {
     const records = await this.vendorMaterialModelPag.paginate(
       {
         ...queryToApply,
-        supplierId: req.user.supplierId,
+        vendorId: req.user.supplierId,
         deletedAt: null,
       },
       {

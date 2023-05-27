@@ -513,7 +513,7 @@ export class OrderHelperService {
         restaurantId: order.restaurantId.toString(),
         menuItemId: menuItem._id.toString(),
         quantitiesSold: items[i].quantity,
-        orderId: order._id.toString(),
+        entity: order,
         price: items[i].unitPriceAfterDiscount,
         paymentStatus: order.paymentStatus,
       });

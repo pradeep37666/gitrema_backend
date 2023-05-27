@@ -27,6 +27,7 @@ import { I18n, I18nContext } from 'nestjs-i18n';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { QueryInventoryHistoryDto } from './dto/query-inventory-history.dto';
 import { TransferInventoryDto } from './dto/transfer-inventory.dto';
+import { InventoryTransferDocument } from './schemas/inventory-transfer.schema';
 
 @Controller('inventory')
 @ApiTags('Inventory')
@@ -49,6 +50,20 @@ export class InventoryController {
     @I18n() i18n: I18nContext,
   ) {
     return await this.inventoryService.transferInventory(req, dto, i18n);
+  }
+
+  @Get('fetch-transfers')
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.LIST)
+  async fetchTransfers(
+    @Req() req,
+    @Query() query: QueryInventoryHistoryDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<InventoryTransferDocument>> {
+    return await this.inventoryService.fetchTransfers(
+      req,
+      query,
+      paginateOptions,
+    );
   }
 
   @Get()
@@ -78,6 +93,20 @@ export class InventoryController {
     @Query() paginateOptions: PaginationDto,
   ) {
     return await this.inventoryService.fetchHistory(
+      req,
+      query,
+      paginateOptions,
+    );
+  }
+
+  @Get('low-inventory')
+  @PermissionGuard(PermissionSubject.Inventory, Permission.Common.FETCH)
+  async lowInventory(
+    @Req() req,
+    @Query() query: QueryInventoryHistoryDto,
+    @Query() paginateOptions: PaginationDto,
+  ) {
+    return await this.inventoryService.fetchLowInventory(
       req,
       query,
       paginateOptions,

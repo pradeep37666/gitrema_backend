@@ -30,6 +30,14 @@ import {
   Restaurant,
   RestaurantSchema,
 } from 'src/restaurant/schemas/restaurant.schema';
+import {
+  LowInventory,
+  LowInventorySchema,
+} from './schemas/low-inventory.schema';
+import {
+  InventoryTransfer,
+  InventoryTransferSchema,
+} from './schemas/inventory-transfer.schema';
 
 @Module({
   imports: [
@@ -42,6 +50,8 @@ import {
       { name: ProfitDetail.name, schema: ProfitDetailSchema },
       { name: RestaurantMaterial.name, schema: RestaurantMaterialSchema },
       { name: Restaurant.name, schema: RestaurantSchema },
+      { name: LowInventory.name, schema: LowInventorySchema },
+      { name: InventoryTransfer.name, schema: InventoryTransferSchema },
     ]),
     forwardRef(() => UnitOfMeasureModule),
     RecipeModule,

@@ -30,6 +30,10 @@ import {
   TIMEZONE,
 } from 'src/core/Constants/system.constant';
 import * as moment from 'moment';
+import {
+  LowInventory,
+  LowInventoryDocument,
+} from './schemas/low-inventory.schema';
 
 @Injectable()
 export class InventorySchedulerService {
@@ -42,6 +46,8 @@ export class InventorySchedulerService {
     private readonly restaurantModel: Model<RestaurantDocument>,
     @InjectModel(Material.name)
     private readonly materialModel: Model<MaterialDocument>,
+    @InjectModel(LowInventory.name)
+    private readonly lowInventoryModel: Model<LowInventoryDocument>,
     @Inject(forwardRef(() => UnitOfMeasureHelperService))
     private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
     private readonly mailService: MailService,
@@ -105,9 +111,26 @@ export class InventorySchedulerService {
               },
               {
                 $match: {
-                  $expr: {
-                    $lte: ['$stock', '$$minStockLevel'],
-                  },
+                  $or: [
+                    {
+                      $expr: {
+                        $lte: ['$stock', '$$minStockLevel'],
+                      },
+                    },
+                    {
+                      $expr: {
+                        $eq: [
+                          moment.utc().format('Y-m-d'),
+                          {
+                            $dateToString: {
+                              date: '$expirationDate',
+                              format: '%Y-%m-%d',
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
                 },
               },
             ],
@@ -151,39 +174,47 @@ export class InventorySchedulerService {
           outOfStockMaterials[inventories[i].restaurantId.toString()] = {
             materials: [],
             email: restaurants[inventories[i].restaurantId.toString()].email,
+            restaurantId: inventories[i].restaurantId,
+            supplierId: inventories[i].supplierId,
           };
         }
         outOfStockMaterials[
           inventories[i].restaurantId.toString()
         ].materials.push({
-          material: materials[inventories[i].materialId.toString()],
+          //material: materials[inventories[i].materialId.toString()],
+          materialId: inventories[i].materialId,
+          materialName: materials[inventories[i].materialId.toString()]?.name,
+          materialNameAr:
+            materials[inventories[i].materialId.toString()]?.nameAr,
           onHand: inventories[i].inventory[0].stock,
           minimumStockLevel: inventories[i].minStockLevel,
+          expirationDate: inventories[i].inventory[0].expirationDate,
         });
       }
       for (const i in outOfStockMaterials) {
-        let html = `<table>
-                      <tr>
-                        <th>Material</th>
-                        <th>On Hand</th>
-                        <th>Minimum Stock Level</th>
-                      </tr>
-                    `;
-        for (const j in outOfStockMaterials[i].materials) {
-          html += `<tr>
-                    <td>${outOfStockMaterials[i].materials[j].material.name}</td>
-                    <td>${outOfStockMaterials[i].materials[j].onHand}</td>
-                    <td>${outOfStockMaterials[i].materials[j].minimumStockLevel}</td>
-                  </tr>
-                  `;
-        }
-        html += `<\table>`;
-        if (outOfStockMaterials[i].email)
-          this.mailService.send({
-            to: outOfStockMaterials[i].email,
-            subject: 'Low Inventory',
-            body: html,
-          });
+        // let html = `<table>
+        //               <tr>
+        //                 <th>Material</th>
+        //                 <th>On Hand</th>
+        //                 <th>Minimum Stock Level</th>
+        //               </tr>
+        //             `;
+        // for (const j in outOfStockMaterials[i].materials) {
+        //   html += `<tr>
+        //             <td>${outOfStockMaterials[i].materials[j].material.name}</td>
+        //             <td>${outOfStockMaterials[i].materials[j].onHand}</td>
+        //             <td>${outOfStockMaterials[i].materials[j].minimumStockLevel}</td>
+        //           </tr>
+        //           `;
+        // }
+        // html += `<\table>`;
+        // if (outOfStockMaterials[i].email)
+        //   this.mailService.send({
+        //     to: outOfStockMaterials[i].email,
+        //     subject: 'Low Inventory',
+        //     body: html,
+        //   });
+        await this.lowInventoryModel.create(outOfStockMaterials[i]);
       }
       this.globalConfigService.create(null, {
         lastLowInventoryNotificationSentAt: new Date(),

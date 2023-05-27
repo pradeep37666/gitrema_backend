@@ -39,6 +39,7 @@ import {
   ProfitDetail,
   ProfitDetailDocument,
 } from 'src/profit-detail/schema/profit-detail.schema';
+import { InventoryTransferDocument } from './schemas/inventory-transfer.schema';
 
 @Injectable()
 export class InventoryHelperService {
@@ -95,6 +96,7 @@ export class InventoryHelperService {
       goodsReceipt.items[i].baseUomCost =
         goodsReceipt.items[i].cost / calculatedInventory.conversionFactor;
 
+      inventoryItem.expirationDate = goodsReceipt.items[i].expirationDate;
       this.applyToMenuItem(inventoryItem);
     }
     await goodsReceipt.save();
@@ -188,49 +190,54 @@ export class InventoryHelperService {
   async applyTransferRequest(
     req,
     sourceInventoryItem: InventoryDocument,
-    transferDetails: TransferInventoryDto,
+    inventoryTransfer: InventoryTransferDocument,
   ) {
-    let targetInventoryItem: InventoryDocument = await this.inventoryModel
-      .findOne({
-        restaurantId: transferDetails.targetRestaurantId,
-        materialId: transferDetails.materialId,
-      })
-      .populate([{ path: 'materialId' }]);
+    for (const i in inventoryTransfer.target) {
+      let targetInventoryItem: InventoryDocument = await this.inventoryModel
+        .findOne({
+          restaurantId: inventoryTransfer.target[i].targetRestaurantId,
+          materialId: inventoryTransfer.materialId,
+        })
+        .populate([{ path: 'materialId' }]);
 
-    if (!targetInventoryItem) {
-      targetInventoryItem = await this.inventoryService.create(req, {
-        restaurantId: transferDetails.targetRestaurantId,
-        materialId: transferDetails.materialId,
-        stock: 0,
-        averageCost: 0,
-        storageArea: null,
-        uom: transferDetails.uom,
-      });
+      if (!targetInventoryItem) {
+        targetInventoryItem = await this.inventoryService.create(req, {
+          restaurantId:
+            inventoryTransfer.target[i].targetRestaurantId.toString(),
+          materialId: inventoryTransfer.materialId.toString(),
+          stock: 0,
+          averageCost: 0,
+          storageArea: null,
+          uom: inventoryTransfer.uom.toString(),
+        });
+      }
+      const calculatedInventory = await this.calculateInventoryItem(
+        targetInventoryItem,
+        {
+          stock: inventoryTransfer.target[i].stock,
+          uom: inventoryTransfer.uom.toString(),
+          cost: sourceInventoryItem.averageCost,
+        },
+        InventoryAction.ReceivedWithTransfer,
+      );
+
+      console.log('########', calculatedInventory);
+
+      targetInventoryItem = await this.saveInventory(
+        targetInventoryItem,
+        calculatedInventory,
+        InventoryAction.ReceivedWithTransfer,
+        inventoryTransfer,
+      );
+
+      this.applyToMenuItem(targetInventoryItem);
     }
-    const calculatedInventory = await this.calculateInventoryItem(
-      targetInventoryItem,
-      {
-        ...transferDetails,
-        cost: sourceInventoryItem.averageCost,
-      },
-      InventoryAction.ReceivedWithTransfer,
-    );
-
-    console.log('########', calculatedInventory);
-
-    targetInventoryItem = await this.saveInventory(
-      targetInventoryItem,
-      calculatedInventory,
-      InventoryAction.ReceivedWithTransfer,
-      sourceInventoryItem,
-    );
-
-    this.applyToMenuItem(targetInventoryItem);
 
     const sourceCalculatedInventory = await this.calculateInventoryItem(
       sourceInventoryItem,
       {
-        ...transferDetails,
+        stock: inventoryTransfer.stock,
+        uom: inventoryTransfer.uom.toString(),
         cost: sourceInventoryItem.averageCost,
       },
       InventoryAction.SentWithTransfer,
@@ -240,12 +247,10 @@ export class InventoryHelperService {
       sourceInventoryItem,
       sourceCalculatedInventory,
       InventoryAction.SentWithTransfer,
-      targetInventoryItem,
+      inventoryTransfer,
     );
 
     this.applyToMenuItem(sourceInventoryItem);
-
-    return { sourceInventoryItem, targetInventoryItem };
   }
 
   async applyWasteEvent(wasteEvent: WasteEventDocument) {
@@ -309,7 +314,7 @@ export class InventoryHelperService {
       );
 
       inventory.storage = inventoryCount.items[j].count;
-
+      inventory.expirationDate = inventoryCount.items[j].expirationDate;
       inventory = await this.saveInventory(
         inventory,
         calculatedInventory,
@@ -367,7 +372,7 @@ export class InventoryHelperService {
     menuItemId: string;
     quantitiesSold: number;
     price: number;
-    orderId?: string;
+    entity: Document;
     paymentStatus?: string;
   }) {
     const material = await this.materialModel.findOne({
@@ -399,7 +404,7 @@ export class InventoryHelperService {
           supplierId: material.supplierId,
           restaurantId: options.restaurantId,
           materialId: material._id,
-          orderId: options.orderId,
+          orderId: options.entity._id,
           menuItemId: options.menuItemId,
           quantity: options.quantitiesSold,
           unitPrice: options.price,
@@ -417,7 +422,7 @@ export class InventoryHelperService {
     material: MaterialDocument,
     options: {
       restaurantId: string;
-
+      entity: Document;
       quantitiesSold: number;
     },
   ) {
@@ -441,6 +446,7 @@ export class InventoryHelperService {
         inventory,
         calculatedInventory,
         InventoryAction.ItemSold,
+        options.entity,
       );
       return inventory;
     }
@@ -451,7 +457,7 @@ export class InventoryHelperService {
     recipe: RecipeDocument,
     options: {
       restaurantId: string;
-
+      entity: Document;
       quantitiesSold: number;
       uom?: string;
     },
@@ -538,6 +544,7 @@ export class InventoryHelperService {
         isProductionEvent
           ? InventoryAction.ProductionEvent
           : InventoryAction.ComponentsItemSold,
+        options.entity,
       );
 
       this.applyToMenuItem(inventory);
@@ -548,6 +555,7 @@ export class InventoryHelperService {
         uom: options.uom,
         stock: options.quantitiesSold,
         totalCost: preparedData.totalCost,
+        entity: options.entity,
       });
     }
     return preparedData;
@@ -560,6 +568,7 @@ export class InventoryHelperService {
       uom: string;
       restaurantId: string;
       totalCost: number;
+      entity: Document;
     },
   ) {
     let inventoryItem: InventoryDocument = await this.inventoryModel.findOne({
@@ -602,6 +611,7 @@ export class InventoryHelperService {
       inventoryItem,
       calculatedInventory,
       InventoryAction.ProductionEvent,
+      options.entity,
     );
 
     this.applyToMenuItem(inventoryItem);
@@ -611,7 +621,7 @@ export class InventoryHelperService {
     inventory: InventoryDocument,
     calculatedInventory: CalculatedInventory,
     action: InventoryAction,
-    entity: Document = null,
+    entity: Document,
   ): Promise<InventoryDocument> {
     console.log('For Saving', calculatedInventory);
     inventory.set({

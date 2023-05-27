@@ -55,11 +55,11 @@ export class SelectedVendor {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Vendor',
+    ref: 'Supplier',
     index: true,
     required: true,
   })
-  vendorId: VendorDocument;
+  vendorId: SupplierDocument;
 
   @Prop({ required: true })
   cost: number;
