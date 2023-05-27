@@ -9,6 +9,7 @@ import {
   IndividualWorkingHoursSchema,
 } from 'src/restaurant/schemas/restaurant.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
+import { SupplierType } from '../enum/en';
 
 export type SupplierDocument = Supplier & Document;
 
@@ -142,6 +143,9 @@ export class Supplier {
 
   @Prop({ default: TIMEZONE })
   timezone: string;
+
+  @Prop({ type: String, enum: SupplierType })
+  type: SupplierType;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

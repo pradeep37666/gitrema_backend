@@ -12,12 +12,15 @@ import {
   IsMongoId,
   IsDate,
   MinDate,
+  IsEnum,
 } from 'class-validator';
 import {
   DefaultWorkingHoursDTO,
   IndividualWorkHoursDTO,
 } from 'src/restaurant/dto/create-restaurant.dto';
 import * as moment from 'moment';
+import { SupplierType } from './enum/en';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class AddSupplierDto {
   @ApiProperty()
@@ -203,6 +206,15 @@ export class AddSupplierDto {
   @Type(() => IndividualWorkHoursDTO)
   @IsOptional()
   overrideWorkingHours: IndividualWorkHoursDTO[];
+
+  @ApiProperty({ type: String, enum: SupplierType, enumName: 'SupplierType' })
+  @IsEnum(SupplierType, {
+    message: i18nValidationMessage('validation.ENUM'),
+  })
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.NOT_EMPTY'),
+  })
+  type: SupplierType;
 
   @ApiProperty({ required: false })
   @IsBoolean()
