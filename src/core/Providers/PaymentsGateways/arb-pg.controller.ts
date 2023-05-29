@@ -33,7 +33,7 @@ export class ArbPgController {
   @Post('process-payment-response')
   @Redirect()
   async create(@Req() req, @Body() paymentDetails: any) {
-    console.log(paymentDetails.trandata);
+    console.log(paymentDetails);
     const transObj = this.arbPgService.parseTransResponse(
       this.arbPgService.aesDecryption(paymentDetails.trandata),
     );
