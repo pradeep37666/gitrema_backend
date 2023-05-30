@@ -37,6 +37,10 @@ import { InvoiceType } from 'src/invoice/invoice.enum';
 import { Invoice, InvoiceDocument } from 'src/invoice/schemas/invoice.schema';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { getHBVars } from 'src/core/Helpers/universal.helper';
+import {
+  ExpoPushNotificationService,
+  ISendExpoMessages,
+} from 'src/notification/expo-push-notification.service';
 
 @Injectable()
 export class OrderNotificationService {
@@ -54,6 +58,7 @@ export class OrderNotificationService {
     private readonly tanqyatService: TaqnyatService,
     @Inject(forwardRef(() => InvoiceService))
     private invoiceService: InvoiceService,
+    private expoPushNotificationService: ExpoPushNotificationService,
   ) {}
 
   async triggerOrderNotification(
@@ -118,6 +123,22 @@ export class OrderNotificationService {
         }
       }
     }
+    if (
+      event == OrderEvents.OrderCreated &&
+      [OrderType.Delivery, OrderType.Pickup].includes(order.orderType)
+    ) {
+      this.triggerPushNotification(order);
+    }
+  }
+
+  async triggerPushNotification(order: OrderDocument) {
+    const message: ISendExpoMessages = {
+      to: order.customerId?.expoToken,
+      body: `Thank you for your order #${order.orderNumber}`,
+      sound: 'default',
+      data: {},
+    };
+    await this.expoPushNotificationService.sendPushMessages([message]);
   }
 
   async triggerEmailNotification(

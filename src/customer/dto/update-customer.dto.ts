@@ -11,5 +11,5 @@ export class UpdateCustomerDto extends PartialType(CreateCustomerDto) {
   @IsOptional()
   @IsString()
   @ApiProperty({ required: false })
-  fcmToken?: string;
+  expoToken?: string;
 }

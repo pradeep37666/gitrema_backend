@@ -44,6 +44,7 @@ import { Invoice, InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
 import { DeliveryModule } from 'src/delivery/delivery.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { InventoryModule } from 'src/inventory/inventory.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { InventoryModule } from 'src/inventory/inventory.module';
     DeliveryModule,
     ScheduleModule.forRoot(),
     InventoryModule,
+    NotificationModule,
   ],
   controllers: [OrderController],
   providers: [

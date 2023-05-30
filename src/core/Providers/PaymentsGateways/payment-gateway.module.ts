@@ -13,6 +13,7 @@ import {
   Transaction,
   TransactionSchema,
 } from 'src/transaction/schemas/transactions.schema';
+import { PaymentGatewayModule as PaymentGatewayConfigModule } from 'src/payment-gateway/payment-gateway.module';
 
 @Module({
   imports: [
@@ -20,6 +21,10 @@ import {
     TransactionModule,
     forwardRef(() => SupplierModule),
     SocketIoModule,
+    MongooseModule.forFeature([
+      { name: Transaction.name, schema: TransactionSchema },
+    ]),
+    PaymentGatewayConfigModule,
     MongooseModule.forFeature([
       { name: Transaction.name, schema: TransactionSchema },
     ]),
