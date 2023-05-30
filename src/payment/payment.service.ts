@@ -121,9 +121,9 @@ export class PaymentService {
         paymentGateway,
         paymentMethod: paymentRequestDetails.paymentMethod,
         status:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Online
-            ? PaymentStatus.Pending
-            : PaymentStatus.Success,
+          paymentRequestDetails.paymentMethod == PaymentMethod.Cash
+            ? PaymentStatus.Success
+            : PaymentStatus.Pending,
         cashierId,
         uuId: uuidv4(),
       });
