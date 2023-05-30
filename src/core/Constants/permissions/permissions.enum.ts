@@ -50,6 +50,7 @@ export enum PermissionSubject {
   InvoiceReceipt = 'Invoice Receipt',
   SelectedVendor = 'Selected Vendor',
   VendorMaterial = 'VendorMaterial',
+  PaymentGateway = 'PaymentGateway',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
@@ -58,6 +59,7 @@ export enum SubjectsRestrictedForSupplier {
   Feature = 'Feature',
   Package = 'Package',
   UnitOfMeasure = 'Units Of Measure',
+  PaymentGateway = 'PaymentGateway',
 }
 export enum CommonPermissions {
   LIST = 'LIST',

@@ -78,6 +78,11 @@ export class UserUpdateDto extends PartialType(
   @IsOptional()
   @IsBoolean()
   paused?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ required: false })
+  expoToken?: string;
 }
 
 export class ImpersonateSupplierDto {

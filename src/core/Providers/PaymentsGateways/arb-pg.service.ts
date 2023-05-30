@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import { decodeBase64, encodeBase64 } from 'bcryptjs';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { PaymentGatewayService } from 'src/payment-gateway/payment-gateway.service';
 
 @Injectable()
 export class ArbPgService {
@@ -36,24 +37,41 @@ export class ArbPgService {
     fixedFee: 1,
     taxOnFee: 15,
   };
+  private credentials = {
+    transportalId: this.configService.get('arbPg.ARB_PG_TRANSPORTAL_ID'),
+    apiUrl: this.configService.get('arbPg.ARB_PG_API_URL'),
+    resourceKey: this.configService.get('arbPg.ARB_PG_RESOURCE_KEY'),
+    transportalPassword: this.configService.get(
+      'arbPg.ARB_PG_TRANSPORTAL_PASSWORD',
+    ),
+  };
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
+    private readonly paymentGatewayService: PaymentGatewayService,
   ) {}
 
+  async init(supplierId: string) {
+    const paymentGateway = await this.paymentGatewayService.findOneBySupplier(
+      supplierId,
+    );
+
+    if (paymentGateway) {
+      this.credentials = paymentGateway.credentials;
+      this.config.baseApiUrl = this.credentials.apiUrl;
+    }
+  }
   async requestPaymentToken(options: PaymentTokenDto) {
     const data = [
       {
-        id: this.configService.get('arbPg.ARB_PG_TRANSPORTAL_ID'),
+        id: this.credentials.transportalId,
         trandata: this.aesEncrypt(
           JSON.stringify([
             {
               amt: options.amount.toFixed(2),
               action: options.action,
-              id: this.configService.get('arbPg.ARB_PG_TRANSPORTAL_ID'),
-              password: this.configService.get(
-                'arbPg.ARB_PG_TRANSPORTAL_PASSWORD',
-              ),
+              id: this.credentials.transportalId,
+              password: this.credentials.transportalPassword,
               currencyCode: this.config.currencyCode,
               trackId: options.transactionId,
               udf1: options.orderId,
@@ -103,9 +121,7 @@ export class ArbPgService {
 
   aesEncrypt(trandata): any {
     const rkEncryptionIv = aesjs.utils.utf8.toBytes(this.config.iv);
-    const enckey = aesjs.utils.utf8.toBytes(
-      this.configService.get('arbPg.ARB_PG_RESOURCE_KEY'),
-    );
+    const enckey = aesjs.utils.utf8.toBytes(this.credentials.resourceKey);
     const aesCtr = new aesjs.ModeOfOperation.cbc(enckey, rkEncryptionIv);
     const textBytes = aesjs.utils.utf8.toBytes(trandata);
     const encryptedBytes = aesCtr.encrypt(aesjs.padding.pkcs7.pad(textBytes));
@@ -114,9 +130,7 @@ export class ArbPgService {
   }
 
   aesDecryption(encryptedHex) {
-    const enckey = aesjs.utils.utf8.toBytes(
-      this.configService.get('arbPg.ARB_PG_RESOURCE_KEY'),
-    );
+    const enckey = aesjs.utils.utf8.toBytes(this.credentials.resourceKey);
     const rkEncryptionIv = aesjs.utils.utf8.toBytes(this.config.iv);
     const encryptedBytes = aesjs.utils.hex.toBytes(encryptedHex);
     const aesCbc = new aesjs.ModeOfOperation.cbc(enckey, rkEncryptionIv);

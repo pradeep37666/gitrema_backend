@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -18,6 +19,12 @@ import { ApiTags } from '@nestjs/swagger';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { Redirect } from '@nestjsplus/redirect';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  Transaction,
+  TransactionDocument,
+} from 'src/transaction/schemas/transactions.schema';
+import { Model } from 'mongoose';
 
 @Public()
 @ApiTags('Alrajhi Payment Gateway')
@@ -28,15 +35,26 @@ export class ArbPgController {
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => SupplierService))
     private readonly supplierService: SupplierService,
+    @InjectModel(Transaction.name)
+    private transactionModel: Model<TransactionDocument>,
   ) {}
 
   @Post('process-payment-response')
   @Redirect()
   async create(@Req() req, @Body() paymentDetails: any) {
     console.log(paymentDetails);
+    const transaction = await this.transactionModel.findOne({
+      externalTransactionId: paymentDetails.paymentid,
+    });
+    if (!transaction) {
+      throw new BadRequestException(`Something went wrong`);
+    }
+    await this.arbPgService.init(transaction.supplierId.toString());
+
     const transObj = this.arbPgService.parseTransResponse(
       this.arbPgService.aesDecryption(paymentDetails.trandata),
     );
+
     console.log(
       transObj,
       this.arbPgService.config.frontendSuccessUrl,

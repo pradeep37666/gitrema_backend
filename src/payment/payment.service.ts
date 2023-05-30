@@ -161,6 +161,7 @@ export class PaymentService {
       const supplier = await this.supplierService.getOne(
         order.supplierId.toString(),
       );
+      await this.arbPgService.init(order.supplierId.toString());
       const options: PaymentTokenDto = {
         orderId: order._id,
         transactionId: transaction._id,

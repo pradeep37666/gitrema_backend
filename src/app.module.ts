@@ -11,7 +11,7 @@ import mongoConfiguration from './config/mongo.configuration';
 import awsConfiguration from './config/aws.configuration';
 import arbPgConfiguration from './config/arb-pg.configuration';
 import mailConfiguration from './config/mail.configuration';
-import firebaseConfiguration from './config/firebase.configuration';
+import pushNotificationConfiguration from './config/push-notification.configuration';
 
 import { UserModule } from './users/users.module';
 import { SupplierModule } from './supplier/Supplier.module';
@@ -83,6 +83,7 @@ import { ProfitDetailModule } from './profit-detail/profit-detail.module';
 import { InvoiceReceiptModule } from './invoice-receipt/invoice-receipt.module';
 import { SelectedVendorModule } from './selected-vendor/selected-vendor.module';
 import { VendorMaterialModule } from './vendor-material/vendor-material.module';
+import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module';
 
 @Module({
   imports: [
@@ -97,7 +98,7 @@ import { VendorMaterialModule } from './vendor-material/vendor-material.module';
         //asmscSmsConfiguration,
         taqnyatSmsConfiguration,
         yallowDeliveryConfiguration,
-        firebaseConfiguration,
+        pushNotificationConfiguration,
       ],
     }),
     MongooseModule.forRootAsync({
@@ -178,6 +179,7 @@ import { VendorMaterialModule } from './vendor-material/vendor-material.module';
     InvoiceReceiptModule,
     SelectedVendorModule,
     VendorMaterialModule,
+    PaymentGatewayModule,
   ],
   controllers: [AppController],
   providers: [

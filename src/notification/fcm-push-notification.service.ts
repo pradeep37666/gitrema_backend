@@ -14,7 +14,7 @@ export interface ISendFirebaseMessages {
 }
 
 @Injectable()
-export class PushNotificationService {
+export class FcmPushNotificationService {
   constructor(private configService: ConfigService) {
     const firebaseCredentials = JSON.parse(
       this.configService.get('firebase.FIREBASE_CREDENTIAL_JSON'),

@@ -89,6 +89,9 @@ export class User {
     default: null,
   })
   addedBy: UserDocument;
+
+  @Prop({ default: null })
+  expoToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

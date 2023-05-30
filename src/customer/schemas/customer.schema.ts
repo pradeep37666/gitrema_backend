@@ -39,7 +39,7 @@ export class Customer {
   addedBy: UserDocument;
 
   @Prop({ default: null })
-  fcmToken: string;
+  expoToken: string;
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);
