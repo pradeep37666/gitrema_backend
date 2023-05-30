@@ -23,7 +23,7 @@ export class NearPayService {
 
   async approved(dto) {
     const transaction = await this.transactionModel.findOne({
-      uuId: dto?.transaction_uuid,
+      uuId: dto.customer_reference_number,
     });
 
     if (transaction) {
@@ -45,7 +45,7 @@ export class NearPayService {
 
   async rejected(dto) {
     const transaction = await this.transactionModel.findOne({
-      uuId: dto?.transaction_uuid,
+      uuId: dto.customer_reference_number,
     });
 
     if (transaction) {
