@@ -47,6 +47,10 @@ import {
 import { PurchaseOrderStatus } from './enum/en';
 import { FillToParDto } from './dto/fill-to-par.dto';
 import { PurchaseOrderHelperService } from './purchase-order-helper.service';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/schemas/suppliers.schema';
 
 @Injectable()
 export class PurchaseOrderService {
@@ -61,8 +65,8 @@ export class PurchaseOrderService {
     private readonly restaurantMaterialModel: AggregatePaginateModel<RestaurantMaterialDocument>,
     @InjectModel(Restaurant.name)
     private readonly restaurantModel: Model<RestaurantDocument>,
-    @InjectModel(Vendor.name)
-    private readonly vendorModel: Model<VendorDocument>,
+    @InjectModel(Supplier.name)
+    private readonly supplierModel: Model<SupplierDocument>,
     private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
     @InjectModel(UnitOfMeasure.name)
     private readonly unitOfMeasureModel: Model<UnitOfMeasureDocument>,
@@ -475,7 +479,7 @@ export class PurchaseOrderService {
       return acc;
     }, []);
 
-    let vendors = await this.vendorModel.find(
+    let vendors = await this.supplierModel.find(
       {
         _id: {
           $in: docs.map((d) => {
