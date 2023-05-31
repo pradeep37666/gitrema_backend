@@ -56,6 +56,9 @@ export class GoodsReceiptHelperService {
     const purchaseOrder = await this.purchaseOrderModel.findById(
       dto.purchaseOrderId,
     );
+    if (!purchaseOrder) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
     const loadedItems = [],
       allowedItems = [];
     goodsReceipts.forEach((goodsReceipt) => {
