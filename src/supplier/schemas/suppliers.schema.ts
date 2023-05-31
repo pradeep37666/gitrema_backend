@@ -144,8 +144,11 @@ export class Supplier {
   @Prop({ default: TIMEZONE })
   timezone: string;
 
-  @Prop({ type: String, enum: SupplierType })
-  type: SupplierType;
+  @Prop({ default: true })
+  isRestaurant: boolean;
+
+  @Prop({ default: false })
+  isVendor: boolean;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
