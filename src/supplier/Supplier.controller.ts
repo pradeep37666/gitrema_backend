@@ -9,13 +9,14 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 import {
   AddSupplierDto,
   AssignPackageDto,
   SupplierQueryDto,
   UpdateSupplierDto,
+  VendoryQueryDto,
 } from './Supplier.dto';
 import { SupplierService } from './Supplier.service';
 
@@ -31,6 +32,7 @@ import { SupplierAggregated } from './interfaces/suppliers.interface';
 @ApiTags('Suppliers')
 @Controller('supplier')
 @ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 
@@ -50,6 +52,15 @@ export class SupplierController {
     @Query() paginationOptions: PaginationDto,
   ): Promise<PaginateResult<SupplierDocument>> {
     return this.supplierService.getAll(query, paginationOptions);
+  }
+
+  @Get('get-vendors')
+  @PermissionGuard(PermissionSubject.Supplier, Permission.Supplier.ListVendors)
+  getAllVendors(
+    @Query() query: VendoryQueryDto,
+    @Query() paginationOptions: PaginationDto,
+  ): Promise<PaginateResult<SupplierDocument>> {
+    return this.supplierService.getAllVendors(query, paginationOptions);
   }
 
   @Get(':supplierId')
