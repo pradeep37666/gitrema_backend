@@ -207,15 +207,6 @@ export class AddSupplierDto {
   @IsOptional()
   overrideWorkingHours: IndividualWorkHoursDTO[];
 
-  @ApiProperty({ type: String, enum: SupplierType, enumName: 'SupplierType' })
-  @IsEnum(SupplierType, {
-    message: i18nValidationMessage('validation.ENUM'),
-  })
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.NOT_EMPTY'),
-  })
-  type: SupplierType;
-
   @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()
@@ -227,6 +218,16 @@ export class UpdateSupplierDto extends PartialType(AddSupplierDto) {
   @IsBoolean()
   @IsOptional()
   active: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  isVendor: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  isRestaurant: boolean;
 }
 
 export class AssignPackageDto {

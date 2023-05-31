@@ -12,6 +12,7 @@ import {
   PurchaseOrder,
   PurchaseOrderSchema,
 } from 'src/purchase-order/schemas/purchase-order.schema';
+import { PurchaseOrderModule } from 'src/purchase-order/purchase-order.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import {
       { name: PurchaseOrder.name, schema: PurchaseOrderSchema },
     ]),
     InventoryModule,
+    PurchaseOrderModule,
   ],
   controllers: [GoodsReceiptController],
   providers: [GoodsReceiptService, GoodsReceiptHelperService],

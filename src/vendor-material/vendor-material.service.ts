@@ -16,6 +16,15 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { QueryVendorMaterialDto } from './dto/query-vendor-material.dto';
 import { I18nContext } from 'nestjs-i18n';
+import {
+  CustomerCondition,
+  CustomerConditionDocument,
+} from 'src/customer-condition/schema/customer-condition.schema';
+import {
+  SelectedVendor,
+  SelectedVendorDocument,
+} from 'src/selected-vendor/schema/selected-vendor.schema';
+import { UnitOfMeasureHelperService } from 'src/unit-of-measure/unit-of-measure-helper.service';
 
 @Injectable()
 export class VendorMaterialService {
@@ -24,6 +33,11 @@ export class VendorMaterialService {
     private readonly vendorMaterialModel: Model<VendorMaterialDocument>,
     @InjectModel(VendorMaterial.name)
     private readonly vendorMaterialModelPag: PaginateModel<VendorMaterialDocument>,
+    @InjectModel(CustomerCondition.name)
+    private readonly customerConditionModel: Model<CustomerConditionDocument>,
+    @InjectModel(SelectedVendor.name)
+    private readonly selectedVendorModel: Model<SelectedVendorDocument>,
+    private readonly unitOfMeasureHelperService: UnitOfMeasureHelperService,
   ) {}
 
   async create(
@@ -104,7 +118,9 @@ export class VendorMaterialService {
     if (!vendorMaterial) {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
     }
-
+    if (dto.cost) {
+      this.afterPriceUpdate(vendorMaterial);
+    }
     return vendorMaterial;
   }
 
@@ -119,5 +135,43 @@ export class VendorMaterialService {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
     }
     return true;
+  }
+
+  async afterPriceUpdate(vendorMaterial: VendorMaterialDocument) {
+    const customerConditions = await this.customerConditionModel.find({
+      vendorMaterialId: vendorMaterial._id,
+    });
+    const vendorInfoRecords = await this.selectedVendorModel.find({
+      vendorMaterialId: vendorMaterial._id,
+      restaurantId: {
+        $nin: customerConditions.map((cc) => {
+          return cc.restaurantId;
+        }),
+      },
+    });
+    for (const i in vendorInfoRecords) {
+      let conversionFactor = 1;
+      if (
+        vendorInfoRecords[i].uom.toString() != vendorMaterial.uomSell.toString()
+      ) {
+        try {
+          const convert =
+            await this.unitOfMeasureHelperService.getConversionFactor(
+              vendorMaterial.uomSell,
+              vendorInfoRecords[i].uom,
+            );
+          conversionFactor = convert.conversionFactor;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      const calculatedCost =
+        (vendorInfoRecords[i].quantity * vendorMaterial.cost) /
+        (vendorMaterial.quantity * conversionFactor);
+
+      vendorInfoRecords[i].cost = calculatedCost;
+
+      vendorInfoRecords[i].save();
+    }
   }
 }

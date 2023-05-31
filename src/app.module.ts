@@ -84,6 +84,7 @@ import { InvoiceReceiptModule } from './invoice-receipt/invoice-receipt.module';
 import { SelectedVendorModule } from './selected-vendor/selected-vendor.module';
 import { VendorMaterialModule } from './vendor-material/vendor-material.module';
 import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module';
+import { CustomerConditionModule } from './customer-condition/customer-condition.module';
 
 @Module({
   imports: [
@@ -180,6 +181,7 @@ import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module';
     SelectedVendorModule,
     VendorMaterialModule,
     PaymentGatewayModule,
+    CustomerConditionModule,
   ],
   controllers: [AppController],
   providers: [

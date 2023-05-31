@@ -46,5 +46,6 @@ import {
   ],
   controllers: [PurchaseOrderController],
   providers: [PurchaseOrderService, PurchaseOrderHelperService],
+  exports: [PurchaseOrderHelperService],
 })
 export class PurchaseOrderModule {}

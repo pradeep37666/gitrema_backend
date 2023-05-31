@@ -59,7 +59,7 @@ export class PurchaseOrderHelperService {
           vendorMaterialId: purchaseOrder.items[i].vendorMaterialId ?? null,
           supplierId: purchaseOrder.supplierId,
           vendorId: purchaseOrder.vendorId,
-          quantity: purchaseOrder.items[i].stock,
+          quantity: 1,
           cost: purchaseOrder.items[i].cost,
           uom: purchaseOrder.items[i].uom,
           isDefault: true,
@@ -82,7 +82,7 @@ export class PurchaseOrderHelperService {
           vendorMaterialId: purchaseOrder.items[i].vendorMaterialId ?? null,
           supplierId: purchaseOrder.supplierId,
           vendorId: purchaseOrder.vendorId,
-          quantity: purchaseOrder.items[i].stock,
+
           cost: purchaseOrder.items[i].cost,
           uom: purchaseOrder.items[i].uom,
         },

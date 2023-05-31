@@ -51,6 +51,7 @@ export enum PermissionSubject {
   SelectedVendor = 'Selected Vendor',
   VendorMaterial = 'VendorMaterial',
   PaymentGateway = 'PaymentGateway',
+  CustomerCondition = 'CustomerCondition',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
