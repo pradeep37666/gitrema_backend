@@ -21,6 +21,7 @@ import {
 import * as moment from 'moment';
 import { SupplierType } from './enum/en';
 import { i18nValidationMessage } from 'nestjs-i18n';
+import { ToBoolean } from 'src/core/Helpers/custom.validators';
 
 export class AddSupplierDto {
   @ApiProperty()
@@ -266,6 +267,28 @@ export class ModifyPackageFeaturesDto {
 }
 
 export class SupplierQueryDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  email: string;
+
+  @ApiProperty({ required: false })
+  @ToBoolean()
+  @IsOptional()
+  isVendor: boolean;
+
+  @ApiProperty({ required: false })
+  @ToBoolean()
+  @IsOptional()
+  isRestaurant: boolean;
+}
+
+export class VendoryQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

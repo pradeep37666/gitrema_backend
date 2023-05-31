@@ -104,3 +104,7 @@ export enum UserPermission {
 export enum ReportPermission {
   PayoutPreview = 'Payout Preview',
 }
+
+export enum SupplierPermission {
+  ListVendors = 'List Vendors',
+}

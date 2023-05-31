@@ -12,6 +12,7 @@ import {
   AssignPackageDto,
   SupplierQueryDto,
   UpdateSupplierDto,
+  VendoryQueryDto,
 } from './Supplier.dto';
 import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
 import {
@@ -115,6 +116,35 @@ export class SupplierService {
       delete query.name;
       criteria = {
         ...query,
+        deletedAt: null,
+        $expr: {
+          $regexMatch: {
+            input: '$name',
+            regex: name,
+            options: 'i',
+          },
+        },
+      };
+    }
+    return await this.supplierModelPag.paginate(criteria, {
+      sort: DefaultSort,
+      lean: true,
+      ...paginateOptions,
+      ...pagination,
+    });
+  }
+
+  async getAllVendors(
+    query: VendoryQueryDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<SupplierDocument>> {
+    let criteria: any = { ...query, isVendor: true, deletedAt: null };
+    if (query.name) {
+      const name = query.name;
+      delete query.name;
+      criteria = {
+        ...query,
+        isVendor: true,
         deletedAt: null,
         $expr: {
           $regexMatch: {
