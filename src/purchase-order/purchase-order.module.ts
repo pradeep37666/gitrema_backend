@@ -26,6 +26,10 @@ import {
   SelectedVendor,
   SelectedVendorSchema,
 } from 'src/selected-vendor/schema/selected-vendor.schema';
+import {
+  Supplier,
+  SupplierSchema,
+} from 'src/supplier/schemas/suppliers.schema';
 
 @Module({
   imports: [
@@ -34,7 +38,7 @@ import {
       { name: Material.name, schema: MaterialSchema },
       { name: RestaurantMaterial.name, schema: RestaurantMaterialSchema },
       { name: Restaurant.name, schema: RestaurantSchema },
-      { name: Vendor.name, schema: VendorSchema },
+      { name: Supplier.name, schema: SupplierSchema },
       { name: UnitOfMeasure.name, schema: UnitOfMeasureSchema },
       { name: SelectedVendor.name, schema: SelectedVendorSchema },
     ]),

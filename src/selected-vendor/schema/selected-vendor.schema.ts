@@ -49,7 +49,7 @@ export class SelectedVendor {
     type: MongooseSchema.Types.ObjectId,
     ref: 'VendorMaterial',
     index: true,
-    required: true,
+    default: null,
   })
   vendorMaterialId: VendorMaterialDocument;
 
