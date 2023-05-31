@@ -22,8 +22,8 @@ import { PaginateResult } from 'mongoose';
 import { SelectedVendorDocument } from './schema/selected-vendor.schema';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
-@Controller('selected-vendor')
-@ApiTags('Selected Vendor')
+@Controller('vendor-info')
+@ApiTags('Vendor Info')
 @ApiBearerAuth('access-token')
 @ApiHeader({ name: 'lang' })
 export class SelectedVendorController {

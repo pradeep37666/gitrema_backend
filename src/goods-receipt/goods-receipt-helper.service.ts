@@ -18,6 +18,8 @@ import {
   PurchaseOrder,
   PurchaseOrderDocument,
 } from 'src/purchase-order/schemas/purchase-order.schema';
+import { PurchaseOrderStatus } from 'src/purchase-order/enum/en';
+import { PurchaseOrderHelperService } from 'src/purchase-order/purchase-order-helper.service';
 
 @Injectable()
 export class GoodsReceiptHelperService {
@@ -27,9 +29,20 @@ export class GoodsReceiptHelperService {
     @InjectModel(PurchaseOrder.name)
     private readonly purchaseOrderModel: Model<PurchaseOrderDocument>,
     private readonly inventoryHelperService: InventoryHelperService,
+    private readonly purchaseOrderHelperService: PurchaseOrderHelperService,
   ) {}
 
   async postGoodsReceiptCreate(req, goodsReceipt: GoodsReceiptDocument) {
+    const purchaseOrder = await this.purchaseOrderModel.findOneAndUpdate(
+      { _id: goodsReceipt.purchaseOrderId, status: PurchaseOrderStatus.New },
+      { status: PurchaseOrderStatus.Confirmed },
+      {
+        new: true,
+      },
+    );
+    if (purchaseOrder) {
+      this.purchaseOrderHelperService.postPurchaseOrderConfirmed(purchaseOrder);
+    }
     return await this.inventoryHelperService.processInventoryChanges(
       req,
       goodsReceipt,

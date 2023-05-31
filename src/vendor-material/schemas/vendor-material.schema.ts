@@ -49,6 +49,12 @@ export class VendorMaterial {
   })
   uomSell: UnitOfMeasureDocument;
 
+  @Prop({ required: true })
+  quantity: number;
+
+  @Prop({ required: true })
+  cost: number;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
