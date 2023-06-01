@@ -164,6 +164,61 @@ export class PurchaseOrderService {
 
   async fillToPar(req: any, dto: FillToParDto, i18n: I18nContext) {
     const response = [];
+    let restaurants = await this.restaurantModel.find(
+      {
+        _id: { $in: dto.payload.map((d) => d.restaurantId) },
+      },
+      { name: 1, nameAr: 1, _id: 1 },
+    );
+    restaurants = restaurants.reduce((acc, d) => {
+      acc[d._id.toString()] = d;
+      return acc;
+    }, []);
+
+    let materials = await this.materialModel
+      .find(
+        {
+          _id: {
+            $in: dto.payload.map((d) => d.materialId),
+          },
+        },
+        {
+          name: 1,
+          nameAr: 1,
+          _id: 1,
+          description: 1,
+          descriptionAr: 1,
+          uomBase: 1,
+          materialType: 1,
+          procurementType: 1,
+        },
+      )
+      .populate([
+        {
+          path: 'uomBase',
+          select: { name: 1, nameAr: 1, _id: 1 },
+        },
+      ]);
+    materials = materials.reduce((acc, d) => {
+      acc[d._id.toString()] = d;
+      return acc;
+    }, []);
+
+    let vendors = await this.supplierModel.find(
+      {
+        _id: {
+          $in: dto.payload.map((d) => {
+            return d.vendorId;
+          }),
+        },
+      },
+      { name: 1, nameAr: 1 },
+    );
+
+    vendors = vendors.reduce((acc, d) => {
+      acc[d._id.toString()] = d;
+      return acc;
+    }, []);
     for (const i in dto.payload) {
       const singleDtoObj = dto.payload[i];
 
@@ -256,44 +311,41 @@ export class PurchaseOrderService {
         },
         { name: 1, nameAr: 1, _id: 1 },
       );
-      const material = await this.materialModel.findOne(
-        {
-          _id: inventory[0].materialId,
-        },
-        {
-          name: 1,
-          nameAr: 1,
-          _id: 1,
-          description: 1,
-          descriptionAr: 1,
-          uomBase: 1,
-          materialType: 1,
-          procurementType: 1,
-        },
-      );
+
       let conversionFactor = 1;
       if (
         inventory[0].selectedVendor[0].uom.toString() !=
-        material.uomBase.toString()
+        materials[singleDtoObj.materialId].uomBase.toString()
       ) {
         const convert =
           await this.unitOfMeasureHelperService.getConversionFactor(
             inventory[0].selectedVendor[0].uom,
-            material.uomBase,
+            materials[singleDtoObj.materialId].uomBase,
           );
         conversionFactor = convert.conversionFactor;
       }
-      const poQuantityBase =
+      const poQuantity =
         (inventory[0].parLevel - inventory[0].inventory[0]?.stock) /
         conversionFactor;
+      const poQuantityBase =
+        inventory[0].parLevel - inventory[0].inventory[0]?.stock;
       response.push({
-        cost: inventory[0].selectedVendor[0]?.cost,
-        quantity: inventory[0].selectedVendor[0]?.quantity,
-        uom: uom,
-        poQuantity: poQuantityBase < 0 ? 0 : poQuantityBase,
-        vendorId: singleDtoObj.vendorId,
-        materialId: singleDtoObj.materialId,
-        restaurantId: singleDtoObj.restaurantId,
+        restaurant: restaurants[singleDtoObj.restaurantId],
+        material: materials[singleDtoObj.materialId],
+        materialRestaurant: {
+          minStockLevel: inventory[0].minStockLevel,
+          parLevel: inventory[0].parLevel,
+          onHand: inventory[0].inventory[0]?.stock,
+          poQuantityBase: poQuantityBase < 0 ? 0 : poQuantityBase,
+          uomBase: materials[singleDtoObj.materialId].uomBase,
+        },
+        vendor: vendors[singleDtoObj.vendorId],
+        vendorRecord: {
+          cost: inventory[0].selectedVendor[0]?.cost,
+          quantity: inventory[0].selectedVendor[0]?.quantity,
+          uom: uom,
+          poQuantity: poQuantity < 0 ? 0 : poQuantity,
+        },
       });
     }
     return response;
