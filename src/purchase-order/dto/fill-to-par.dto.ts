@@ -10,7 +10,7 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 import { MaterialItemDto } from './item.dto';
 import { Type } from 'class-transformer';
 
-export class FillToParDto {
+export class FillToParSingleDto {
   @ApiProperty()
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
@@ -37,4 +37,17 @@ export class FillToParDto {
     message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
   materialId: string;
+}
+
+export class FillToParDto {
+  @ApiProperty({ type: [FillToParSingleDto] })
+  @IsArray({
+    message: i18nValidationMessage('validation.MUST_BE_ARRAY'),
+  })
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.NOT_EMPTY'),
+  })
+  @ValidateNested({ each: true })
+  @Type(() => FillToParSingleDto)
+  payload: FillToParSingleDto[];
 }
