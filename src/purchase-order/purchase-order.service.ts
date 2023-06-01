@@ -162,126 +162,141 @@ export class PurchaseOrderService {
     );
   }
 
-  async fillToPar(req: any, query: FillToParDto, i18n: I18nContext) {
-    const inventory = await this.restaurantMaterialModel.aggregate(
-      [
-        {
-          $match: {
-            materialId: new mongoose.Types.ObjectId(query.materialId),
-            restaurantId: new mongoose.Types.ObjectId(query.restaurantId),
-            supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
-          },
-        },
-        {
-          $lookup: {
-            from: 'inventories',
-            let: {
-              restaurantId: '$restaurantId',
-              materialId: '$materialId',
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$restaurantId', '$$restaurantId'],
-                  },
-                },
-              },
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$materialId', '$$materialId'],
-                  },
-                },
-              },
-            ],
-            as: 'inventory',
-          },
-        },
-        {
-          $lookup: {
-            from: 'selectedvendors',
-            let: {
-              restaurantId: '$restaurantId',
-              materialId: '$materialId',
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$restaurantId', '$$restaurantId'],
-                  },
-                },
-              },
-              {
-                $match: {
-                  $expr: {
-                    $eq: ['$materialId', '$$materialId'],
-                  },
-                },
-              },
-              {
-                $match: {
-                  vendorId: new mongoose.Types.ObjectId(query.vendorId),
-                },
-              },
-            ],
-            as: 'selectedVendor',
-          },
-        },
-        {
-          $match: {
-            selectedVendor: { $ne: [] },
-          },
-        },
-      ],
-      { allowDiskUse: true },
-    );
-    console.log(inventory);
+  async fillToPar(req: any, dto: FillToParDto, i18n: I18nContext) {
+    const response = [];
+    for (const i in dto.payload) {
+      const singleDtoObj = dto.payload[i];
 
-    if (inventory.length == 0) {
-      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
-    }
-    const uom = await this.unitOfMeasureModel.findOne(
-      {
-        _id: inventory[0].selectedVendor[0]?.uom,
-      },
-      { name: 1, nameAr: 1, _id: 1 },
-    );
-    const material = await this.materialModel.findOne(
-      {
-        _id: inventory[0].materialId,
-      },
-      {
-        name: 1,
-        nameAr: 1,
-        _id: 1,
-        description: 1,
-        descriptionAr: 1,
-        uomBase: 1,
-        materialType: 1,
-        procurementType: 1,
-      },
-    );
-    let conversionFactor = 1;
-    if (
-      inventory[0].selectedVendor[0].uom.toString() !=
-      material.uomBase.toString()
-    ) {
-      const convert = await this.unitOfMeasureHelperService.getConversionFactor(
-        inventory[0].selectedVendor[0].uom,
-        material.uomBase,
+      const inventory = await this.restaurantMaterialModel.aggregate(
+        [
+          {
+            $match: {
+              materialId: new mongoose.Types.ObjectId(singleDtoObj.materialId),
+              restaurantId: new mongoose.Types.ObjectId(
+                singleDtoObj.restaurantId,
+              ),
+              supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+            },
+          },
+          {
+            $lookup: {
+              from: 'inventories',
+              let: {
+                restaurantId: '$restaurantId',
+                materialId: '$materialId',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $eq: ['$restaurantId', '$$restaurantId'],
+                    },
+                  },
+                },
+                {
+                  $match: {
+                    $expr: {
+                      $eq: ['$materialId', '$$materialId'],
+                    },
+                  },
+                },
+              ],
+              as: 'inventory',
+            },
+          },
+          {
+            $lookup: {
+              from: 'selectedvendors',
+              let: {
+                restaurantId: '$restaurantId',
+                materialId: '$materialId',
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $eq: ['$restaurantId', '$$restaurantId'],
+                    },
+                  },
+                },
+                {
+                  $match: {
+                    $expr: {
+                      $eq: ['$materialId', '$$materialId'],
+                    },
+                  },
+                },
+                {
+                  $match: {
+                    vendorId: new mongoose.Types.ObjectId(
+                      singleDtoObj.vendorId,
+                    ),
+                  },
+                },
+              ],
+              as: 'selectedVendor',
+            },
+          },
+          {
+            $match: {
+              selectedVendor: { $ne: [] },
+            },
+          },
+        ],
+        { allowDiskUse: true },
       );
-      conversionFactor = convert.conversionFactor;
-    }
-    return {
-      cost: inventory[0].selectedVendor[0]?.cost,
-      quantity: inventory[0].selectedVendor[0]?.quantity,
-      uom: uom,
-      poQuantity:
+      console.log(inventory);
+
+      if (inventory.length == 0) {
+        throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+      }
+      const uom = await this.unitOfMeasureModel.findOne(
+        {
+          _id: inventory[0].selectedVendor[0]?.uom,
+        },
+        { name: 1, nameAr: 1, _id: 1 },
+      );
+      const material = await this.materialModel.findOne(
+        {
+          _id: inventory[0].materialId,
+        },
+        {
+          name: 1,
+          nameAr: 1,
+          _id: 1,
+          description: 1,
+          descriptionAr: 1,
+          uomBase: 1,
+          materialType: 1,
+          procurementType: 1,
+        },
+      );
+      let conversionFactor = 1;
+      if (
+        inventory[0].selectedVendor[0].uom.toString() !=
+        material.uomBase.toString()
+      ) {
+        const convert =
+          await this.unitOfMeasureHelperService.getConversionFactor(
+            inventory[0].selectedVendor[0].uom,
+            material.uomBase,
+          );
+        conversionFactor = convert.conversionFactor;
+      }
+      const poQuantityBase =
         (inventory[0].parLevel - inventory[0].inventory[0]?.stock) /
-        conversionFactor,
-    };
+        conversionFactor;
+      response.push({
+        cost: inventory[0].selectedVendor[0]?.cost,
+        quantity: inventory[0].selectedVendor[0]?.quantity,
+        uom: uom,
+        poQuantity: poQuantityBase < 0 ? 0 : poQuantityBase,
+        vendorId: singleDtoObj.vendorId,
+        materialId: singleDtoObj.materialId,
+        restaurantId: singleDtoObj.restaurantId,
+      });
+    }
+    return response;
   }
 
   async findAll(
@@ -511,7 +526,9 @@ export class PurchaseOrderService {
           );
         conversionFactor = convert.conversionFactor;
       }
-
+      const poQuantityBase = docs[i].parLevel - docs[i].inventory[0]?.stock;
+      const poQuantity =
+        (docs[i].parLevel - docs[i].inventory[0]?.stock) / conversionFactor;
       response.push({
         restaurant: restaurants[docs[i].restaurantId.toString()],
         material: materials[docs[i].materialId.toString()],
@@ -519,7 +536,7 @@ export class PurchaseOrderService {
           minStockLevel: docs[i].minStockLevel,
           parLevel: docs[i].parLevel,
           onHand: docs[i].inventory[0]?.stock,
-          poQuantityBase: docs[i].parLevel - docs[i].inventory[0]?.stock,
+          poQuantityBase: poQuantityBase < 0 ? 0 : poQuantityBase,
           uomBase:
             unitOfMeasures[
               materials[docs[i].materialId.toString()].uomBase.toString()
@@ -530,8 +547,7 @@ export class PurchaseOrderService {
           cost: docs[i].selectedVendor[0]?.cost,
           quantity: docs[i].selectedVendor[0]?.quantity,
           uom: unitOfMeasures[docs[i].selectedVendor[0]?.uom.toString()],
-          poQuantity:
-            (docs[i].parLevel - docs[i].inventory[0]?.stock) / conversionFactor,
+          poQuantity: poQuantity < 0 ? 0 : poQuantity,
         },
       });
     }

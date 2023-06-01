@@ -52,11 +52,11 @@ export class PurchaseOrderController {
     return await this.purchaseOrderService.createDraft(req, dto, i18n);
   }
 
-  @Get('fill-to-par')
+  @Post('fill-to-par')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.FETCH)
   async fillToPar(
     @Req() req,
-    @Query() dto: FillToParDto,
+    @Body() dto: FillToParDto,
     @I18n() i18n: I18nContext,
   ) {
     return await this.purchaseOrderService.fillToPar(req, dto, i18n);
