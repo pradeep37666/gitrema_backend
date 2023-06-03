@@ -24,6 +24,7 @@ import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { QueryPurchaseOrderPreviewDto } from './dto/query-purchase-order-preview.dto';
 import { PurchaseOrderStatus } from './enum/en';
 import { FillToParDto } from './dto/fill-to-par.dto';
+import { BulkPoCreateDto } from './dto/bulk-po-create.dto';
 
 @Controller('purchase-order')
 @ApiTags('Purchase Orders')
@@ -40,6 +41,16 @@ export class PurchaseOrderController {
     @I18n() i18n: I18nContext,
   ) {
     return await this.purchaseOrderService.create(req, dto, i18n);
+  }
+
+  @Post('bulk-create')
+  @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.CREATE)
+  async bulkCreate(
+    @Req() req,
+    @Body() dto: BulkPoCreateDto,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.purchaseOrderService.bulkPurchaseOrder(req, dto, i18n);
   }
 
   @Post('create-preview')
