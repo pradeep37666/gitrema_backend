@@ -27,7 +27,7 @@ import {
   NotificationDocument,
 } from 'src/notification/schemas/notification.schema';
 import { TaqnyatService } from 'src/core/Providers/Sms/taqnyat.service';
-import { PaymentStatus } from 'src/core/Constants/enum';
+import { PaymentStatus, RoleSlug } from 'src/core/Constants/enum';
 import {
   TrackNotification,
   TrackNotificationDocument,
@@ -41,6 +41,8 @@ import {
   ExpoPushNotificationService,
   ISendExpoMessages,
 } from 'src/notification/expo-push-notification.service';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { Role, RoleDocument } from 'src/role/schemas/roles.schema';
 
 @Injectable()
 export class OrderNotificationService {
@@ -53,6 +55,10 @@ export class OrderNotificationService {
     private readonly trackNotificationModel: Model<TrackNotificationDocument>,
     @InjectModel(Invoice.name)
     private readonly invoiceModel: Model<InvoiceDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+    @InjectModel(Role.name)
+    private readonly roleModel: Model<RoleDocument>,
     private readonly whatsappService: WhatsappService,
     private readonly mailService: MailService,
     private readonly tanqyatService: TaqnyatService,
@@ -132,13 +138,35 @@ export class OrderNotificationService {
   }
 
   async triggerPushNotification(order: OrderDocument) {
-    const message: ISendExpoMessages = {
-      to: order.customerId?.expoToken,
-      body: `Thank you for your order #${order.orderNumber}`,
-      sound: 'default',
-      data: {},
-    };
-    await this.expoPushNotificationService.sendPushMessages([message]);
+    const messages: ISendExpoMessages[] = [];
+    if (order.customerId?.expoToken) {
+      messages.push({
+        to: order.customerId?.expoToken,
+        body: `Thank you for your order #${order.orderNumber}`,
+        sound: 'default',
+        data: {},
+      });
+    }
+    const role = await this.roleModel.findOne({
+      slug: RoleSlug.SupplierAdmin,
+    });
+    if (role) {
+      const users = await this.userModel.find({
+        role: role._id,
+        supplierId: order.supplierId,
+      });
+      users.forEach((u) => {
+        if (u.expoToken) {
+          messages.push({
+            to: u.expoToken,
+            body: `New Order Placed #${order.orderNumber}`,
+            sound: 'default',
+            data: {},
+          });
+        }
+      });
+    }
+    await this.expoPushNotificationService.sendPushMessages(messages);
   }
 
   async triggerEmailNotification(

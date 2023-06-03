@@ -45,6 +45,8 @@ import { DeliveryModule } from 'src/delivery/delivery.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { InventoryModule } from 'src/inventory/inventory.module';
 import { NotificationModule } from 'src/notification/notification.module';
+import { User, UserSchema } from 'src/users/schemas/users.schema';
+import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
 
 @Module({
   imports: [
@@ -63,6 +65,8 @@ import { NotificationModule } from 'src/notification/notification.module';
       { name: Notification.name, schema: NotificationSchema },
       { name: TrackNotification.name, schema: TrackNotificationSchema },
       { name: Invoice.name, schema: InvoiceSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Role.name, schema: RoleSchema },
     ]),
     SocketIoModule,
     TableModule,
