@@ -51,6 +51,7 @@ import {
   Supplier,
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
+import { BulkPoCreateDto } from './dto/bulk-po-create.dto';
 
 @Injectable()
 export class PurchaseOrderService {
@@ -125,6 +126,49 @@ export class PurchaseOrderService {
     });
     this.purchaseOrderHelperService.postPurchaseOrderCreate(purchaseOrder);
     return purchaseOrder;
+  }
+
+  async bulkPurchaseOrder(
+    req: any,
+    dto: BulkPoCreateDto,
+    i18n: I18nContext,
+  ): Promise<PurchaseOrderDocument[]> {
+    const posToCreate: CreatePurchaseOrderDto[] = [];
+    const response: PurchaseOrderDocument[] = [];
+    for (const i in dto.payload) {
+      if (dto.payload[i].vendorRecord.poQuantity <= 0) {
+        throw new BadRequestException(
+          `PoQuantity  for ${dto.payload[i].material._id} must be a non-zero positive value`,
+        );
+      }
+      if (
+        !posToCreate[
+          dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+        ]
+      ) {
+        posToCreate[
+          dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+        ] = {
+          restaurantId: dto.payload[i].restaurant._id,
+          vendorId: dto.payload[i].restaurant._id,
+          items: [],
+        };
+      }
+      posToCreate[
+        dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+      ].items.push({
+        materialId: dto.payload[i].material._id,
+        vendorMaterialId: dto.payload[i].vendorRecord.vendorMaterialId ?? null,
+        cost: dto.payload[i].vendorRecord.cost,
+        stock: dto.payload[i].vendorRecord.poQuantity,
+        uom: dto.payload[i].vendorRecord.uom._id,
+      });
+    }
+    for (const i in posToCreate) {
+      const purchaseOrder = await this.create(req, posToCreate[i], i18n);
+      response.push(purchaseOrder);
+    }
+    return response;
   }
 
   async createDraft(
@@ -324,18 +368,19 @@ export class PurchaseOrderService {
           );
         conversionFactor = convert.conversionFactor;
       }
-      const poQuantity =
-        (inventory[0].parLevel - inventory[0].inventory[0]?.stock) /
-        conversionFactor;
-      const poQuantityBase =
+
+      let poQuantityBase =
         inventory[0].parLevel - inventory[0].inventory[0]?.stock;
+      if (!poQuantityBase) poQuantityBase = 0;
+      let poQuantity = poQuantityBase / conversionFactor;
+      if (!poQuantity) poQuantity = 0;
       response.push({
         restaurant: restaurants[singleDtoObj.restaurantId],
         material: materials[singleDtoObj.materialId],
         materialRestaurant: {
           minStockLevel: inventory[0].minStockLevel,
           parLevel: inventory[0].parLevel,
-          onHand: inventory[0].inventory[0]?.stock,
+          onHand: inventory[0].inventory[0]?.stock ?? 0,
           poQuantityBase: poQuantityBase < 0 ? 0 : poQuantityBase,
           uomBase: materials[singleDtoObj.materialId].uomBase,
         },
@@ -345,6 +390,7 @@ export class PurchaseOrderService {
           quantity: inventory[0].selectedVendor[0]?.quantity,
           uom: uom,
           poQuantity: poQuantity < 0 ? 0 : poQuantity,
+          vendorMaterialId: inventory[0].selectedVendor[0].vendorMaterialId,
         },
       });
     }
@@ -578,16 +624,17 @@ export class PurchaseOrderService {
           );
         conversionFactor = convert.conversionFactor;
       }
-      const poQuantityBase = docs[i].parLevel - docs[i].inventory[0]?.stock;
-      const poQuantity =
-        (docs[i].parLevel - docs[i].inventory[0]?.stock) / conversionFactor;
+      let poQuantityBase = docs[i].parLevel - docs[i].inventory[0]?.stock;
+      if (!poQuantityBase) poQuantityBase = 0;
+      let poQuantity = poQuantityBase / conversionFactor;
+      if (!poQuantity) poQuantity = 0;
       response.push({
         restaurant: restaurants[docs[i].restaurantId.toString()],
         material: materials[docs[i].materialId.toString()],
         materialRestaurant: {
           minStockLevel: docs[i].minStockLevel,
           parLevel: docs[i].parLevel,
-          onHand: docs[i].inventory[0]?.stock,
+          onHand: docs[i].inventory[0]?.stock ?? 0,
           poQuantityBase: poQuantityBase < 0 ? 0 : poQuantityBase,
           uomBase:
             unitOfMeasures[
@@ -600,6 +647,7 @@ export class PurchaseOrderService {
           quantity: docs[i].selectedVendor[0]?.quantity,
           uom: unitOfMeasures[docs[i].selectedVendor[0]?.uom.toString()],
           poQuantity: poQuantity < 0 ? 0 : poQuantity,
+          vendorMaterialId: docs[i].selectedVendor[0].vendorMaterialId,
         },
       });
     }
