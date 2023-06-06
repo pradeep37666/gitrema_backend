@@ -67,6 +67,9 @@ export class Inventory {
   stock: number;
 
   @Prop({ default: 0 })
+  virtualConsumption: number;
+
+  @Prop({ default: 0 })
   stockValue: number;
 
   @Prop({ default: 0 })
