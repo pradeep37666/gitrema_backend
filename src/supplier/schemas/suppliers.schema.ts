@@ -31,6 +31,18 @@ export class Supplier {
   aboutAr: string;
 
   @Prop({ default: null })
+  goals: string;
+
+  @Prop({ default: null })
+  goalsAr: string;
+
+  @Prop({ default: null })
+  returnPolicy: string;
+
+  @Prop({ default: null })
+  returnPolicyAr: string;
+
+  @Prop({ default: null })
   vatNumber: string;
 
   @Prop({ required: true })

@@ -49,6 +49,26 @@ export class AddSupplierDto {
   @IsOptional()
   aboutAr: string;
 
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  goals: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  goalsAr: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  returnPolicy: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  returnPolicyAr: string;
+
   @ApiProperty()
   @IsEmail()
   @IsNotEmpty()
