@@ -625,10 +625,21 @@ export class InventoryHelperService {
   ): Promise<InventoryDocument> {
     console.log('For Saving', calculatedInventory);
     inventory.set({
-      stock: calculatedInventory.stock,
+      stock: calculatedInventory.stock > 0 ? calculatedInventory.stock : 0,
       averageCost: calculatedInventory.averageCost,
-      stockValue: calculatedInventory.stockValue,
+      stockValue:
+        calculatedInventory.stockValue > 0 ? calculatedInventory.stockValue : 0,
     });
+    if (action == InventoryAction.InventoryCount) {
+      inventory.virtualConsumption = 0;
+    } else if (
+      calculatedInventory.stock < 0 &&
+      calculatedInventory.sourceItemWithBase.stock
+    ) {
+      inventory.virtualConsumption = inventory.virtualConsumption
+        ? inventory.virtualConsumption - calculatedInventory.stock
+        : calculatedInventory.stock;
+    }
     await inventory.save();
     this.saveHistory(inventory, calculatedInventory, action, entity);
     return inventory;
