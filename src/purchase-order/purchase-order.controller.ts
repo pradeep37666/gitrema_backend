@@ -77,7 +77,7 @@ export class PurchaseOrderController {
   //   return await this.purchaseOrderService.createDraft(req, dto, i18n);
   // }
 
-  @Post('fill-to-par')
+  @Post('change-vendor')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.FETCH)
   async fillToPar(
     @Req() req,

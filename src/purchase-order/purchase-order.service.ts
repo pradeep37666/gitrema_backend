@@ -474,7 +474,8 @@ export class PurchaseOrderService {
           cost: inventory[0].selectedVendor[0]?.cost,
           quantity: inventory[0].selectedVendor[0]?.quantity,
           uom: uom,
-          poQuantity: poQuantity < 0 ? 0 : poQuantity,
+          defaultParQuantity: poQuantity < 0 ? 0 : poQuantity,
+          poQuantity: 0,
           vendorMaterialId: inventory[0].selectedVendor[0].vendorMaterialId,
         },
       });
@@ -731,7 +732,8 @@ export class PurchaseOrderService {
           cost: docs[i].selectedVendor[0]?.cost,
           quantity: docs[i].selectedVendor[0]?.quantity,
           uom: unitOfMeasures[docs[i].selectedVendor[0]?.uom.toString()],
-          poQuantity: poQuantity < 0 ? 0 : poQuantity,
+          defaultParQuantity: poQuantity < 0 ? 0 : poQuantity,
+          poQuantity: 0,
           vendorMaterialId: docs[i].selectedVendor[0].vendorMaterialId,
         },
       });
