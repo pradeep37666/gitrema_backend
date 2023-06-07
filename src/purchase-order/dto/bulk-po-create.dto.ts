@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsString,
   ValidateNested,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
@@ -12,7 +13,7 @@ import { MaterialItemDto } from './item.dto';
 import { Type } from 'class-transformer';
 
 class IdDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
@@ -20,6 +21,20 @@ class IdDto {
     message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
   _id: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({
+    message: i18nValidationMessage('validation.MUST_BE_STRING'),
+  })
+  name: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({
+    message: i18nValidationMessage('validation.MUST_BE_STRING'),
+  })
+  nameAr: string;
 }
 
 class VendorRecordDto {
