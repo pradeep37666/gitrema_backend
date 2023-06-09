@@ -32,17 +32,26 @@ export class GoodsReceiptHelperService {
     private readonly purchaseOrderHelperService: PurchaseOrderHelperService,
   ) {}
 
-  async postGoodsReceiptCreate(req, goodsReceipt: GoodsReceiptDocument) {
+  async postGoodsReceiptCreate(
+    req,
+    goodsReceipt: GoodsReceiptDocument,
+    loaded: boolean,
+  ) {
     const purchaseOrder = await this.purchaseOrderModel.findOneAndUpdate(
-      { _id: goodsReceipt.purchaseOrderId, status: PurchaseOrderStatus.New },
-      { status: PurchaseOrderStatus.Confirmed },
+      { _id: goodsReceipt.purchaseOrderId },
+      {
+        status: loaded
+          ? PurchaseOrderStatus.Received
+          : PurchaseOrderStatus.PartiallyReceived,
+      },
       {
         new: true,
       },
     );
-    if (purchaseOrder) {
-      this.purchaseOrderHelperService.postPurchaseOrderConfirmed(purchaseOrder);
-    }
+
+    // if (purchaseOrder) {
+    //   this.purchaseOrderHelperService.postPurchaseOrderConfirmed(purchaseOrder);
+    // }
     return await this.inventoryHelperService.processInventoryChanges(
       req,
       goodsReceipt,
@@ -59,8 +68,10 @@ export class GoodsReceiptHelperService {
     if (!purchaseOrder) {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
     }
-    const loadedItems = [],
-      allowedItems = [];
+    let loadedItems = [],
+      allowedItems = [],
+      totalAllowed = 0,
+      totalLoaded = 0;
     goodsReceipts.forEach((goodsReceipt) => {
       goodsReceipt.items.forEach((item) => {
         if (loadedItems[item.materialId.toString()]) {
@@ -68,11 +79,14 @@ export class GoodsReceiptHelperService {
         } else {
           loadedItems[item.materialId.toString()] = item.stock;
         }
+        totalLoaded += item.stock;
       });
     });
     purchaseOrder.items.forEach((poi) => {
       allowedItems[poi.materialId.toString()] = poi.stock;
+      totalAllowed += poi.stock;
     });
+
     for (const i in dto.items) {
       if (!allowedItems[dto.items[i].materialId]) {
         throw new BadRequestException(
@@ -89,6 +103,8 @@ export class GoodsReceiptHelperService {
           } quantities allowed for ${dto.items[i].materialId}`,
         );
       }
+      totalLoaded += dto.items[i].stock;
     }
+    return totalAllowed == totalLoaded;
   }
 }

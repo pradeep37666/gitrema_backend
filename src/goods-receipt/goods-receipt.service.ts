@@ -34,7 +34,10 @@ export class GoodsReceiptService {
     dto: CreateGoodsReceiptDto,
     i18n: I18nContext,
   ): Promise<GoodsReceiptDocument> {
-    await this.goodReceiptHelperService.validateGoodsReceipt(dto, i18n);
+    const loaded = await this.goodReceiptHelperService.validateGoodsReceipt(
+      dto,
+      i18n,
+    );
     const items: any = dto.items;
     let totalCost = 0;
     items.forEach((i) => {
@@ -58,6 +61,7 @@ export class GoodsReceiptService {
     goodsReceipt = await this.goodReceiptHelperService.postGoodsReceiptCreate(
       req,
       goodsReceipt,
+      loaded,
     );
     return goodsReceipt;
   }
