@@ -1,5 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import {
+  Document,
+  Schema as MongooseSchema,
+  SchemaTimestampsConfig,
+} from 'mongoose';
 
 import * as paginate from 'mongoose-paginate-v2';
 import { MaterialDocument } from 'src/material/schemas/material.schema';
@@ -8,7 +12,9 @@ import { OrderDocument } from 'src/order/schemas/order.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
-export type ProfitDetailDocument = ProfitDetail & Document;
+export type ProfitDetailDocument = ProfitDetail &
+  Document &
+  SchemaTimestampsConfig;
 
 @Schema({ timestamps: true })
 export class ProfitDetail {
