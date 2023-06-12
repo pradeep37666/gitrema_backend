@@ -186,7 +186,6 @@ import { PrinterModule } from './printer/printer.module';
     PaymentGatewayModule,
     CustomerConditionModule,
     InventoryReportModule,
-    CostSimulatorModule,
   ],
   controllers: [AppController],
   providers: [
