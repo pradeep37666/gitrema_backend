@@ -31,6 +31,7 @@ export class PrinterService {
         {
           supplierId: printer.supplierId,
           _id: { $ne: printer._id },
+          type: printer.type,
         },
         { isDefault: false },
       );
@@ -92,6 +93,7 @@ export class PrinterService {
         {
           supplierId: printer.supplierId,
           _id: { $ne: printer._id },
+          type: printer.type,
         },
         { isDefault: false },
       );

@@ -42,6 +42,9 @@ import { TIMEZONE } from 'src/core/Constants/system.constant';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { ExpoPushNotificationService } from 'src/notification/expo-push-notification.service';
 import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
+import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
+import { PrinterType } from 'src/printer/enum/en';
+import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 
 @Injectable()
 export class OrderService {
@@ -66,6 +69,8 @@ export class OrderService {
     private readonly menuItemModel: Model<MenuItemDocument>,
     @InjectModel(Printer.name)
     private readonly printerModel: Model<PrinterDocument>,
+    @InjectModel(Cashier.name)
+    private readonly cashierModel: Model<CashierDocument>,
   ) {}
 
   async create(
@@ -594,32 +599,43 @@ export class OrderService {
     return order;
   }
 
-  async identifyPrinters(req, orderId: string) {
-    const order = await this.orderModel.findById(orderId);
+  async identifyPrinters(req, query: QueryIdentifyPrinterDto) {
+    const order = await this.orderModel.findById(query.orderId);
 
     if (!order) {
       throw new NotFoundException();
     }
 
-    const menuItemIds = order.items.map((oi) => oi.menuItem.menuItemId);
-    const menuItems = await this.menuItemModel
-      .find({
-        _id: { $in: menuItemIds },
-      })
-      .populate([
-        {
-          path: 'categoryId',
-          select: { printerId: 1 },
-        },
-      ]);
-    let printers = menuItems.map((mi) => {
-      if (mi.categoryId?.printerId) return mi.categoryId?.printerId;
-    });
+    let printers = [];
+    if (query.printerType == PrinterType.Cashier && order.cashierId) {
+      const cashier = await this.cashierModel.findById(order.cashierId);
+      if (cashier && cashier.printerId) {
+        printers.push(cashier.printerId);
+      }
+    } else {
+      const menuItemIds = order.items.map((oi) => oi.menuItem.menuItemId);
+      const menuItems = await this.menuItemModel
+        .find({
+          _id: { $in: menuItemIds },
+        })
+        .populate([
+          {
+            path: 'categoryId',
+            select: { printerId: 1 },
+          },
+        ]);
+      printers = menuItems.map((mi) => {
+        if (mi.categoryId?.printerId) return mi.categoryId?.printerId;
+      });
+    }
     if (printers.length == 0) {
       printers = [];
       const printer = await this.printerModel.findOne({
         isDefault: true,
         supplierId: req.user.supplierId,
+        type: query.printerType ?? {
+          $in: [PrinterType.Cashier, PrinterType.Kitchen],
+        },
       });
       if (printer) {
         printers.push(printer._id);

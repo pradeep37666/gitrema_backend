@@ -5,6 +5,7 @@ import * as paginate from 'mongoose-paginate-v2';
 
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
+import { PrinterType } from '../enum/en';
 
 export type PrinterDocument = Printer & Document;
 
@@ -23,6 +24,12 @@ export class Printer {
 
   @Prop({ default: null })
   nameAr: string;
+
+  @Prop({ type: String, enum: PrinterType })
+  type: PrinterType;
+
+  @Prop()
+  printerSetup: number;
 
   @Prop({ required: true })
   isDefault: boolean;
