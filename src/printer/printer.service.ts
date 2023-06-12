@@ -1,49 +1,115 @@
-import { Injectable } from '@nestjs/common';
-//import * as Printer from 'node-thermal-printer';
-import { execute } from 'html2thermal';
-import * as Printer from 'escpos';
-import * as USB from 'escpos-usb';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreatePrinterDto } from './dto/create-printer.dto';
+import { UpdatePrinterDto } from './dto/update-printer.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Printer, PrinterDocument } from './schema/printer.schema';
+import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import {
+  DefaultSort,
+  PaginationDto,
+  pagination,
+} from 'src/core/Constants/pagination';
+import { I18nContext } from 'nestjs-i18n';
 
 @Injectable()
 export class PrinterService {
-  async print(template: string) {
-    // const printer = new Printer.ThermalPrinter({
-    //   type: Printer.PrinterTypes.EPSON,
-    //   interface: 'tcp://109.171.133.40:17446',
-    // });
-    // console.log(printer);
-    // printer.print('Test');
-    // await execute(printer, template);
+  constructor(
+    @InjectModel(Printer.name)
+    private readonly printerModel: Model<PrinterDocument>,
+    @InjectModel(Printer.name)
+    private readonly printerModelPag: PaginateModel<PrinterDocument>,
+  ) {}
 
-    const device = USB();
-
-    // const device  = new escpos.Network('localhost');
-    // const device  = new escpos.Serial('/dev/usb/lp0');
-
-    const options = { encoding: 'GB18030' /* default */ };
-    // encoding is optional
-
-    const printer = new Printer(device, options);
-
-    device.open(function (error) {
-      printer
-        .font('a')
-        .align('ct')
-        .style('bu')
-        .size(1, 1)
-        .text('The quick brown fox jumps over the lazy dog')
-        .text('敏捷的棕色狐狸跳过懒狗')
-        .barcode('1234567', 'EAN8')
-        .table(['One', 'Two', 'Three'])
-        .tableCustom([
-          { text: 'Left', align: 'LEFT', width: 0.33 },
-          { text: 'Center', align: 'CENTER', width: 0.33 },
-          { text: 'Right', align: 'RIGHT', width: 0.33 },
-        ])
-        .qrimage('https://github.com/song940/node-escpos', function (err) {
-          this.cut();
-          this.close();
-        });
+  async create(req: any, dto: CreatePrinterDto): Promise<PrinterDocument> {
+    const printer = await this.printerModel.create({
+      ...dto,
+      supplierId: req.user.supplierId,
+      addedBy: req.user.userId,
     });
+    if (dto.isDefault == true) {
+      await this.printerModel.updateMany(
+        {
+          supplierId: printer.supplierId,
+          _id: { $ne: printer._id },
+        },
+        { isDefault: false },
+      );
+    }
+    return printer;
+  }
+
+  async findAll(
+    req: any,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<PrinterDocument>> {
+    const printers = await this.printerModelPag.paginate(
+      {
+        supplierId: req.user.supplierId,
+        deletedAt: null,
+      },
+      {
+        sort: DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+      },
+    );
+    return printers;
+  }
+
+  async fetchBySupplier(supplierId): Promise<PrinterDocument[]> {
+    return await this.printerModel.find({ supplierId });
+  }
+
+  async findOne(
+    printerId: string,
+    i18n: I18nContext,
+  ): Promise<PrinterDocument> {
+    const exists = await this.printerModel.findById(printerId);
+
+    if (!exists) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+
+    return exists;
+  }
+
+  async update(
+    printerId: string,
+    dto: UpdatePrinterDto,
+    i18n: I18nContext,
+  ): Promise<PrinterDocument> {
+    const printer = await this.printerModel.findByIdAndUpdate(printerId, dto, {
+      new: true,
+    });
+
+    if (!printer) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+
+    if (dto.isDefault == true) {
+      await this.printerModel.updateMany(
+        {
+          supplierId: printer.supplierId,
+          _id: { $ne: printer._id },
+        },
+        { isDefault: false },
+      );
+    }
+
+    return printer;
+  }
+
+  async remove(printerId: string, i18n: I18nContext): Promise<boolean> {
+    const printer = await this.printerModel.findByIdAndUpdate(
+      printerId,
+      { deletedAt: new Date() },
+      { new: true },
+    );
+
+    if (!printer) {
+      throw new NotFoundException(i18n.t('error.NOT_FOUND'));
+    }
+    return true;
   }
 }

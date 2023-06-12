@@ -71,6 +71,11 @@ export class OrderController {
     return await this.orderService.findOne(orderId);
   }
 
+  @Get(':orderId/identify-printers')
+  async identifyPrinters(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.identifyPrinters(req, orderId);
+  }
+
   @Patch(':orderId')
   @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
   async update(

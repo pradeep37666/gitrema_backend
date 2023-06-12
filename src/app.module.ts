@@ -52,7 +52,7 @@ import { PackageModule } from './package/package.module';
 import { SocketIoModule } from './socket-io/socket-io.module';
 import { ReportModule } from './reports/report.module';
 import { ImportModule } from './import/import.module';
-import { PrinterModule } from './printer/printer.module';
+
 import { GlobalConfigModule } from './global-config/global-config.module';
 import { TestDataModule } from './test-data/test-data.module';
 import { AdminModule } from './admin/admin.module';
@@ -85,6 +85,9 @@ import { SelectedVendorModule } from './selected-vendor/selected-vendor.module';
 import { VendorMaterialModule } from './vendor-material/vendor-material.module';
 import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module';
 import { CustomerConditionModule } from './customer-condition/customer-condition.module';
+import { InventoryReportModule } from './inventory-report/inventory-report.module';
+import { CostSimulatorModule } from './cost-simulator/cost-simulator.module';
+import { PrinterModule } from './printer/printer.module';
 
 @Module({
   imports: [
@@ -182,6 +185,8 @@ import { CustomerConditionModule } from './customer-condition/customer-condition
     VendorMaterialModule,
     PaymentGatewayModule,
     CustomerConditionModule,
+    InventoryReportModule,
+    CostSimulatorModule,
   ],
   controllers: [AppController],
   providers: [
