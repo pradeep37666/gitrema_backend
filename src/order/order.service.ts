@@ -40,6 +40,8 @@ import * as moment from 'moment';
 import 'moment-timezone';
 import { TIMEZONE } from 'src/core/Constants/system.constant';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { ExpoPushNotificationService } from 'src/notification/expo-push-notification.service';
+import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
 
 @Injectable()
 export class OrderService {
@@ -60,6 +62,10 @@ export class OrderService {
     private readonly calculationService: CalculationService,
     @Inject(forwardRef(() => InvoiceHelperService))
     private readonly invoiceHelperService: InvoiceHelperService,
+    @InjectModel(MenuItem.name)
+    private readonly menuItemModel: Model<MenuItemDocument>,
+    @InjectModel(Printer.name)
+    private readonly printerModel: Model<PrinterDocument>,
   ) {}
 
   async create(
@@ -586,5 +592,40 @@ export class OrderService {
       throw new NotFoundException();
     }
     return order;
+  }
+
+  async identifyPrinters(req, orderId: string) {
+    const order = await this.orderModel.findById(orderId);
+
+    if (!order) {
+      throw new NotFoundException();
+    }
+
+    const menuItemIds = order.items.map((oi) => oi.menuItem.menuItemId);
+    const menuItems = await this.menuItemModel
+      .find({
+        _id: { $in: menuItemIds },
+      })
+      .populate([
+        {
+          path: 'categoryId',
+          select: { printerId: 1 },
+        },
+      ]);
+    let printers = menuItems.map((mi) => {
+      if (mi.categoryId?.printerId) return mi.categoryId?.printerId;
+    });
+    if (printers.length == 0) {
+      printers = [];
+      const printer = await this.printerModel.findOne({
+        isDefault: true,
+        supplierId: req.user.supplierId,
+      });
+      if (printer) {
+        printers.push(printer._id);
+      }
+    }
+
+    return printers;
   }
 }

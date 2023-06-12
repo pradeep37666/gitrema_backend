@@ -1,12 +1,14 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   IsUrl,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class CreateMenuCategoryDTO {
   @ApiProperty()
@@ -28,6 +30,13 @@ export class CreateMenuCategoryDTO {
   @IsOptional()
   @IsNumber()
   order: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
+  })
+  printerId?: string;
 }
 
 export class UpdateMenuCategoryDTO extends PartialType(CreateMenuCategoryDTO) {

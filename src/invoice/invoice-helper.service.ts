@@ -64,6 +64,7 @@ export class InvoiceHelperService {
     cancelledInvoice: InvoiceDocument = null,
   ): Promise<{ url: string; items: any[]; html: string; imageUrl: string }> {
     const multiplier = cancelledInvoice ? -1 : 1;
+    const orderObj: any = order;
     console.log(order.supplierId, {
       sellerName: order.supplierId.nameAr ?? order.supplierId.name,
       vatRegistrationNumber: '311151351200003',
@@ -80,6 +81,18 @@ export class InvoiceHelperService {
       invoiceVatTotal: (multiplier * order.summary.totalTax).toString(),
     });
 
+    orderObj.items.forEach((oi) => {
+      let message = '';
+      oi.additions.forEach((oia) => {
+        const options = oia.options.map((o) => {
+          return o.nameAr;
+        });
+        message += `- with ${options.join(',')}`;
+        message += `\n`;
+      });
+      oi.additionTextAr = message;
+    });
+
     const templateHtml = fs.readFileSync(
       'src/invoice/templates/invoice.v1.html',
       'utf8',
@@ -89,7 +102,7 @@ export class InvoiceHelperService {
     const html = template({
       qrCode,
       invoiceNumber: dto.invoiceNumber,
-      order: order,
+      order: orderObj,
       multiplier,
     });
 
