@@ -46,7 +46,6 @@ export class PrinterService {
     const printers = await this.printerModelPag.paginate(
       {
         supplierId: req.user.supplierId,
-        deletedAt: null,
       },
       {
         sort: DefaultSort,
@@ -103,11 +102,7 @@ export class PrinterService {
   }
 
   async remove(printerId: string, i18n: I18nContext): Promise<boolean> {
-    const printer = await this.printerModel.findByIdAndUpdate(
-      printerId,
-      { deletedAt: new Date() },
-      { new: true },
-    );
+    const printer = await this.printerModel.findByIdAndRemove(printerId);
 
     if (!printer) {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
