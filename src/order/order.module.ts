@@ -47,6 +47,8 @@ import { InventoryModule } from 'src/inventory/inventory.module';
 import { NotificationModule } from 'src/notification/notification.module';
 import { User, UserSchema } from 'src/users/schemas/users.schema';
 import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
+import { Printer, PrinterSchema } from 'src/printer/schema/printer.schema';
+import { Cashier, CashierSchema } from 'src/cashier/schemas/cashier.schema';
 
 @Module({
   imports: [
@@ -67,6 +69,8 @@ import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
       { name: Invoice.name, schema: InvoiceSchema },
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
+      { name: Printer.name, schema: PrinterSchema },
+      { name: Cashier.name, schema: CashierSchema },
     ]),
     SocketIoModule,
     TableModule,

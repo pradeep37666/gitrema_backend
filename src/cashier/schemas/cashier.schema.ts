@@ -8,6 +8,7 @@ import {
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { CashierLogDocument } from './cashier-log.schema';
+import { PrinterDocument } from 'src/printer/schema/printer.schema';
 
 export type CashierDocument = Cashier & Document;
 
@@ -28,6 +29,13 @@ export class Cashier {
     required: true,
   })
   restaurantId: RestaurantDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Printer',
+    index: true,
+  })
+  printerId: PrinterDocument;
 
   @Prop({ required: true })
   name: string;

@@ -53,17 +53,31 @@ export class PurchaseOrderController {
     return await this.purchaseOrderService.bulkPurchaseOrder(req, dto, i18n);
   }
 
-  @Post('create-preview')
+  @Post('bulk-preview')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.CREATE)
-  async createDraft(
+  async bulkPreview(
     @Req() req,
-    @Body() dto: CreatePurchaseOrderDto,
+    @Body() dto: BulkPoCreateDto,
     @I18n() i18n: I18nContext,
   ) {
-    return await this.purchaseOrderService.createDraft(req, dto, i18n);
+    return await this.purchaseOrderService.bulkPurchaseOrderPreview(
+      req,
+      dto,
+      i18n,
+    );
   }
 
-  @Post('fill-to-par')
+  // @Post('create-preview')
+  // @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.CREATE)
+  // async createDraft(
+  //   @Req() req,
+  //   @Body() dto: CreatePurchaseOrderDto,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.purchaseOrderService.createDraft(req, dto, i18n);
+  // }
+
+  @Post('change-vendor')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.FETCH)
   async fillToPar(
     @Req() req,
@@ -83,20 +97,20 @@ export class PurchaseOrderController {
     return await this.purchaseOrderService.findAll(req, query, paginateOptions);
   }
 
-  @Get('fetch-preview')
-  @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.LIST)
-  async fetchDraftPos(
-    @Req() req,
-    @Query() query: QueryPurchaseOrderDto,
-    @Query() paginateOptions: PaginationDto,
-  ): Promise<PaginateResult<PurchaseOrderDocument>> {
-    return await this.purchaseOrderService.findAll(
-      req,
-      query,
-      paginateOptions,
-      PurchaseOrderStatus.Draft,
-    );
-  }
+  // @Get('fetch-preview')
+  // @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.LIST)
+  // async fetchDraftPos(
+  //   @Req() req,
+  //   @Query() query: QueryPurchaseOrderDto,
+  //   @Query() paginateOptions: PaginationDto,
+  // ): Promise<PaginateResult<PurchaseOrderDocument>> {
+  //   return await this.purchaseOrderService.findAll(
+  //     req,
+  //     query,
+  //     paginateOptions,
+  //     PurchaseOrderStatus.Draft,
+  //   );
+  // }
 
   @Get('sheet')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.FETCH)
@@ -133,19 +147,19 @@ export class PurchaseOrderController {
     );
   }
 
-  @Patch(':purchaseOrderId/approve-preview')
-  @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.UPDATE)
-  async approvePreview(
-    @Req() req,
-    @Param('purchaseOrderId') purchaseOrderId: string,
-    @I18n() i18n: I18nContext,
-  ) {
-    return await this.purchaseOrderService.approvePreview(
-      req,
-      purchaseOrderId,
-      i18n,
-    );
-  }
+  // @Patch(':purchaseOrderId/approve-preview')
+  // @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.UPDATE)
+  // async approvePreview(
+  //   @Req() req,
+  //   @Param('purchaseOrderId') purchaseOrderId: string,
+  //   @I18n() i18n: I18nContext,
+  // ) {
+  //   return await this.purchaseOrderService.approvePreview(
+  //     req,
+  //     purchaseOrderId,
+  //     i18n,
+  //   );
+  // }
 
   @Patch(':purchaseOrderId/confirm')
   @PermissionGuard(PermissionSubject.PurchaseOrder, Permission.Common.UPDATE)

@@ -171,6 +171,91 @@ export class PurchaseOrderService {
     return response;
   }
 
+  async bulkPurchaseOrderPreview(
+    req: any,
+    dto: BulkPoCreateDto,
+    i18n: I18nContext,
+  ): Promise<any> {
+    const posToCreate = [];
+    let total = 0;
+    for (const i in dto.payload) {
+      if (dto.payload[i].vendorRecord.poQuantity <= 0) {
+        throw new BadRequestException(
+          `PoQuantity  for ${dto.payload[i].material._id} must be a non-zero positive value`,
+        );
+      }
+      if (
+        !posToCreate[
+          dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+        ]
+      ) {
+        posToCreate[
+          dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+        ] = {
+          restaurant: dto.payload[i].restaurant,
+          vendor: dto.payload[i].vendor,
+          items: [],
+          total: 0,
+          totalNetPrice: 0,
+          totalTax: 0,
+        };
+      }
+      const itemTaxableAmount = roundOffNumber(
+        dto.payload[i].vendorRecord.cost / (1 + Tax.rate / 100),
+      );
+
+      const netPrice = itemTaxableAmount;
+      const stockValue = roundOffNumber(
+        dto.payload[i].vendorRecord.cost *
+          dto.payload[i].vendorRecord.poQuantity,
+      );
+      const tax = roundOffNumber(
+        dto.payload[i].vendorRecord.cost - itemTaxableAmount,
+      );
+
+      posToCreate[
+        dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+      ].items.push({
+        material: dto.payload[i].material,
+        vendorMaterialId: dto.payload[i].vendorRecord.vendorMaterialId ?? null,
+        cost: dto.payload[i].vendorRecord.cost,
+        stock: dto.payload[i].vendorRecord.poQuantity,
+        uom: dto.payload[i].vendorRecord.uom,
+        tax,
+        netPrice,
+        stockValue,
+      });
+      posToCreate[
+        dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+      ].total += stockValue;
+      posToCreate[
+        dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+      ].totalNetPrice += netPrice * dto.payload[i].vendorRecord.poQuantity;
+      posToCreate[
+        dto.payload[i].restaurant._id + '_' + dto.payload[i].vendor._id
+      ].totalTax += tax * dto.payload[i].vendorRecord.poQuantity;
+      total += stockValue;
+    }
+    const purchaseOrders = [];
+    for (const i in posToCreate) {
+      posToCreate[i].total = roundOffNumber(posToCreate[i].total);
+      posToCreate[i].totalNetPrice = roundOffNumber(
+        posToCreate[i].totalNetPrice,
+      );
+      posToCreate[i].totalTax = roundOffNumber(posToCreate[i].totalTax);
+      purchaseOrders.push(posToCreate[i]);
+    }
+
+    const totalTaxableAmount = roundOffNumber(total / (1 + Tax.rate / 100));
+    const totalTax = roundOffNumber((totalTaxableAmount * Tax.rate) / 100);
+    return {
+      purchaseOrders,
+      total: roundOffNumber(total),
+      totalNetPrice: totalTaxableAmount,
+      totalTax,
+    };
+  }
+
   async createDraft(
     req: any,
     dto: CreatePurchaseOrderDto,
@@ -389,7 +474,8 @@ export class PurchaseOrderService {
           cost: inventory[0].selectedVendor[0]?.cost,
           quantity: inventory[0].selectedVendor[0]?.quantity,
           uom: uom,
-          poQuantity: poQuantity < 0 ? 0 : poQuantity,
+          defaultParQuantity: poQuantity < 0 ? 0 : poQuantity,
+          poQuantity: 0,
           vendorMaterialId: inventory[0].selectedVendor[0].vendorMaterialId,
         },
       });
@@ -646,7 +732,8 @@ export class PurchaseOrderService {
           cost: docs[i].selectedVendor[0]?.cost,
           quantity: docs[i].selectedVendor[0]?.quantity,
           uom: unitOfMeasures[docs[i].selectedVendor[0]?.uom.toString()],
-          poQuantity: poQuantity < 0 ? 0 : poQuantity,
+          defaultParQuantity: poQuantity < 0 ? 0 : poQuantity,
+          poQuantity: 0,
           vendorMaterialId: docs[i].selectedVendor[0].vendorMaterialId,
         },
       });

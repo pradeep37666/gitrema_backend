@@ -20,7 +20,7 @@ import {
   pagination,
 } from 'src/core/Constants/pagination';
 import { QueryInvoiceDto } from './dto/query-invoice.dto';
-import { PrinterService } from 'src/printer/printer.service';
+
 import { EscCommandsDto } from './dto/esc-commands.dto';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 
@@ -46,7 +46,6 @@ export class InvoiceService {
     @InjectModel(Invoice.name)
     private invoiceModelPag: PaginateModel<InvoiceDocument>,
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
-    private readonly printerService: PrinterService,
   ) {}
 
   async checkIfInvoiceExist(orderId: string): Promise<number> {

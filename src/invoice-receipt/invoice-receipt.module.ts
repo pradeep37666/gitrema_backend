@@ -10,12 +10,17 @@ import {
   InvoiceReceipt,
   InvoiceReceiptSchema,
 } from './schema/invoice-receipt.schema';
+import {
+  PurchaseOrder,
+  PurchaseOrderSchema,
+} from 'src/purchase-order/schemas/purchase-order.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: GoodsReceipt.name, schema: GoodsReceiptSchema },
       { name: InvoiceReceipt.name, schema: InvoiceReceiptSchema },
+      { name: PurchaseOrder.name, schema: PurchaseOrderSchema },
     ]),
   ],
   controllers: [InvoiceReceiptController],

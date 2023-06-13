@@ -25,6 +25,7 @@ import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
+import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -69,6 +70,11 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Common.FETCH)
   async findOne(@Param('orderId') orderId: string) {
     return await this.orderService.findOne(orderId);
+  }
+
+  @Get('identify-printers')
+  async identifyPrinters(@Req() req, @Query() query: QueryIdentifyPrinterDto) {
+    return await this.orderService.identifyPrinters(req, query);
   }
 
   @Patch(':orderId')

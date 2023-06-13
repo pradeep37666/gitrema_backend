@@ -80,10 +80,12 @@ export class TransactionService {
   async update(
     transactionId: string,
     transactionDetail: any,
-  ): Promise<LeanDocument<TransactionDocument>> {
-    const transaction = await this.transactionModel
-      .findByIdAndUpdate(transactionId, transactionDetail, { new: true })
-      .lean();
+  ): Promise<TransactionDocument> {
+    const transaction = await this.transactionModel.findByIdAndUpdate(
+      transactionId,
+      transactionDetail,
+      { new: true },
+    );
     if (!transaction) {
       throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }
@@ -119,7 +121,7 @@ export class TransactionService {
 
   async postTransactionProcess(
     req: any,
-    transaction: LeanDocument<TransactionDocument>,
+    transaction: TransactionDocument,
   ): Promise<void> {
     if (transaction.status == PaymentStatus.Success) {
       const order = await this.orderModel.findById(transaction.orderId);
@@ -176,7 +178,9 @@ export class TransactionService {
             dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
             dataToUpdate.paymentTime = new Date();
           }
+
           order.set(dataToUpdate);
+          if (!order.cashierId) order.cashierId = transaction.cashierId;
           await order.save();
           if (order.paymentStatus == OrderPaymentStatus.Paid) {
             try {

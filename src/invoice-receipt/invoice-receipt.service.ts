@@ -25,6 +25,11 @@ import {
 } from 'src/goods-receipt/schemas/goods-receipt.schema';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { Tax } from 'src/core/Constants/tax-rate.constant';
+import {
+  PurchaseOrder,
+  PurchaseOrderDocument,
+} from 'src/purchase-order/schemas/purchase-order.schema';
+import { PurchaseOrderStatus } from 'src/purchase-order/enum/en';
 
 @Injectable()
 export class InvoiceReceiptService {
@@ -35,6 +40,8 @@ export class InvoiceReceiptService {
     private readonly invoiceReceiptModelPag: PaginateModel<InvoiceReceiptDocument>,
     @InjectModel(GoodsReceipt.name)
     private readonly goodsReceiptModel: Model<GoodsReceiptDocument>,
+    @InjectModel(PurchaseOrder.name)
+    private readonly purchaseOrderModel: Model<PurchaseOrderDocument>,
   ) {}
 
   async create(
@@ -48,7 +55,7 @@ export class InvoiceReceiptService {
     if (exists) {
       throw new NotFoundException(i18n.t('error.RECORD_ALREADY_EXIST'));
     }
-    const goodsReceipts = await this.validate(dto, i18n);
+    const validated = await this.validate(dto, i18n);
     const items: any = dto.items;
     let totalCost = 0;
     items.forEach((i) => {
@@ -67,8 +74,16 @@ export class InvoiceReceiptService {
       tax,
       addedBy: req.user.userId,
       supplierId: req.user.supplierId,
-      restaurantId: goodsReceipts[0].restaurantId,
+      restaurantId: validated.goodsReceipts[0].restaurantId,
     });
+    await this.purchaseOrderModel.findOneAndUpdate(
+      { _id: dto.purchaseOrderId },
+      {
+        status: validated.loaded
+          ? PurchaseOrderStatus.Invoiced
+          : PurchaseOrderStatus.PartiallyInvoiced,
+      },
+    );
 
     return invoiceReceipt;
   }
@@ -118,7 +133,7 @@ export class InvoiceReceiptService {
     dto: UpdateInvoiceReceiptDto,
     i18n: I18nContext,
   ): Promise<InvoiceReceiptDocument> {
-    const goodsReceipts = await this.validate(dto, i18n);
+    const validated = await this.validate(dto, i18n);
     const items: any = dto.items;
     let totalCost = 0;
     items.forEach((i) => {
@@ -141,6 +156,15 @@ export class InvoiceReceiptService {
       throw new NotFoundException(i18n.t('error.NOT_FOUND'));
     }
 
+    await this.purchaseOrderModel.findOneAndUpdate(
+      { _id: dto.purchaseOrderId },
+      {
+        status: validated.loaded
+          ? PurchaseOrderStatus.Invoiced
+          : PurchaseOrderStatus.PartiallyInvoiced,
+      },
+    );
+
     return invoiceReceipt;
   }
 
@@ -159,7 +183,12 @@ export class InvoiceReceiptService {
     const goodsReceipts = await this.goodsReceiptModel.find({
       purchaseOrderId: dto.purchaseOrderId,
     });
+    const purchaseOrder = await this.purchaseOrderModel.findById(
+      dto.purchaseOrderId,
+    );
     const loadedItems = [];
+    let totalAllowed = 0,
+      totalLoaded = 0;
 
     goodsReceipts.forEach((goodsReceipt) => {
       goodsReceipt.items.forEach((item) => {
@@ -168,7 +197,11 @@ export class InvoiceReceiptService {
         } else {
           loadedItems[item.materialId.toString()] = item.stock;
         }
+        totalLoaded += item.stock;
       });
+    });
+    purchaseOrder.items.forEach((poi) => {
+      totalAllowed += poi.stock;
     });
     for (const i in dto.items) {
       if (!loadedItems[dto.items[i].materialId]) {
@@ -185,6 +218,6 @@ export class InvoiceReceiptService {
         );
       }
     }
-    return goodsReceipts;
+    return { goodsReceipts, loaded: totalAllowed == totalLoaded };
   }
 }

@@ -40,6 +40,11 @@ import * as moment from 'moment';
 import 'moment-timezone';
 import { TIMEZONE } from 'src/core/Constants/system.constant';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { ExpoPushNotificationService } from 'src/notification/expo-push-notification.service';
+import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
+import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
+import { PrinterType } from 'src/printer/enum/en';
+import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 
 @Injectable()
 export class OrderService {
@@ -60,6 +65,12 @@ export class OrderService {
     private readonly calculationService: CalculationService,
     @Inject(forwardRef(() => InvoiceHelperService))
     private readonly invoiceHelperService: InvoiceHelperService,
+    @InjectModel(MenuItem.name)
+    private readonly menuItemModel: Model<MenuItemDocument>,
+    @InjectModel(Printer.name)
+    private readonly printerModel: Model<PrinterDocument>,
+    @InjectModel(Cashier.name)
+    private readonly cashierModel: Model<CashierDocument>,
   ) {}
 
   async create(
@@ -586,5 +597,58 @@ export class OrderService {
       throw new NotFoundException();
     }
     return order;
+  }
+
+  async identifyPrinters(req, query: QueryIdentifyPrinterDto) {
+    const order = await this.orderModel.findById(query.orderId);
+
+    if (!order) {
+      throw new NotFoundException();
+    }
+
+    let printers = [];
+    if (!query.printerType || query.printerType == PrinterType.Cashier) {
+      console.log(1);
+      if (order.cashierId) {
+        const cashier = await this.cashierModel.findById(order.cashierId);
+        if (cashier && cashier.printerId) {
+          printers.push(cashier.printerId);
+        }
+      }
+    }
+    if (!query.printerType || query.printerType == PrinterType.Kitchen) {
+      console.log(2);
+      const menuItemIds = order.items.map((oi) => oi.menuItem.menuItemId);
+      const menuItems = await this.menuItemModel
+        .find({
+          _id: { $in: menuItemIds },
+        })
+        .populate([
+          {
+            path: 'categoryId',
+            select: { printerId: 1 },
+          },
+        ]);
+      for (const i in menuItems) {
+        if (menuItems[i].categoryId?.printerId) {
+          printers.push(menuItems[i].categoryId?.printerId);
+        }
+      }
+    }
+    if (printers.length == 0) {
+      printers = [];
+      const records = await this.printerModel.find({
+        isDefault: true,
+        supplierId: req.user.supplierId,
+        type: query.printerType ?? {
+          $in: [PrinterType.Cashier, PrinterType.Kitchen],
+        },
+      });
+      records.forEach((p) => {
+        printers.push(p._id);
+      });
+    }
+
+    return printers;
   }
 }
