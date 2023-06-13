@@ -607,10 +607,12 @@ export class OrderService {
     }
 
     let printers = [];
-    if (query.printerType == PrinterType.Cashier && order.cashierId) {
-      const cashier = await this.cashierModel.findById(order.cashierId);
-      if (cashier && cashier.printerId) {
-        printers.push(cashier.printerId);
+    if (query.printerType == PrinterType.Cashier) {
+      if (order.cashierId) {
+        const cashier = await this.cashierModel.findById(order.cashierId);
+        if (cashier && cashier.printerId) {
+          printers.push(cashier.printerId);
+        }
       }
     } else {
       const menuItemIds = order.items.map((oi) => oi.menuItem.menuItemId);
@@ -624,9 +626,11 @@ export class OrderService {
             select: { printerId: 1 },
           },
         ]);
-      printers = menuItems.map((mi) => {
-        if (mi.categoryId?.printerId) return mi.categoryId?.printerId;
-      });
+      for (const i in menuItems) {
+        if (menuItems[i].categoryId?.printerId) {
+          printers.push(menuItems[i].categoryId?.printerId);
+        }
+      }
     }
     if (printers.length == 0) {
       printers = [];
