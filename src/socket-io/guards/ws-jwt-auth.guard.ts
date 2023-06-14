@@ -39,8 +39,14 @@ export class WsJwtGuard implements CanActivate {
         this.socketGateway.emit(client.id, SocketEvents.auth, true, client.id);
         context.switchToHttp().getRequest().user = payload;
         client.data.user = payload;
-        if (payload.supplierId && payload.roleId)
-          client.join(`${payload.supplierId}_${payload.roleId}`);
+        if (payload.supplierId && payload.roleId) {
+          if (client.handshake.query.type == 'PRINTER') {
+            client.join(`${payload.supplierId}_PRINT`);
+          } else {
+            client.join(`${payload.supplierId}_${payload.roleId}`);
+          }
+        }
+
         return true;
       }
       return false;

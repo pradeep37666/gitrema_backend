@@ -121,6 +121,17 @@
                   justify-content: center;
                 "
               >
+                <span style="direction: ltr">Invoice |&nbsp;</span>
+                <span style="direction: rtl"> فاتورة ضريبية</span>
+                <span style="direction: ltr">&nbsp;#{{ invoiceNumber }}</span>
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+                "
+              >
                 <span style="direction: ltr">Order |&nbsp;</span>
                 <span style="direction: rtl">رقم الطلب</span>
                 <span style="direction: ltr"
@@ -155,15 +166,53 @@
               <div style="display: flex; flex-direction: column">
                 <div style="direction: ltr">{{this.menuItem.name}}</div>
                 <div style="direction: rtl">{{this.menuItem.nameAr}}</div>
+                <div>{{ this.additionTextAr }}</div>
               </div>
             </div>
             <div style="flex: 1">X{{this.quantity}}</div>
+            <div style="flex: 1">{{ this.amountAfterDiscount}}</div>
           </div>
-
           <br />
+          <div>{{ this.notes }}</div>
           {{/each}}
+          <div></div>
         </div>
       </div>
+
+      <!-- <div class="text-24" style="position: relative; color: #0e110e">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0px;
+          "
+        >
+          <div>Subtotal | قيمة المنتج</div>
+          <div>{{ math multiplier "*" order.summary.totalTaxableAmount }}</div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+
+            margin: 15px 0px;
+          "
+        >
+          <div>VAT 15% Tax | ضريبة</div>
+          <div>{{math multiplier "*" order.summary.totalTax }}</div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+
+            margin: 15px 0px;
+          "
+        >
+          <div><b>Total</b></div>
+          <div><b>{{math multiplier "*" order.summary.totalWithTax }}</b></div>
+        </div>
+      </div> -->
     </div>
   </body>
 </html>
