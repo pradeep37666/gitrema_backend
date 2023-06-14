@@ -243,7 +243,7 @@ export class InvoiceService {
         invoice.supplierId.toString(),
         SocketEvents.print,
         {
-          place: printer._id,
+          place: printer._id.toString(),
           commands,
         },
         `${invoice.supplierId.toString()}_PRINT`,
@@ -260,7 +260,7 @@ export class InvoiceService {
           order.supplierId.toString(),
           SocketEvents.print,
           {
-            place: order.kitchenReceipts[i].printerId,
+            place: order.kitchenReceipts[i].printerId.toString(),
             commands,
           },
           `${order.supplierId.toString()}_PRINT`,
