@@ -367,25 +367,6 @@ export class OrderService {
     }
 
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
-      // generate kitchen receipt
-      const printersDetails: any = await this.identifyPrinters(
-        req,
-        {
-          orderId: orderId,
-          printerType: PrinterType.Kitchen,
-        },
-        order,
-        true,
-      );
-
-      if (printersDetails.printers.length == 0) {
-        throw new BadRequestException(`No kitchen printers found`);
-      }
-      orderData.kitchenReceipts =
-        await this.invoiceHelperService.generateKitchenReceipt(
-          order,
-          printersDetails,
-        );
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
@@ -655,8 +636,12 @@ export class OrderService {
       for (const i in menuItems) {
         if (menuItems[i].categoryId?.printerId) {
           printers.push(menuItems[i].categoryId?.printerId.toString());
-          printerItems[menuItems[i].categoryId?.printerId.toString()] =
-            menuItems[i]._id.toString();
+          if (!printerItems[menuItems[i].categoryId?.printerId.toString()]) {
+            printerItems[menuItems[i].categoryId?.printerId.toString()] = [];
+          }
+          printerItems[menuItems[i].categoryId?.printerId.toString()].push(
+            menuItems[i]._id.toString(),
+          );
         } else {
           itemsWithoutPrinter.push(menuItems[i]._id.toString());
         }
