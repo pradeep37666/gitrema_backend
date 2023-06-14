@@ -23,6 +23,12 @@ import { QueryInvoiceDto } from './dto/query-invoice.dto';
 
 import { EscCommandsDto } from './dto/esc-commands.dto';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { PrintInvoiceDto } from './dto/print-invoice.dto';
+import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
+import { Cashier } from 'src/cashier/schemas/cashier.schema';
+import { PrinterType } from 'src/printer/enum/en';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -46,6 +52,8 @@ export class InvoiceService {
     @InjectModel(Invoice.name)
     private invoiceModelPag: PaginateModel<InvoiceDocument>,
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+    @InjectModel(Printer.name) private printerModel: Model<PrinterDocument>,
+    private readonly socketGateway: SocketIoGateway,
   ) {}
 
   async checkIfInvoiceExist(orderId: string): Promise<number> {
@@ -209,5 +217,56 @@ export class InvoiceService {
       );
     }
     return commands;
+  }
+  async printInvoice(req, query: PrintInvoiceDto) {
+    if (!query.type || query.type == PrinterType.Cashier) {
+      const printer = await this.printerModel.findOne({
+        isDefault: true,
+        type: PrinterType.Cashier,
+        supplierId: req.user.supplierId,
+      });
+      if (!printer) {
+        throw new BadRequestException(`No Cashier Printer Found`);
+      }
+      const invoice = await this.invoiceModel.findOne({
+        orderId: query.orderId,
+      });
+      if (!invoice) {
+        throw new BadRequestException(VALIDATION_MESSAGES.InvoiceNotFound.key);
+      }
+      let commands =
+        await this.invoiceHelperService.generateEscCommandsForInvoice(
+          invoice.imageUrl,
+        );
+      commands = Object.values(commands);
+      await this.socketGateway.emit(
+        invoice.supplierId.toString(),
+        SocketEvents.print,
+        {
+          place: printer._id,
+          commands,
+        },
+        `${invoice.supplierId.toString()}_PRINT`,
+      );
+    }
+    if (!query.type || query.type == PrinterType.Kitchen) {
+      const order = await this.orderModel.findById(query.orderId);
+      for (const i in order.kitchenReceipts) {
+        const commands =
+          await this.invoiceHelperService.generateEscCommandsForInvoice(
+            order.kitchenReceipts[i].url,
+          );
+        this.socketGateway.emit(
+          order.supplierId.toString(),
+          SocketEvents.print,
+          {
+            place: order.kitchenReceipts[i].printerId,
+            commands,
+          },
+          `${order.supplierId.toString()}_PRINT`,
+        );
+      }
+    }
+    return true;
   }
 }

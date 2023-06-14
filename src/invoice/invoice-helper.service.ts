@@ -377,10 +377,15 @@ export class InvoiceHelperService {
     const commands = await this.generateEscCommandsForInvoice(
       kitchenReceipt.url,
     );
-    await this.socketGateway.emit(supplierId, SocketEvents.print, {
-      place: kitchenReceipt.printerId,
-      commands,
-    });
+    await this.socketGateway.emit(
+      supplierId,
+      SocketEvents.print,
+      {
+        place: kitchenReceipt.printerId,
+        commands: Object.values(commands),
+      },
+      `${supplierId}_PRINT`,
+    );
   }
 
   async generateEscCommandsForInvoice(imageUrl: string) {

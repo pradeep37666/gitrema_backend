@@ -21,6 +21,7 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 import { EscCommandsDto } from './dto/esc-commands.dto';
 import { Public } from 'src/core/decorators/public.decorator';
+import { PrintInvoiceDto } from './dto/print-invoice.dto';
 
 @ApiTags('Invoice')
 @ApiBearerAuth('access-token')
@@ -45,6 +46,14 @@ export class InvoiceController {
     @Query() query: EscCommandsDto,
   ): Promise<InvoiceDocument> {
     return await this.invoiceService.generateCommands(req, query);
+  }
+
+  @Get('print')
+  async print(
+    @Request() req,
+    @Query() query: PrintInvoiceDto,
+  ): Promise<boolean> {
+    return await this.invoiceService.printInvoice(req, query);
   }
 
   @Patch(':invoiceId/cancel')
