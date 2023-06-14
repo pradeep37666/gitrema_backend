@@ -158,13 +158,17 @@ export class InvoiceHelperService {
     const response = [];
     for (const i in printerDetails.printers) {
       const tempOrderObj = { ...orderObj };
-
+      //console.log(orderObj.items);
       tempOrderObj.items = orderObj.items.filter((oi) => {
         return printerDetails.printerItems[printerDetails.printers[i]].includes(
           oi.menuItem.menuItemId.toString(),
         );
       });
-
+      // console.log(
+      //   printerDetails.printers[i],
+      //   printerDetails.printerItems[printerDetails.printers[i]],
+      //   tempOrderObj.items,
+      // );
       const template = Handlebars.compile(templateHtml);
 
       const html = template({

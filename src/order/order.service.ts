@@ -662,7 +662,7 @@ export class OrderService {
         }
       });
     }
-
+    printers = [...new Set(printers)];
     if (returnPrinterItems) {
       return { printers, printerItems };
     }
