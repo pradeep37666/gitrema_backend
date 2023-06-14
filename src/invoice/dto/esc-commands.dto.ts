@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { InvoiceType } from '../invoice.enum';
-import { IsEnum, IsMongoId, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class EscCommandsDto {
   @ApiProperty({ type: String })
@@ -21,4 +21,9 @@ export class EscCommandsDto {
   @IsEnum(InvoiceType)
   @IsNotEmpty()
   type: InvoiceType;
+
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  printerId: string;
 }

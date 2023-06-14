@@ -368,8 +368,24 @@ export class OrderService {
 
     if (dto.status && dto.status == OrderStatus.SentToKitchen) {
       // generate kitchen receipt
-      orderData.kitchenReceipt =
-        await this.invoiceHelperService.generateKitchenReceipt(order);
+      const printersDetails: any = await this.identifyPrinters(
+        req,
+        {
+          orderId: orderId,
+          printerType: PrinterType.Kitchen,
+        },
+        order,
+        true,
+      );
+
+      if (printersDetails.printers.length == 0) {
+        throw new BadRequestException(`No kitchen printers found`);
+      }
+      orderData.kitchenReceipts =
+        await this.invoiceHelperService.generateKitchenReceipt(
+          order,
+          printersDetails,
+        );
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
@@ -599,25 +615,32 @@ export class OrderService {
     return order;
   }
 
-  async identifyPrinters(req, query: QueryIdentifyPrinterDto) {
-    const order = await this.orderModel.findById(query.orderId);
+  async identifyPrinters(
+    req,
+    query: QueryIdentifyPrinterDto,
+    order: OrderDocument = null,
+    returnPrinterItems = false,
+  ) {
+    if (!order) {
+      order = await this.orderModel.findById(query.orderId);
+    }
 
     if (!order) {
       throw new NotFoundException();
     }
 
-    let printers = [];
+    let printers = [],
+      printerItems = [],
+      itemsWithoutPrinter = [];
     if (!query.printerType || query.printerType == PrinterType.Cashier) {
-      console.log(1);
       if (order.cashierId) {
         const cashier = await this.cashierModel.findById(order.cashierId);
         if (cashier && cashier.printerId) {
-          printers.push(cashier.printerId);
+          printers.push(cashier.printerId.toString());
         }
       }
     }
     if (!query.printerType || query.printerType == PrinterType.Kitchen) {
-      console.log(2);
       const menuItemIds = order.items.map((oi) => oi.menuItem.menuItemId);
       const menuItems = await this.menuItemModel
         .find({
@@ -631,12 +654,15 @@ export class OrderService {
         ]);
       for (const i in menuItems) {
         if (menuItems[i].categoryId?.printerId) {
-          printers.push(menuItems[i].categoryId?.printerId);
+          printers.push(menuItems[i].categoryId?.printerId.toString());
+          printerItems[menuItems[i].categoryId?.printerId.toString()] =
+            menuItems[i]._id.toString();
+        } else {
+          itemsWithoutPrinter.push(menuItems[i]._id.toString());
         }
       }
     }
     if (printers.length == 0) {
-      printers = [];
       const records = await this.printerModel.find({
         isDefault: true,
         supplierId: req.user.supplierId,
@@ -645,10 +671,16 @@ export class OrderService {
         },
       });
       records.forEach((p) => {
-        printers.push(p._id);
+        printers.push(p._id.toString());
+        if ((p.type = PrinterType.Kitchen)) {
+          printerItems[p._id.toString()] = itemsWithoutPrinter;
+        }
       });
     }
 
+    if (returnPrinterItems) {
+      return { printers, printerItems };
+    }
     return printers;
   }
 }

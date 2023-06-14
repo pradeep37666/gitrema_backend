@@ -198,8 +198,14 @@ export class InvoiceService {
       commands = Object.values(commands);
     } else if (query.type == InvoiceType.KitchenReceipt) {
       const order = await this.orderModel.findById(query.orderId);
+      const kitchenReceipt = order.kitchenReceipts.find((r) => {
+        return r.printerId.toString() == query.printerId;
+      });
+      if (!kitchenReceipt) {
+        throw new BadRequestException(VALIDATION_MESSAGES.InvoiceNotFound.key);
+      }
       commands = await this.invoiceHelperService.generateEscCommandsForInvoice(
-        order.kitchenReceipt,
+        kitchenReceipt.url,
       );
     }
     return commands;
