@@ -56,6 +56,9 @@ import { OrderEvents } from 'src/notification/enum/en.enum';
 import { DeliveryService } from 'src/delivery/delivery.service';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { InventoryHelperService } from 'src/inventory/inventory-helper.service';
+import { OrderService } from './order.service';
+import { PrinterType } from 'src/printer/enum/en';
+import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -86,6 +89,10 @@ export class OrderHelperService {
     private readonly customerService: CustomerService,
     private readonly deliveryService: DeliveryService,
     private readonly inventoryHelperService: InventoryHelperService,
+    @Inject(forwardRef(() => OrderService))
+    private readonly orderService: OrderService,
+    @Inject(forwardRef(() => InvoiceHelperService))
+    private readonly invoiceHelperService: InvoiceHelperService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -440,6 +447,26 @@ export class OrderHelperService {
           //   order,
           //   OrderStatus.SentToKitchen,
           // );
+        }
+        // generate kitchen receipt
+        const printersDetails: any = await this.orderService.identifyPrinters(
+          { user: { supplierId: order.supplierId } },
+          {
+            orderId: order._id.toString(),
+            printerType: PrinterType.Kitchen,
+          },
+          order,
+          true,
+        );
+
+        if (printersDetails.printers.length > 0) {
+          order.kitchenReceipts =
+            await this.invoiceHelperService.generateKitchenReceipt(
+              order,
+              printersDetails,
+            );
+          order.save();
+          console.log(order);
         }
       } else if (dto.status == OrderStatus.OnTable) {
         this.storeOrderStateActivity(
