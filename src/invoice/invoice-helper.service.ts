@@ -18,7 +18,7 @@ import { LeanDocument, Model, PaginateModel } from 'mongoose';
 import { InvoiceDocument } from './schemas/invoice.schema';
 import { InvoiceType } from './invoice.enum';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import { Order, OrderDocument } from 'src/order/schemas/order.schema';
+import { Order, OrderDocument, Receipts } from 'src/order/schemas/order.schema';
 import { InvoiceStatus } from 'src/order/enum/en.enum';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
@@ -30,6 +30,9 @@ import * as CodepageEncoder from 'codepage-encoder';
 import { HttpService } from '@nestjs/axios';
 import { catchError, lastValueFrom, map } from 'rxjs';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
+import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
+import { SocketEvents } from 'src/socket-io/enum/events.enum';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -56,6 +59,8 @@ export class InvoiceHelperService {
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
     private readonly httpService: HttpService,
+
+    private readonly socketGateway: SocketIoGateway,
   ) {}
 
   async generateInvoice(
@@ -125,27 +130,64 @@ export class InvoiceHelperService {
     throw new BadRequestException(VALIDATION_MESSAGES.InvoiceError.key);
   }
 
-  async generateKitchenReceipt(order: OrderDocument): Promise<string> {
+  async generateKitchenReceipt(
+    order: OrderDocument,
+    printerDetails: { printers: string[]; printerItems: string[] },
+  ): Promise<Receipts[]> {
     await order.populate([{ path: 'restaurantId' }]);
+
+    const orderObj: any = order.toObject();
+
+    orderObj.items.forEach((oi) => {
+      let message = '';
+      oi.additions.forEach((oia) => {
+        const options = oia.options.map((o) => {
+          return o.nameAr;
+        });
+        message += `- with ${options.join(',')}`;
+        message += '\n';
+      });
+      oi.additionTextAr = message;
+    });
+
     const templateHtml = fs.readFileSync(
       'src/invoice/templates/kitchen-receipt.html',
       'utf8',
     );
 
-    const template = Handlebars.compile(templateHtml);
-    const html = template({
-      order: order.toObject(),
-    });
+    const response = [];
+    for (const i in printerDetails.printers) {
+      const tempOrderObj = orderObj;
+      tempOrderObj.items = orderObj.items.filter((oi) => {
+        return printerDetails.printerItems[printerDetails.printers[i]].includes(
+          oi.menuItem.menuItemId.toString(),
+        );
+      });
+      const template = Handlebars.compile(templateHtml);
 
-    const imageUrl = await this.uploadDocument(
-      html,
-      order.supplierId._id + '/' + order.restaurantId._id + '/kitchen-receipt/',
-      true,
-    );
+      const html = template({
+        order: tempOrderObj,
+      });
 
-    console.log(imageUrl);
-    if (imageUrl) return imageUrl;
-    throw new BadRequestException(VALIDATION_MESSAGES.KitchenReceiptError.key);
+      const imageUrl = await this.uploadDocument(
+        html,
+        order.supplierId._id +
+          '/' +
+          order.restaurantId._id +
+          '/kitchen-receipt/',
+        true,
+      );
+      response.push({
+        printerId: printerDetails.printers[i],
+        url: imageUrl,
+      });
+      this.printKitchenReceipts(order.supplierId.toString(), {
+        printerId: printerDetails.printers[i],
+        url: imageUrl,
+      });
+    }
+
+    return response;
   }
 
   async generateCreditMemo(
@@ -329,6 +371,16 @@ export class InvoiceHelperService {
         invoiceStatus: InvoiceStatus.Invoiced,
       });
     }
+  }
+
+  async printKitchenReceipts(supplierId: string, kitchenReceipt: any) {
+    const commands = await this.generateEscCommandsForInvoice(
+      kitchenReceipt.url,
+    );
+    await this.socketGateway.emit(supplierId, SocketEvents.print, {
+      place: kitchenReceipt.printerId,
+      commands,
+    });
   }
 
   async generateEscCommandsForInvoice(imageUrl: string) {

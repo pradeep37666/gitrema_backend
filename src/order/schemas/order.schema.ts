@@ -26,6 +26,7 @@ import {
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import { CustomerDocument } from 'src/customer/schemas/customer.schema';
+import { PrinterDocument } from 'src/printer/schema/printer.schema';
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
@@ -41,6 +42,21 @@ class ChefInquiry {
 }
 
 export const ChefInquirySchema = SchemaFactory.createForClass(ChefInquiry);
+
+@Schema({ _id: false })
+export class Receipts {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    required: true,
+    ref: 'Printer',
+  })
+  printerId: PrinterDocument;
+
+  @Prop({ required: true })
+  url: string;
+}
+
+export const ReceiptsSchema = SchemaFactory.createForClass(Receipts);
 
 @Schema({ timestamps: true })
 export class Order {
@@ -236,14 +252,14 @@ export class Order {
     kitchenSortingNumber: number;
   };
 
+  @Prop({ type: [ReceiptsSchema], default: [] })
+  kitchenReceipts: Receipts[];
+
   @Prop({ default: false })
   chefRequestedClarification: boolean;
 
   @Prop({ type: [ChefInquirySchema], default: [] })
-  chefInquiry: ChefInquiry;
-
-  @Prop({ default: null })
-  kitchenReceipt: string;
+  chefInquiry: ChefInquiry[];
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.plugin(paginate);

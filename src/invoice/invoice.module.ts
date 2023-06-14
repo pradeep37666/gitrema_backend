@@ -12,6 +12,7 @@ import { InvoiceHelperService } from './invoice-helper.service';
 import { OrderModule } from 'src/order/order.module';
 import { PrinterModule } from 'src/printer/printer.module';
 import { HttpModule } from '@nestjs/axios';
+import { SocketIoModule } from 'src/socket-io/socket-io.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { HttpModule } from '@nestjs/axios';
     forwardRef(() => OrderModule),
     PrinterModule,
     HttpModule,
+    SocketIoModule,
   ],
   controllers: [InvoiceController],
   providers: [InvoiceService, FatooraService, InvoiceHelperService],
