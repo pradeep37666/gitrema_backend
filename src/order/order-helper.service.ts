@@ -458,7 +458,7 @@ export class OrderHelperService {
           order,
           true,
         );
-
+        console.log(printersDetails);
         if (printersDetails.printers.length > 0) {
           order.kitchenReceipts =
             await this.invoiceHelperService.generateKitchenReceipt(
@@ -466,7 +466,7 @@ export class OrderHelperService {
               printersDetails,
             );
           order.save();
-          console.log(order);
+          //console.log(order);
         }
       } else if (dto.status == OrderStatus.OnTable) {
         this.storeOrderStateActivity(
