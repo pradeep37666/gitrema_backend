@@ -59,17 +59,19 @@ export class RoleService {
   ): Promise<LeanDocument<RoleDocument>> {
     if (req.user.supplierId) {
       delete roleDetails.slug;
-      const subjects: any = roleDetails.permissions.map((p) => p.subject);
-      if (
-        subjects.some(
-          (r) => Object.values(SubjectsRestrictedForSupplier).indexOf(r) >= 0,
-        )
-      ) {
-        throw new BadRequestException(
-          `${VALIDATION_MESSAGES.PermissionNotAllowed.key}__${Object.values(
-            SubjectsRestrictedForSupplier,
-          ).join(',')}`,
-        );
+      if (roleDetails.permissions) {
+        const subjects: any = roleDetails.permissions.map((p) => p.subject);
+        if (
+          subjects.some(
+            (r) => Object.values(SubjectsRestrictedForSupplier).indexOf(r) >= 0,
+          )
+        ) {
+          throw new BadRequestException(
+            `${VALIDATION_MESSAGES.PermissionNotAllowed.key}__${Object.values(
+              SubjectsRestrictedForSupplier,
+            ).join(',')}`,
+          );
+        }
       }
     }
     const role = await this.roleModel
