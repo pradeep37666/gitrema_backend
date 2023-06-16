@@ -26,6 +26,11 @@ export class PaymentOptionDto {
   @IsBoolean()
   @IsNotEmpty()
   rewardsClaim: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsNotEmpty()
+  pos: boolean;
 }
 export class CreatePaymentSetupDto {
   @ApiProperty({ type: PaymentOptionDto })

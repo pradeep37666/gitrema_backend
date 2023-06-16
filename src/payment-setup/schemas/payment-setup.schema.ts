@@ -22,32 +22,50 @@ export class PaymentSetup {
 
   @Prop({
     type: Object,
-    default: { ePayment: true, cashPayment: true, rewardsClaim: true },
+    default: {
+      ePayment: true,
+      cashPayment: true,
+      rewardsClaim: true,
+      pos: true,
+    },
   })
   inStore: {
     ePayment: boolean;
     cashPayment: boolean;
     rewardsClaim: boolean;
+    pos: boolean;
   };
 
   @Prop({
     type: Object,
-    default: { ePayment: true, cashPayment: false, rewardsClaim: true },
+    default: {
+      ePayment: true,
+      cashPayment: false,
+      rewardsClaim: true,
+      pos: true,
+    },
   })
   pickup: {
     ePayment: boolean;
     cashPayment: boolean;
     rewardsClaim: boolean;
+    pos: boolean;
   };
 
   @Prop({
     type: Object,
-    default: { ePayment: true, cashPayment: false, rewardsClaim: true },
+    default: {
+      ePayment: true,
+      cashPayment: false,
+      rewardsClaim: true,
+      pos: true,
+    },
   })
   delivery: {
     ePayment: boolean;
     cashPayment: boolean;
     rewardsClaim: boolean;
+    pos: boolean;
   };
 
   @Prop({ default: null })
