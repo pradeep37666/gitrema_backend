@@ -6,6 +6,7 @@ import {
   IsMongoId,
   IsNotEmpty,
   IsOptional,
+  isArray,
 } from 'class-validator';
 import { PreparationStatus } from '../enum/en.enum';
 
@@ -28,4 +29,12 @@ export class KitchenQueueProcessDto {
   @IsEnum(PreparationStatus)
   @IsNotEmpty()
   preparationStatus: PreparationStatus;
+}
+
+export class ItemPreparedDto {
+  @ApiProperty({ required: false })
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  orderItemIds: string[];
 }

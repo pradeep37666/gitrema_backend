@@ -40,10 +40,7 @@ export class UpdateOrderDto extends PartialType(
   @IsOptional()
   status?: OrderStatus;
 
-  @ApiProperty({ required: false })
-  @IsMongoId()
-  @IsOptional()
-  orderItemId?: string;
+  orderItemIds?: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()

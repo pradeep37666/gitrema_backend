@@ -376,10 +376,13 @@ export class OrderService {
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
-      if (dto.orderItemId) {
-        const item = orderData.items.find(
-          (oi) => oi._id.toString() == dto.orderItemId,
-        );
+      if (dto.orderItemIds) {
+        orderData.items.forEach((oi) => {
+          if (dto.orderItemIds.includes(oi._id.toString())) {
+            oi.preparationStatus = PreparationStatus.OnTable;
+          }
+        });
+        delete orderData.status;
       }
     }
 
