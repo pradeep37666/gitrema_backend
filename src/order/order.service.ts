@@ -23,7 +23,12 @@ import {
   Supplier,
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
-import { OrderStatus, OrderType, PreparationStatus } from './enum/en.enum';
+import {
+  OrderPaymentStatus,
+  OrderStatus,
+  OrderType,
+  PreparationStatus,
+} from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { MoveOrderItemDto } from './dto/move-order.dto';
@@ -35,7 +40,7 @@ import {
 } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
-import { OrderTypes } from 'src/core/Constants/enum';
+import { OrderTypes, PaymentStatus } from 'src/core/Constants/enum';
 import * as moment from 'moment';
 import 'moment-timezone';
 import { TIMEZONE } from 'src/core/Constants/system.constant';
@@ -384,6 +389,18 @@ export class OrderService {
       orderData.summary = await this.calculationService.calculateSummery(
         orderData,
       );
+
+      if (orderData.summary.totalPaid > 0) {
+        if (orderData.summary.totalPaid > orderData.sumarry.totalWithTax) {
+          orderData.paymentStatus = OrderPaymentStatus.OverPaid;
+        } else if (
+          orderData.summary.totalPaid == orderData.sumarry.totalWithTax
+        ) {
+          orderData.paymentStatus = OrderPaymentStatus.Paid;
+        } else {
+          orderData.paymentStatus = OrderPaymentStatus.NotPaid;
+        }
+      }
     }
 
     const modified = await this.orderModel.findByIdAndUpdate(

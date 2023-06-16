@@ -141,7 +141,11 @@ export class CalculationService {
     summary.totalWithTax = roundOffNumber(summary.totalWithTax);
     summary.totalTaxableAmount = roundOffNumber(summary.totalTaxableAmount);
     summary.totalTax = roundOffNumber(summary.totalTax);
-
+    if (orderData.summary?.totalRefunded)
+      summary.totalRefunded = orderData.summary?.totalRefunded;
+    if (orderData.summary?.totalPaid) {
+      summary.totalPaid = orderData.summary?.totalPaid;
+    }
     return summary;
   }
 

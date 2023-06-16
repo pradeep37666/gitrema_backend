@@ -36,6 +36,7 @@ export enum OrderPaymentStatus {
   Pending = 'Pending',
   NotPaid = 'Not Paid',
   Paid = 'Paid',
+  OverPaid = 'Over Paid',
   Refunded = 'Refunded',
   PartiallyRefunded = 'Partially Refunded',
 }
