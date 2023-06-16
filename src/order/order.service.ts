@@ -135,8 +135,9 @@ export class OrderService {
               minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
             });
           if (
-            parseInt(endArr[0]) <= parseInt(startArr[0]) &&
-            parseInt(endArr[1]) <= parseInt(startArr[1])
+            parseInt(endArr[0]) < parseInt(startArr[0]) ||
+            (parseInt(endArr[0]) == parseInt(startArr[0]) &&
+              parseInt(endArr[1]) <= parseInt(startArr[1]))
           ) {
             endDate.add(24, 'hours');
           }
@@ -375,6 +376,11 @@ export class OrderService {
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
+      if (dto.orderItemId) {
+        const item = orderData.items.find(
+          (oi) => oi._id.toString() == dto.orderItemId,
+        );
+      }
     }
 
     // prepare the order items
@@ -591,10 +597,7 @@ export class OrderService {
     await this.orderModel.updateMany({ _id: dto.orderId }, dataToSet, {
       ...arrayFilter,
     });
-    this.orderHelperService.postKitchenQueueProcessing(
-      order,
-      dto.preparationStatus,
-    );
+    this.orderHelperService.postKitchenQueueProcessing(order, dto);
     return true;
   }
 
