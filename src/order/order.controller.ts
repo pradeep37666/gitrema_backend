@@ -23,7 +23,10 @@ import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
-import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
+import {
+  ItemPreparedDto,
+  KitchenQueueProcessDto,
+} from './dto/kitchen-queue-process.dto';
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 
@@ -105,9 +108,14 @@ export class OrderController {
 
   @Patch(':orderId/on-table')
   @PermissionGuard(PermissionSubject.Order, Permission.Order.OnTable)
-  async onTable(@Req() req, @Param('orderId') orderId: string) {
+  async onTable(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: ItemPreparedDto,
+  ) {
     return await this.orderService.update(req, orderId, {
       status: OrderStatus.OnTable,
+      ...dto,
     });
   }
 
