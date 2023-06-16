@@ -33,6 +33,7 @@ import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
+import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -61,6 +62,7 @@ export class InvoiceHelperService {
     private readonly httpService: HttpService,
 
     private readonly socketGateway: SocketIoGateway,
+    @InjectModel(Printer.name) private printerModel: Model<PrinterDocument>,
   ) {}
 
   async generateInvoice(
@@ -148,14 +150,14 @@ export class InvoiceHelperService {
         const options = oia.options.map((o) => {
           return o.nameAr;
         });
-        message += `- with ${options.join(',')}`;
+        message += `- ${options.join(',')}`;
         message += '\n';
       });
       oi.additionTextAr = message;
     });
 
     const templateHtml = fs.readFileSync(
-      'src/invoice/templates/kitchen-receipt.v1.html',
+      'src/invoice/templates/kitchen-receipt.v2.html',
       'utf8',
     );
 
@@ -173,10 +175,14 @@ export class InvoiceHelperService {
       //   printerDetails.printerItems[printerDetails.printers[i]],
       //   tempOrderObj.items,
       // );
+      const printer = await this.printerModel
+        .findById(printerDetails.printers[i])
+        .lean();
       const template = Handlebars.compile(templateHtml);
 
       const html = template({
         order: tempOrderObj,
+        printer,
       });
 
       const imageUrl = await this.uploadDocument(
