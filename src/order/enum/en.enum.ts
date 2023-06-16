@@ -51,4 +51,5 @@ export enum PreparationStatus {
   NotStarted = 'Not Started',
   StartedPreparing = 'Started Preparing',
   DonePreparing = 'Done Preparing',
+  OnTable = 'On Table',
 }
