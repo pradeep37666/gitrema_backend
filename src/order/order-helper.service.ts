@@ -59,6 +59,7 @@ import { InventoryHelperService } from 'src/inventory/inventory-helper.service';
 import { OrderService } from './order.service';
 import { PrinterType } from 'src/printer/enum/en';
 import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
+import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
 
 @Injectable()
 export class OrderHelperService {
@@ -609,14 +610,18 @@ export class OrderHelperService {
 
   async postKitchenQueueProcessing(
     order: OrderDocument,
-    status: PreparationStatus,
+    dto: KitchenQueueProcessDto,
   ) {
-    if (status == PreparationStatus.DonePreparing) {
+    if (dto.preparationStatus == PreparationStatus.DonePreparing) {
+      const dataToNotify = {
+        type: 'Item',
+        data: null,
+      };
       const modifiedOrder = await this.orderModel.findById(order._id);
       if (
         modifiedOrder.items.length ==
         modifiedOrder.items.filter((oi) => {
-          return oi.preparationStatus == status;
+          return oi.preparationStatus == dto.preparationStatus;
         }).length
       ) {
         modifiedOrder.status = OrderStatus.DonePreparing;
@@ -631,7 +636,17 @@ export class OrderHelperService {
         this.calculationService.identifyOrdersToRecalculateAfterCompleted(
           modifiedOrder,
         );
+        dataToNotify.data = modifiedOrder.toObject();
+      } else {
+        dataToNotify.data = order.items.find(
+          (oi) => oi._id.toString() == dto.orderItemId,
+        );
       }
+      this.socketGateway.emit(
+        order.supplierId.toString(),
+        SocketEvents.OrderPrepared,
+        dataToNotify,
+      );
     }
   }
 }

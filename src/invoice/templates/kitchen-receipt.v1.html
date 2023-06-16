@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      .text-24 {
+        font-size: 24px;
+      }
+      .text-8 {
+        font-size: 8px;
+      }
+      .fw-600 {
+        font-weight: 600;
+      }
+      .title {
+        font-family: 'Calibri';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 40px;
+        color: #0e110e;
+      }
+      .divider {
+        height: 1px;
+        width: 100%;
+        margin: 30px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .divider span {
+        padding: 0 10px;
+        background-color: #fff;
+      }
+      .container {
+        width: 600px;
+        margin: 0px auto;
+        padding: 0px 21px;
+        font-family: 'Cairo';
+        border-radius: 4px;
+        background: #ffffff;
+      }
+
+      .topContainer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .mainTable table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+      table {
+        border-collapse: collapse;
+      }
+
+      td,
+      th {
+        border: 1px solid #00000033;
+        padding: 6px;
+        text-align: left;
+        border-style: dashed;
+      }
+      body {
+        line-height: 35px;
+        font-family: 'Calibri', sans-serif;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container" id="container">
+      <div>
+        <div style="text-align: center">
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              padding-bottom: 20px;
+              padding-top: 20px;
+              text-align: center;
+              border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            "
+          >
+            <div
+              style="
+                width: 100%;
+                display: flex;
+                justify-content: end;
+                padding: 12px 0;
+              "
+            >
+              {{orderType}}
+            </div>
+            <div class="title">{{ order.restaurantId.name }}</div>
+            <div class="title">{{ order.restaurantId.nameAr }}</div>
+            <!-- <div
+              class="text-24 fw-600"
+              style="color: #5c5c5c; margin-top: 8px; line-height: 22px"
+            >
+              <span>رقم الفاتورة : </span><span>{{ invoiceNumber }}</span>
+            </div> -->
+            <div
+              class="text-24 fw-600"
+              style="
+                display: grid;
+                margin-top: 10px;
+                grid-template-columns: 1fr 1fr;
+                gap: 4px;
+              "
+            >
+              <div style="display: grid; grid-template-columns: 1fr 1fr">
+                <span>رقم اليومي</span>
+                <sapn>{{order.orderNumber}}</sapn>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr">
+                <span>الطاولة</span>
+                <sapn>طاولة{{order.tableId.name}}</sapn>
+              </div>
+              <div
+                style="
+                  grid-column: 3/1;
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr;
+                "
+              >
+                <span>التاريخ</span>
+                <sapn>{{moment order.createdAt format="YYYY-M-D"}}</sapn>
+                <sapn>{{moment order.createdAt format="h:mm A"}}</sapn>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr">
+                <span>المضيف</span>
+                <sapn>{{order.waiterId.name}}</sapn>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr">
+                <span>الزبون</span>
+                <sapn>{{order.name}}</sapn>
+              </div>
+              <!-- <div
+                style="
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+                "
+              >
+                <span style="direction: ltr">Invoice |&nbsp;</span>
+                <span style="direction: rtl"> فاتورة ضريبية</span>
+                <span style="direction: ltr">&nbsp;#{{ invoiceNumber }}</span>
+              </div>
+              <div
+                style="
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+                "
+              >
+                <span style="direction: ltr">Order |&nbsp;</span>
+                <span style="direction: rtl">رقم الطلب</span>
+                <span style="direction: ltr"
+                  >&nbsp;#{{ order.orderNumber }}</span
+                >
+              </div>
+              <div>
+                <span>VAT |&nbsp;</span>
+                <span>الرقم الضريبي</span>
+              </div>
+              <div>{{ order.supplierId.vatNumber }}</div>
+              <div>{{moment order.createdAt format="D/M/YYYY [|] h:mm A"}}</div> -->
+            </div>
+          </div>
+        </div>
+        <table style="width: 100%">
+          <thead>
+            <tr class="">
+              <td class="">المادة</td>
+              <td class="">الكمية</td>
+              <td class="">الملاحظات</td>
+            </tr>
+          </thead>
+
+          <tbody className="">
+            {{#each order.items}}
+            <tr key="{index}">
+              <td class="">
+                <div class="">
+                  <span>{{this.menuItem.nameAr}}</span>
+                </div>
+                <div class="">
+                  <span>{{this.additionTextAr}}</span>
+                </div>
+              </td>
+              <td class="">
+                <span>{{this.quantity}}</span>
+              </td>
+              <td class="">
+                <span>{{this.notes}}</span>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        <br />
+      </div>
+      <!-- <div
+        style="
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          padding-bottom: 40px;
+        "
+        class="tableData"
+      >
+        <div
+          class="text-24"
+          style="margin: 15px 0px; text-align: center; line-height: 30px"
+        >
+          {{#each order.items}}
+          <div style="display: flex; justify-content: space-between; gap: 10px">
+            <div style="flex: 1">Item{{math @index "+" 1}}</div>
+            <div style="flex: 3">
+              <div style="display: flex; flex-direction: column">
+                <div style="direction: ltr">{{this.menuItem.name}}</div>
+                <div style="direction: rtl">{{this.menuItem.nameAr}}</div>
+                <div>{{ this.additionTextAr }}</div>
+              </div>
+            </div>
+            <div style="flex: 1">X{{this.quantity}}</div>
+            <div style="flex: 1">{{ this.amountAfterDiscount}}</div>
+          </div>
+          <br />
+          <div>{{ this.notes }}</div>
+          {{/each}}
+          <div></div>
+        </div>
+      </div> -->
+
+      <!-- <div class="text-24" style="position: relative; color: #0e110e">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0px;
+          "
+        >
+          <div>Subtotal | قيمة المنتج</div>
+          <div>{{ math multiplier "*" order.summary.totalTaxableAmount }}</div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+
+            margin: 15px 0px;
+          "
+        >
+          <div>VAT 15% Tax | ضريبة</div>
+          <div>{{math multiplier "*" order.summary.totalTax }}</div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+
+            margin: 15px 0px;
+          "
+        >
+          <div><b>Total</b></div>
+          <div><b>{{math multiplier "*" order.summary.totalWithTax }}</b></div>
+        </div>
+      </div> -->
+    </div>
+  </body>
+</html>

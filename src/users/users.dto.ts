@@ -59,10 +59,15 @@ export class UserCreateDto {
   @IsOptional()
   @IsMongoId()
   cashier?: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }
 
 export class UserUpdateDto extends PartialType(
-  OmitType(UserCreateDto, ['email'] as const),
+  OmitType(UserCreateDto, ['email', 'password'] as const),
 ) {
   @ApiProperty({ required: false })
   @IsOptional()

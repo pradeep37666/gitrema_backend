@@ -36,6 +36,7 @@ export enum OrderPaymentStatus {
   Pending = 'Pending',
   NotPaid = 'Not Paid',
   Paid = 'Paid',
+  OverPaid = 'Over Paid',
   Refunded = 'Refunded',
   PartiallyRefunded = 'Partially Refunded',
 }
@@ -50,4 +51,5 @@ export enum PreparationStatus {
   NotStarted = 'Not Started',
   StartedPreparing = 'Started Preparing',
   DonePreparing = 'Done Preparing',
+  OnTable = 'On Table',
 }

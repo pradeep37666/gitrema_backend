@@ -41,6 +41,11 @@ export class UpdateOrderDto extends PartialType(
   status?: OrderStatus;
 
   @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  orderItemId?: string;
+
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
   chefRequestedClarification?: boolean;

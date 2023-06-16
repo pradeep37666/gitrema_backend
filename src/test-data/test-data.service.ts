@@ -158,16 +158,19 @@ export class TestDataService {
         ePayment: true,
         cashPayment: true,
         rewardsClaim: true,
+        pos: true,
       },
       delivery: {
         ePayment: true,
         cashPayment: true,
         rewardsClaim: true,
+        pos: true,
       },
       pickup: {
         ePayment: true,
         cashPayment: true,
         rewardsClaim: true,
+        pos: true,
       },
     };
     await this.paymentSetupService.create(req, dto);

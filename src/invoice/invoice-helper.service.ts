@@ -134,7 +134,11 @@ export class InvoiceHelperService {
     order: OrderDocument,
     printerDetails: { printers: string[]; printerItems: string[] },
   ): Promise<Receipts[]> {
-    await order.populate([{ path: 'restaurantId' }]);
+    await order.populate([
+      { path: 'restaurantId' },
+      { path: 'tableId' },
+      { path: 'waiterId' },
+    ]);
 
     const orderObj: any = order.toObject();
 
@@ -151,7 +155,7 @@ export class InvoiceHelperService {
     });
 
     const templateHtml = fs.readFileSync(
-      'src/invoice/templates/kitchen-receipt.html',
+      'src/invoice/templates/kitchen-receipt.v1.html',
       'utf8',
     );
 
