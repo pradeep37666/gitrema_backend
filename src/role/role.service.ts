@@ -16,6 +16,7 @@ import {
 } from 'src/core/Constants/pagination';
 import { SubjectsRestrictedForSupplier } from 'src/core/Constants/permissions/permissions.enum';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { RoleSlug } from 'src/core/Constants/enum';
 
 @Injectable()
 export class RoleService {
@@ -94,8 +95,22 @@ export class RoleService {
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<RoleDocument>> {
     const query: any = {};
-    if (req.supplierId) {
-      query.supplierId = req.supplierId;
+    if (req.user.supplierId) {
+      query.$or = [
+        {
+          supplierId: req.user.supplierId,
+        },
+        {
+          slug: {
+            $in: [
+              RoleSlug.SupplierAdmin,
+              RoleSlug.Waiter,
+              RoleSlug.Cashier,
+              RoleSlug.Chef,
+            ],
+          },
+        },
+      ];
     }
 
     const roles = await this.roleModelPag.paginate(query, {
