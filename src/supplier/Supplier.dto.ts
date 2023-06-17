@@ -231,6 +231,26 @@ export class AddSupplierDto {
   @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()
+  customerAuthForDeliveryOrder: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  customerAuthForPickupOrder: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  customerAuthForDineInOrder: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  customerAuthForTableActivities: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
   createTestData?: boolean;
 }
 

@@ -132,6 +132,18 @@ export class Supplier {
   @Prop({ default: true })
   isWaitingEnabled: boolean;
 
+  @Prop({ default: true })
+  customerAuthForDeliveryOrder: boolean;
+
+  @Prop({ default: true })
+  customerAuthForPickupOrder: boolean;
+
+  @Prop({ default: true })
+  customerAuthForDineInOrder: boolean;
+
+  @Prop({ default: true })
+  customerAuthForTableActivities: boolean;
+
   @Prop({ default: { start: '08:00', end: '22:00' }, type: Object })
   defaultWorkingHours: {
     start: string;

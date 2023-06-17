@@ -169,6 +169,9 @@ export class Order {
     netBeforeTax: number;
   };
 
+  @Prop({ default: 0 })
+  tip: number;
+
   @Prop({
     type: Object,
     default: {

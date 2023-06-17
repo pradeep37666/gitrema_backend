@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { ChangeOrderDto, TipDto, UpdateOrderDto } from './dto/update-order.dto';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
@@ -88,6 +88,28 @@ export class OrderController {
     @Body() dto: UpdateOrderDto,
   ) {
     return await this.orderService.update(req, orderId, dto);
+  }
+
+  @Patch(':orderId/change')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.Change)
+  async change(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: ChangeOrderDto,
+  ) {
+    const updateDto: UpdateOrderDto = { items: dto.items };
+    return await this.orderService.update(req, orderId, updateDto);
+  }
+
+  @Patch(':orderId/tip')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.Change)
+  async tip(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: TipDto,
+  ) {
+    const updateDto: UpdateOrderDto = { ...dto };
+    return await this.orderService.update(req, orderId, updateDto);
   }
 
   @Patch(':orderId/cancel')

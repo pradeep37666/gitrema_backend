@@ -60,6 +60,7 @@ import { OrderService } from './order.service';
 import { PrinterType } from 'src/printer/enum/en';
 import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
+import { TableLogService } from 'src/table/table-log.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -475,6 +476,9 @@ export class OrderHelperService {
           OrderActivityType.OrderReady,
           order.orderReadyTime,
         );
+        if (order.tableId) {
+          this.tableHelperService.handleReadyFlag(order);
+        }
       } else if (
         dto.status == OrderStatus.Cancelled ||
         dto.status == OrderStatus.CancelledWihPaymentFailed
@@ -637,11 +641,21 @@ export class OrderHelperService {
           modifiedOrder,
         );
         dataToNotify.data = modifiedOrder.toObject();
+        dataToNotify.type = 'Order';
       } else {
         dataToNotify.data = order.items.find(
           (oi) => oi._id.toString() == dto.orderItemId,
         );
       }
+      // update table log
+      if (order.tableId) {
+        this.tableHelperService.handleReadyFlag(order);
+      }
+      // notify customer
+      this.orderNotificationService.triggerOrderNotification(
+        OrderEvents.DonePreparing,
+        order,
+      );
       this.socketGateway.emit(
         order.supplierId.toString(),
         SocketEvents.OrderPrepared,

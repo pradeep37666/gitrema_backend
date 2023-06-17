@@ -4,7 +4,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { OrderDocument } from './schemas/order.schema';
 
-import { OrderPaymentStatus, OrderStatus, OrderType } from './enum/en.enum';
+import {
+  OrderPaymentStatus,
+  OrderStatus,
+  OrderType,
+  PreparationStatus,
+} from './enum/en.enum';
 
 import { replaceAll } from 'src/core/Helpers/universal.helper';
 
@@ -83,6 +88,12 @@ export class OrderNotificationService {
         },
         {
           path: 'customerId',
+        },
+        {
+          path: 'waiterId',
+        },
+        {
+          path: 'tableId',
         },
       ]);
     }
@@ -312,6 +323,9 @@ export class OrderNotificationService {
         case RecipientTypes.Restaurant:
           if (order.supplierId?.phoneNumber)
             recipients.push(order.supplierId.whatsapp.replace('+', ''));
+        case RecipientTypes.Waiter:
+          if (order.waiterId?.whatsappNumber)
+            recipients.push(order.waiterId.whatsappNumber.replace('+', ''));
       }
     }
     return recipients;
@@ -334,7 +348,9 @@ export class OrderNotificationService {
       '{{RestaurantPhoneNumber}}': order.supplierId.phoneNumber,
       '{{RestaurantWhatsappNumber}}': order.supplierId.whatsapp,
       '{{RestaurantEmail}}': order.supplierId.email,
+      '{{TableName}}': order.tableId.nameAr,
       '{{OrderSummary}}': this.prepareOrderSummary(order),
+      '{{PreparedItems}}': this.prepareItemReadyMessage(order),
     };
     const placeholders = getHBVars(notification.content);
 
@@ -405,5 +421,15 @@ export class OrderNotificationService {
       }
     }
     return attachments;
+  }
+
+  async prepareItemReadyMessage(order: OrderDocument) {
+    let message = '';
+    order.items.forEach((oi) => {
+      if (oi.preparationStatus == PreparationStatus.DonePreparing) {
+        if (message != '') message += ', ';
+        message += oi.menuItem.nameAr;
+      }
+    });
   }
 }
