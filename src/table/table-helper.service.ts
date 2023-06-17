@@ -11,7 +11,7 @@ import { Order, OrderDocument } from 'src/order/schemas/order.schema';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { TableStatus } from './enum/en.enum';
-import { OrderStatus } from 'src/order/enum/en.enum';
+import { OrderStatus, PreparationStatus } from 'src/order/enum/en.enum';
 
 @Injectable()
 export class TableHelperService {
@@ -90,6 +90,49 @@ export class TableHelperService {
     }
 
     await this.addOrderToTableLogWithAutoStart(order);
+  }
+
+  async handleReadyFlag(order: OrderDocument) {
+    const tableLog = await this.tableLogModel.findOne({
+      tableId: order.tableId,
+      closingTime: null,
+    });
+    if (tableLog) {
+      const orders = await this.orderModel.find({
+        _id: { $in: tableLog.orders },
+        status: {
+          $nin: [
+            OrderStatus.Cancelled,
+            OrderStatus.CancelledWihPaymentFailed,
+            OrderStatus.Closed,
+          ],
+        },
+      });
+      const donePreparingOrders = orders.filter(
+        (o) => o.status == OrderStatus.DonePreparing,
+      );
+      const donePreparingItems = orders.filter((o) => {
+        const item = o.items.find(
+          (oi) => oi.preparationStatus == PreparationStatus.DonePreparing,
+        );
+        if (item) return true;
+      });
+      tableLog.orderReady = false;
+      if (donePreparingOrders.length > 0) {
+        tableLog.orderReady = true;
+      }
+      tableLog.itemReady = false;
+      if (donePreparingItems.length > 0) {
+        tableLog.itemReady = true;
+      }
+
+      tableLog.save();
+      this.socketGateway.emit(
+        tableLog.supplierId.toString(),
+        SocketEvents.TableLog,
+        tableLog.toObject(),
+      );
+    }
   }
 
   async addOrderToTableLogWithAutoStart(order: OrderDocument) {

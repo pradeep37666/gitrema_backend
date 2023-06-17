@@ -6,7 +6,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { ChangeOrderDto, UpdateOrderDto } from './dto/update-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema';
@@ -156,6 +156,9 @@ export class OrderService {
           );
         }
       }
+    }
+    if (dto.orderType == OrderType.DineIn) {
+      orderData.waiterId = req.user.userId;
     }
     orderData.taxRate = supplier.taxRate ?? 15;
 
@@ -376,14 +379,17 @@ export class OrderService {
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
+      let orderItemIds = orderData.items.map((oi) => oi._id.toString());
       if (dto.orderItemIds) {
-        orderData.items.forEach((oi) => {
-          if (dto.orderItemIds.includes(oi._id.toString())) {
-            oi.preparationStatus = PreparationStatus.OnTable;
-          }
-        });
+        orderItemIds = dto.orderItemIds;
+
         delete orderData.status;
       }
+      orderData.items.forEach((oi) => {
+        if (orderItemIds.includes(oi._id.toString())) {
+          oi.preparationStatus = PreparationStatus.OnTable;
+        }
+      });
     }
 
     // prepare the order items
@@ -398,17 +404,21 @@ export class OrderService {
       orderData.summary = await this.calculationService.calculateSummery(
         orderData,
       );
-
-      if (orderData.summary.totalPaid > 0) {
-        if (orderData.summary.totalPaid > orderData.sumarry.totalWithTax) {
-          orderData.paymentStatus = OrderPaymentStatus.OverPaid;
-        } else if (
-          orderData.summary.totalPaid == orderData.sumarry.totalWithTax
-        ) {
-          orderData.paymentStatus = OrderPaymentStatus.Paid;
-        } else {
-          orderData.paymentStatus = OrderPaymentStatus.NotPaid;
-        }
+    }
+    // handle payment status
+    if (orderData.summary.totalPaid > 0) {
+      if (
+        orderData.summary.totalPaid >
+        orderData.summary.totalWithTax + (orderData.tip ?? 0)
+      ) {
+        orderData.paymentStatus = OrderPaymentStatus.OverPaid;
+      } else if (
+        orderData.summary.totalPaid ==
+        orderData.summary.totalWithTax + (orderData.tip ?? 0)
+      ) {
+        orderData.paymentStatus = OrderPaymentStatus.Paid;
+      } else {
+        orderData.paymentStatus = OrderPaymentStatus.NotPaid;
       }
     }
 

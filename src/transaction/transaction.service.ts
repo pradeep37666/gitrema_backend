@@ -171,12 +171,20 @@ export class TransactionService {
           const dataToUpdate: any = {
             'summary.totalPaid': total,
           };
-          if (total >= order.summary.totalWithTax) {
+          if (total > order.summary.totalWithTax + (order.tip ?? 0)) {
+            dataToUpdate.status = OrderStatus.New
+              ? OrderStatus.SentToKitchen
+              : OrderStatus.Closed;
+            dataToUpdate.paymentStatus = OrderPaymentStatus.OverPaid;
+            dataToUpdate.paymentTime = new Date();
+          } else if (total == order.summary.totalWithTax + (order.tip ?? 0)) {
             dataToUpdate.status = OrderStatus.New
               ? OrderStatus.SentToKitchen
               : OrderStatus.Closed;
             dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
             dataToUpdate.paymentTime = new Date();
+          } else {
+            dataToUpdate.paymentStatus = OrderPaymentStatus.NotPaid;
           }
 
           order.set(dataToUpdate);

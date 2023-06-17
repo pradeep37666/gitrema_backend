@@ -62,6 +62,12 @@ export class TableLog {
 
   @Prop({ default: false })
   helpNeeded: boolean;
+
+  @Prop({ default: false })
+  itemReady: boolean;
+
+  @Prop({ default: false })
+  orderReady: boolean;
 }
 
 export const TableLogSchema = SchemaFactory.createForClass(TableLog);
