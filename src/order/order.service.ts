@@ -158,7 +158,7 @@ export class OrderService {
       }
     }
     if (dto.orderType == OrderType.DineIn) {
-      orderData.waiterId = req.user.userId;
+      if (!req.user.isCustomer) orderData.waiterId = req.user.userId;
     }
     orderData.taxRate = supplier.taxRate ?? 15;
 
