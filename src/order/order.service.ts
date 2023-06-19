@@ -50,6 +50,7 @@ import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 import { PrinterType } from 'src/printer/enum/en';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class OrderService {
@@ -76,6 +77,8 @@ export class OrderService {
     private readonly printerModel: Model<PrinterDocument>,
     @InjectModel(Cashier.name)
     private readonly cashierModel: Model<CashierDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   async create(
@@ -166,6 +169,18 @@ export class OrderService {
       delete orderData.scheduledDateTime;
     }
 
+    // check for kitchen queue
+    if (!orderData.kitchenQueueId) {
+      const kitchenQueue = await this.kitchenQueueModel.findOne(
+        {
+          restaurantId: orderData.restaurantId,
+        },
+        {},
+        { sort: { _id: -1 } },
+      );
+      if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
+    }
+
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
       orderData,
@@ -201,18 +216,6 @@ export class OrderService {
     orderData.summary = await this.calculationService.calculateSummery(
       orderData,
     );
-
-    // check for kitchen queue
-    if (!orderData.kitchenQueueId) {
-      const kitchenQueue = await this.kitchenQueueModel.findOne(
-        {
-          restaurantId: orderData.restaurantId,
-        },
-        {},
-        { sort: { _id: -1 } },
-      );
-      if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
-    }
 
     if (orderData.scheduledDateTime == null) {
       delete orderData.scheduledDateTime;
@@ -261,6 +264,65 @@ export class OrderService {
       delete queryToApply.notBelongingToTable;
     }
 
+    if (paginateOptions.pagination == false) {
+      paginateOptions = {
+        pagination: true,
+        limit: 10,
+        page: 1,
+      };
+    }
+    const orders = await this.orderModelPag.paginate(
+      {
+        supplierId: req.user.supplierId,
+        groupId: null,
+        ...queryToApply,
+      },
+      {
+        sort: paginateOptions.sortBy
+          ? {
+              [paginateOptions.sortBy]: paginateOptions.sortDirection
+                ? paginateOptions.sortDirection
+                : -1,
+            }
+          : DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+        populate: [
+          { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
+          { path: 'customerId', select: { name: 1 } },
+          { path: 'waiterId', select: { name: 1 } },
+          { path: 'tableId', select: { name: 1, nameAr: 1 } },
+          { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
+        ],
+      },
+    );
+    return orders;
+  }
+
+  async kitchenDisplay(
+    req: any,
+    query: QueryOrderDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<OrderDocument>> {
+    const queryToApply: any = { ...query };
+
+    if (query.search) {
+      queryToApply.$or = [
+        { name: { $regex: query.search, $options: 'i' } },
+        { contactNumber: { $regex: query.search, $options: 'i' } },
+        { orderNumber: { $regex: query.search, $options: 'i' } },
+      ];
+    }
+    if (query.notBelongingToTable) {
+      queryToApply.tableId = null;
+      delete queryToApply.notBelongingToTable;
+    }
+    const user = await this.userModel.findById(req.user.userId);
+    if (user && user.kitchenQueue) {
+      queryToApply.items.kitchenQueueId = user.kitchenQueue;
+      queryToApply.items.preparationStatus = { $ne: PreparationStatus.OnTable };
+    }
     if (paginateOptions.pagination == false) {
       paginateOptions = {
         pagination: true,

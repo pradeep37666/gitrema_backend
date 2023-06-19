@@ -112,6 +112,7 @@ export class OrderHelperService {
         active: true,
         deletedAt: null,
       })
+      .populate([{ path: 'categoryId' }])
       .lean();
 
     //fetch all menu additions
@@ -259,6 +260,8 @@ export class OrderHelperService {
         ),
         itemTaxableAmount: roundOffNumber(itemTaxableAmount),
         tax: roundOffNumber(tax),
+        kitchenQueueId:
+          menuItem.categoryId.kitchenQueueId ?? dto.kitchenQueueId,
       };
 
       //prepare additions

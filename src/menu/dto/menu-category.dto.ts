@@ -37,6 +37,13 @@ export class CreateMenuCategoryDTO {
     message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
   printerId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId({
+    message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
+  })
+  kitchenQueueId?: string;
 }
 
 export class UpdateMenuCategoryDTO extends PartialType(CreateMenuCategoryDTO) {

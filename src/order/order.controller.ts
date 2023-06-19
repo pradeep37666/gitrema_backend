@@ -59,6 +59,16 @@ export class OrderController {
     return await this.orderService.findAll(req, query, paginateOptions);
   }
 
+  @Get('kitchen')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.KitchenDisplay)
+  async kitchen(
+    @Req() req,
+    @Query() query: QueryOrderDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<OrderDocument>> {
+    return await this.orderService.kitchenDisplay(req, query, paginateOptions);
+  }
+
   @Get('customer')
   @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
   async findByCustomer(

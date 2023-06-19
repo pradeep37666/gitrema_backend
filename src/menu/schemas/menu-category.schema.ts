@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 import { ImportDocument } from 'src/import/schemas/import.schema';
+import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { PrinterDocument } from 'src/printer/schema/printer.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
@@ -36,6 +37,13 @@ export class MenuCategory {
     index: true,
   })
   printerId: PrinterDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'KitchenQueue',
+    index: true,
+  })
+  kitchenQueueId: KitchenQueueDocument;
 
   @Prop({ default: true })
   active: boolean;
