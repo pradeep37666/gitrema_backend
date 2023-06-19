@@ -192,14 +192,21 @@ export class PaymentService {
       this.transactionService.update(transaction._id, dataToUpdate);
       return res;
     }
-    if (paymentRequestDetails.paymentMethod == PaymentMethod.Cash)
+    if (
+      [PaymentMethod.Cash, PaymentMethod.Card].includes(
+        paymentRequestDetails.paymentMethod,
+      )
+    )
       this.transactionService.postTransactionProcess(req, transaction);
 
-    this.socketGateway.emit(
-      transaction.supplierId.toString(),
-      SocketEvents.PosLaunched,
-      transaction,
-    );
+    if (paymentRequestDetails.paymentMethod == PaymentMethod.POS) {
+      this.socketGateway.emit(
+        transaction.supplierId.toString(),
+        SocketEvents.PosLaunched,
+        transaction,
+      );
+    }
+
     return transaction;
   }
 

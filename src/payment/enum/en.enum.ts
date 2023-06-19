@@ -1,6 +1,7 @@
 export enum PaymentMethod {
   Cash = 'Cash',
   Online = 'Online',
+  Card = 'Card',
   POS = 'POS',
 }
 
