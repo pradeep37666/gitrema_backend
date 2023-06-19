@@ -168,8 +168,12 @@ export class TransactionService {
         ]);
         if (result && result.length == 1) {
           const total = result[0].total;
+          let remainingAmount =
+            order.summary.totalWithTax + (order.tip ?? 0) - total;
+          if (remainingAmount < 0) remainingAmount = 0;
           const dataToUpdate: any = {
             'summary.totalPaid': total,
+            'summary.remainingAmountToCollect': remainingAmount,
           };
           if (total > order.summary.totalWithTax + (order.tip ?? 0)) {
             dataToUpdate.status = OrderStatus.New
