@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class QueryKitchenQueueDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsMongoId()
-  @IsNotEmpty()
+  @IsOptional()
   restaurantId: string;
 
   @ApiProperty({ required: false })

@@ -63,6 +63,7 @@ export class KitchenQueueService {
     const kitchenQueues = await this.kitchenQueueModelPag.paginate(
       {
         ...query,
+        supplierId: req.user.supplierId,
         deletedAt: null,
       },
       {
