@@ -46,6 +46,7 @@ import {
 } from 'src/core/Constants/system.constant';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { PaymentGatewayService } from 'src/payment-gateway/payment-gateway.service';
 
 @Injectable()
 export class PaymentService {
@@ -67,6 +68,7 @@ export class PaymentService {
     private readonly cashierModel: Model<CashierDocument>,
 
     private socketGateway: SocketIoGateway,
+    private readonly paymentGatewayService: PaymentGatewayService,
   ) {}
 
   async create(
@@ -165,7 +167,10 @@ export class PaymentService {
       const supplier = await this.supplierService.getOne(
         order.supplierId.toString(),
       );
-      await this.arbPgService.init(order.supplierId.toString());
+      const paymentGateway = await this.paymentGatewayService.findOneBySupplier(
+        order.supplierId.toString(),
+      );
+      await this.arbPgService.init(paymentGateway);
       const options: PaymentTokenDto = {
         orderId: order._id,
         transactionId: transaction._id,
@@ -180,6 +185,11 @@ export class PaymentService {
 
       const dataToUpdate: any = {
         externalTransactionId: res.paymentId,
+        paymentGatewayDetails: {
+          paymentGatewayId: paymentGateway?._id ?? null,
+          terminalName:
+            paymentGateway?.credentials.terminalName ?? 'TalabatMenu',
+        },
       };
       if (options.accountDetails && options.accountDetails.length > 0) {
         dataToUpdate.isRemitScheduled = true;

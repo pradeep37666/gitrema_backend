@@ -113,6 +113,9 @@ export class Transaction {
   @Prop()
   paymentGateway: string;
 
+  @Prop({ type: Object, default: null })
+  paymentGatewayDetails: object;
+
   @Prop({})
   externalTransactionId: string;
 
