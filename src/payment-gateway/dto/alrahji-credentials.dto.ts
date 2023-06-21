@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PaymentGateways } from '../enum/en';
-import { IsEnum, IsMongoId, IsNotEmpty, IsObject } from 'class-validator';
+import {
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsObject,
+  IsString,
+} from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class AlrahjiCredentialsDto {
@@ -8,7 +14,7 @@ export class AlrahjiCredentialsDto {
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
-  @IsMongoId({
+  @IsString({
     message: i18nValidationMessage('validation.MUST_BE_STRING'),
   })
   transportalId: string;
@@ -17,7 +23,7 @@ export class AlrahjiCredentialsDto {
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
-  @IsMongoId({
+  @IsString({
     message: i18nValidationMessage('validation.MUST_BE_STRING'),
   })
   resourceKey: string;
@@ -26,7 +32,7 @@ export class AlrahjiCredentialsDto {
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
-  @IsMongoId({
+  @IsString({
     message: i18nValidationMessage('validation.MUST_BE_STRING'),
   })
   transportalPassword: string;
@@ -35,7 +41,7 @@ export class AlrahjiCredentialsDto {
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
-  @IsMongoId({
+  @IsString({
     message: i18nValidationMessage('validation.MUST_BE_STRING'),
   })
   apiUrl: string;
