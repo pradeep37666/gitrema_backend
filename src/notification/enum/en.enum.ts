@@ -9,6 +9,7 @@ export enum OrderEvents {
 export enum RecipientTypes {
   Customer = 'Customer',
   Restaurant = 'Restaurant',
+  Waiter = 'Waiter',
 }
 
 export enum NotificationStatus {

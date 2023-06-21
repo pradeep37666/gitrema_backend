@@ -6,7 +6,9 @@ import {
   IsBoolean,
   IsEnum,
   IsMongoId,
+  IsNotEmpty,
   IsNotIn,
+  IsNumber,
   IsOptional,
   ValidateNested,
 } from 'class-validator';
@@ -40,13 +42,28 @@ export class UpdateOrderDto extends PartialType(
   @IsOptional()
   status?: OrderStatus;
 
-  @ApiProperty({ required: false })
-  @IsMongoId()
-  @IsOptional()
-  orderItemId?: string;
+  orderItemIds?: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
   chefRequestedClarification?: boolean;
+
+  tip?: number;
+}
+
+export class ChangeOrderDto {
+  @ApiProperty({ type: [UpdateOrderItemDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateOrderItemDto)
+  @IsNotEmpty()
+  items: UpdateOrderItemDto[];
+}
+
+export class TipDto {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  tip: number;
 }

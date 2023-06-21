@@ -6,7 +6,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { ChangeOrderDto, UpdateOrderDto } from './dto/update-order.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, PaginateModel, PaginateResult } from 'mongoose';
 import { Order, OrderDocument } from './schemas/order.schema';
@@ -50,6 +50,7 @@ import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 import { PrinterType } from 'src/printer/enum/en';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class OrderService {
@@ -76,6 +77,8 @@ export class OrderService {
     private readonly printerModel: Model<PrinterDocument>,
     @InjectModel(Cashier.name)
     private readonly cashierModel: Model<CashierDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   async create(
@@ -157,10 +160,25 @@ export class OrderService {
         }
       }
     }
+    if (dto.orderType == OrderType.DineIn) {
+      if (!req.user.isCustomer) orderData.waiterId = req.user.userId;
+    }
     orderData.taxRate = supplier.taxRate ?? 15;
 
     if (orderData.isScheduled != true) {
       delete orderData.scheduledDateTime;
+    }
+
+    // check for kitchen queue
+    if (!orderData.kitchenQueueId) {
+      const kitchenQueue = await this.kitchenQueueModel.findOne(
+        {
+          restaurantId: orderData.restaurantId,
+        },
+        {},
+        { sort: { _id: -1 } },
+      );
+      if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
     }
 
     // prepare the order items
@@ -198,18 +216,6 @@ export class OrderService {
     orderData.summary = await this.calculationService.calculateSummery(
       orderData,
     );
-
-    // check for kitchen queue
-    if (!orderData.kitchenQueueId) {
-      const kitchenQueue = await this.kitchenQueueModel.findOne(
-        {
-          restaurantId: orderData.restaurantId,
-        },
-        {},
-        { sort: { _id: -1 } },
-      );
-      if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
-    }
 
     if (orderData.scheduledDateTime == null) {
       delete orderData.scheduledDateTime;
@@ -258,6 +264,65 @@ export class OrderService {
       delete queryToApply.notBelongingToTable;
     }
 
+    if (paginateOptions.pagination == false) {
+      paginateOptions = {
+        pagination: true,
+        limit: 10,
+        page: 1,
+      };
+    }
+    const orders = await this.orderModelPag.paginate(
+      {
+        supplierId: req.user.supplierId,
+        groupId: null,
+        ...queryToApply,
+      },
+      {
+        sort: paginateOptions.sortBy
+          ? {
+              [paginateOptions.sortBy]: paginateOptions.sortDirection
+                ? paginateOptions.sortDirection
+                : -1,
+            }
+          : DefaultSort,
+        lean: true,
+        ...paginateOptions,
+        ...pagination,
+        populate: [
+          { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
+          { path: 'customerId', select: { name: 1 } },
+          { path: 'waiterId', select: { name: 1 } },
+          { path: 'tableId', select: { name: 1, nameAr: 1 } },
+          { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
+        ],
+      },
+    );
+    return orders;
+  }
+
+  async kitchenDisplay(
+    req: any,
+    query: QueryOrderDto,
+    paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<OrderDocument>> {
+    const queryToApply: any = { ...query };
+
+    if (query.search) {
+      queryToApply.$or = [
+        { name: { $regex: query.search, $options: 'i' } },
+        { contactNumber: { $regex: query.search, $options: 'i' } },
+        { orderNumber: { $regex: query.search, $options: 'i' } },
+      ];
+    }
+    if (query.notBelongingToTable) {
+      queryToApply.tableId = null;
+      delete queryToApply.notBelongingToTable;
+    }
+    const user = await this.userModel.findById(req.user.userId);
+    if (user && user.kitchenQueue) {
+      queryToApply.items.kitchenQueueId = user.kitchenQueue;
+      queryToApply.items.preparationStatus = { $ne: PreparationStatus.OnTable };
+    }
     if (paginateOptions.pagination == false) {
       paginateOptions = {
         pagination: true,
@@ -376,11 +441,17 @@ export class OrderService {
       orderData.sentToKitchenTime = new Date();
     } else if (dto.status && dto.status == OrderStatus.OnTable) {
       orderData.orderReadyTime = new Date();
-      if (dto.orderItemId) {
-        const item = orderData.items.find(
-          (oi) => oi._id.toString() == dto.orderItemId,
-        );
+      let orderItemIds = orderData.items.map((oi) => oi._id.toString());
+      if (dto.orderItemIds) {
+        orderItemIds = dto.orderItemIds;
+
+        delete orderData.status;
       }
+      orderData.items.forEach((oi) => {
+        if (orderItemIds.includes(oi._id.toString())) {
+          oi.preparationStatus = PreparationStatus.OnTable;
+        }
+      });
     }
 
     // prepare the order items
@@ -395,17 +466,21 @@ export class OrderService {
       orderData.summary = await this.calculationService.calculateSummery(
         orderData,
       );
-
-      if (orderData.summary.totalPaid > 0) {
-        if (orderData.summary.totalPaid > orderData.sumarry.totalWithTax) {
-          orderData.paymentStatus = OrderPaymentStatus.OverPaid;
-        } else if (
-          orderData.summary.totalPaid == orderData.sumarry.totalWithTax
-        ) {
-          orderData.paymentStatus = OrderPaymentStatus.Paid;
-        } else {
-          orderData.paymentStatus = OrderPaymentStatus.NotPaid;
-        }
+    }
+    // handle payment status
+    if (orderData.summary.totalPaid > 0) {
+      if (
+        orderData.summary.totalPaid >
+        orderData.summary.totalWithTax + (orderData.tip ?? 0)
+      ) {
+        orderData.paymentStatus = OrderPaymentStatus.OverPaid;
+      } else if (
+        orderData.summary.totalPaid ==
+        orderData.summary.totalWithTax + (orderData.tip ?? 0)
+      ) {
+        orderData.paymentStatus = OrderPaymentStatus.Paid;
+      } else {
+        orderData.paymentStatus = OrderPaymentStatus.NotPaid;
       }
     }
 

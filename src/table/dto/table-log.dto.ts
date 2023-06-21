@@ -20,15 +20,19 @@ export class TableLogDto {
     ({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD HH:MM')),
   )
   @IsDate()
-  menuScannedTime: Date;
+  menuScannedTime?: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  helpNeeded: boolean;
+  helpNeeded?: boolean;
 
   @ApiProperty({ required: false })
   @IsMongoId()
   @IsOptional()
-  waiterId: string;
+  waiterId?: string;
+
+  itemReady?: boolean;
+
+  orderReady?: boolean;
 }

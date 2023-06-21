@@ -46,6 +46,7 @@ import {
 } from 'src/core/Constants/system.constant';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { PaymentGatewayService } from 'src/payment-gateway/payment-gateway.service';
 
 @Injectable()
 export class PaymentService {
@@ -67,6 +68,7 @@ export class PaymentService {
     private readonly cashierModel: Model<CashierDocument>,
 
     private socketGateway: SocketIoGateway,
+    private readonly paymentGatewayService: PaymentGatewayService,
   ) {}
 
   async create(
@@ -84,7 +86,8 @@ export class PaymentService {
     let transaction = null;
 
     let amountToCollect =
-      paymentRequestDetails.amount ?? order.summary.totalWithTax;
+      paymentRequestDetails.amount ??
+      order.summary.totalWithTax + (order.tip ?? 0);
     if (paymentRequestDetails.transactionId) {
       transaction = await this.transactionModel.findById(
         paymentRequestDetails.transactionId,
@@ -96,7 +99,10 @@ export class PaymentService {
       amountToCollect = transaction.amount;
     }
 
-    if (order.summary.totalWithTax < order.summary.totalPaid + amountToCollect)
+    if (
+      order.summary.totalWithTax + (order.tip ?? 0) <
+      order.summary.totalPaid + amountToCollect
+    )
       throw new BadRequestException(
         `${VALIDATION_MESSAGES.OverPayment.key}__${
           order.summary.totalWithTax - order.summary.totalPaid
@@ -161,7 +167,10 @@ export class PaymentService {
       const supplier = await this.supplierService.getOne(
         order.supplierId.toString(),
       );
-      await this.arbPgService.init(order.supplierId.toString());
+      const paymentGateway = await this.paymentGatewayService.findOneBySupplier(
+        order.supplierId.toString(),
+      );
+      await this.arbPgService.init(paymentGateway);
       const options: PaymentTokenDto = {
         orderId: order._id,
         transactionId: transaction._id,
@@ -176,6 +185,11 @@ export class PaymentService {
 
       const dataToUpdate: any = {
         externalTransactionId: res.paymentId,
+        paymentGatewayDetails: {
+          paymentGatewayId: paymentGateway?._id ?? null,
+          terminalName:
+            paymentGateway?.credentials.terminalName ?? 'TalabatMenu',
+        },
       };
       if (options.accountDetails && options.accountDetails.length > 0) {
         dataToUpdate.isRemitScheduled = true;
@@ -188,14 +202,21 @@ export class PaymentService {
       this.transactionService.update(transaction._id, dataToUpdate);
       return res;
     }
-    if (paymentRequestDetails.paymentMethod == PaymentMethod.Cash)
+    if (
+      [PaymentMethod.Cash, PaymentMethod.Card].includes(
+        paymentRequestDetails.paymentMethod,
+      )
+    )
       this.transactionService.postTransactionProcess(req, transaction);
 
-    this.socketGateway.emit(
-      transaction.supplierId.toString(),
-      SocketEvents.PosLaunched,
-      transaction,
-    );
+    if (paymentRequestDetails.paymentMethod == PaymentMethod.POS) {
+      this.socketGateway.emit(
+        transaction.supplierId.toString(),
+        SocketEvents.PosLaunched,
+        transaction,
+      );
+    }
+
     return transaction;
   }
 

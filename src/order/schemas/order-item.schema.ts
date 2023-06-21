@@ -5,6 +5,7 @@ import { MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { MenuAdditionDocument } from 'src/menu/schemas/menu-addition.schema';
 import { Alergies } from 'src/menu/enum/en.enum';
 import { PreparationStatus } from '../enum/en.enum';
+import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 
 export type OrderItemDocument = OrderItem & Document;
 
@@ -152,6 +153,13 @@ const MenuItemSchema = SchemaFactory.createForClass(MenuItem);
 export class OrderItem {
   @Prop({ type: MenuItemSchema, required: true })
   menuItem: MenuItem;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'KitchenQueue',
+    default: null,
+  })
+  kitchenQueueId: KitchenQueueDocument;
 
   @Prop({ type: [MenuAdditionSchema] })
   additions: MenuAddition[];

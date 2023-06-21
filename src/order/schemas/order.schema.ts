@@ -169,6 +169,9 @@ export class Order {
     netBeforeTax: number;
   };
 
+  @Prop({ default: 0 })
+  tip: number;
+
   @Prop({
     type: Object,
     default: {
@@ -180,6 +183,7 @@ export class Order {
       totalPaid: 0,
       totalRefunded: 0,
       headerDiscount: 0,
+      remainingAmountToCollect: 0,
     },
   })
   summary: {
@@ -191,6 +195,7 @@ export class Order {
     totalPaid: number;
     totalRefunded: number;
     headerDiscount: number;
+    remainingAmountToCollect: number;
   };
 
   @Prop()

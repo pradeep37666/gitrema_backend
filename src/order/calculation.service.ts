@@ -45,6 +45,7 @@ export class CalculationService {
       totalPaid: 0,
       totalRefunded: 0,
       headerDiscount: 0,
+      remainingAmountToCollect: 0,
     };
 
     let offer = await this.offerModel.findOne(
@@ -145,6 +146,12 @@ export class CalculationService {
       summary.totalRefunded = orderData.summary?.totalRefunded;
     if (orderData.summary?.totalPaid) {
       summary.totalPaid = orderData.summary?.totalPaid;
+      summary.remainingAmountToCollect =
+        summary.totalWithTax +
+        (orderData.tip ?? 0) -
+        orderData.summary?.totalPaid;
+      if (summary.remainingAmountToCollect < 0)
+        summary.remainingAmountToCollect = 0;
     }
     return summary;
   }

@@ -95,6 +95,8 @@ export enum OrderPermissions {
   CancelOrder = 'Cancel Order',
   SentToKitchen = 'Sent To Kitchen',
   OnTable = 'On Table',
+  Change = 'Change',
+  KitchenDisplay = 'Kitchen Display',
 }
 
 export enum UserPermission {

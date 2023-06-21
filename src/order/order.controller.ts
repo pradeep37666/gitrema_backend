@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { ChangeOrderDto, TipDto, UpdateOrderDto } from './dto/update-order.dto';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
 import { Permission } from 'src/core/Constants/permission.type';
@@ -23,7 +23,10 @@ import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
-import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
+import {
+  ItemPreparedDto,
+  KitchenQueueProcessDto,
+} from './dto/kitchen-queue-process.dto';
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 
@@ -54,6 +57,16 @@ export class OrderController {
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     return await this.orderService.findAll(req, query, paginateOptions);
+  }
+
+  @Get('kitchen')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.KitchenDisplay)
+  async kitchen(
+    @Req() req,
+    @Query() query: QueryOrderDto,
+    @Query() paginateOptions: PaginationDto,
+  ): Promise<PaginateResult<OrderDocument>> {
+    return await this.orderService.kitchenDisplay(req, query, paginateOptions);
   }
 
   @Get('customer')
@@ -87,6 +100,28 @@ export class OrderController {
     return await this.orderService.update(req, orderId, dto);
   }
 
+  @Patch(':orderId/change')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.Change)
+  async change(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: ChangeOrderDto,
+  ) {
+    const updateDto: UpdateOrderDto = { items: dto.items };
+    return await this.orderService.update(req, orderId, updateDto);
+  }
+
+  @Patch(':orderId/tip')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.Change)
+  async tip(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: TipDto,
+  ) {
+    const updateDto: UpdateOrderDto = { ...dto };
+    return await this.orderService.update(req, orderId, updateDto);
+  }
+
   @Patch(':orderId/cancel')
   @PermissionGuard(PermissionSubject.Order, Permission.Order.CancelOrder)
   async cancel(@Req() req, @Param('orderId') orderId: string) {
@@ -105,9 +140,14 @@ export class OrderController {
 
   @Patch(':orderId/on-table')
   @PermissionGuard(PermissionSubject.Order, Permission.Order.OnTable)
-  async onTable(@Req() req, @Param('orderId') orderId: string) {
+  async onTable(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: ItemPreparedDto,
+  ) {
     return await this.orderService.update(req, orderId, {
       status: OrderStatus.OnTable,
+      ...dto,
     });
   }
 
