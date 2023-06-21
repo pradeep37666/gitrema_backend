@@ -16,6 +16,7 @@ import { CashierModule } from 'src/cashier/cashier.module';
 import { PaymentSetupModule } from 'src/payment-setup/payment-setup.module';
 import { SupplierModule } from 'src/supplier/Supplier.module';
 import { GlobalConfigModule } from 'src/global-config/global-config.module';
+import { PaymentGatewayModule as PGConfigModule } from 'src/payment-gateway/payment-gateway.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { GlobalConfigModule } from 'src/global-config/global-config.module';
     PaymentSetupModule,
     forwardRef(() => SupplierModule),
     GlobalConfigModule,
+    PGConfigModule,
   ],
   providers: [PaymentService],
   controllers: [PaymentController],

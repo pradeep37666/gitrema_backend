@@ -14,6 +14,7 @@ import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
 import { decodeBase64, encodeBase64 } from 'bcryptjs';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { PaymentGatewayService } from 'src/payment-gateway/payment-gateway.service';
+import { PaymentGatewayDocument } from 'src/payment-gateway/schema/payment-gateway.schema';
 
 @Injectable()
 export class ArbPgService {
@@ -48,14 +49,9 @@ export class ArbPgService {
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
-    private readonly paymentGatewayService: PaymentGatewayService,
   ) {}
 
-  async init(supplierId: string) {
-    const paymentGateway = await this.paymentGatewayService.findOneBySupplier(
-      supplierId,
-    );
-
+  async init(paymentGateway: PaymentGatewayDocument) {
     if (paymentGateway) {
       this.credentials = paymentGateway.credentials;
       this.config.baseApiUrl = this.credentials.apiUrl;

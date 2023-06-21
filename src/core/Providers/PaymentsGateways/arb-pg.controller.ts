@@ -25,6 +25,7 @@ import {
   TransactionDocument,
 } from 'src/transaction/schemas/transactions.schema';
 import { Model } from 'mongoose';
+import { PaymentGatewayService } from 'src/payment-gateway/payment-gateway.service';
 
 @Public()
 @ApiTags('Alrajhi Payment Gateway')
@@ -37,6 +38,7 @@ export class ArbPgController {
     private readonly supplierService: SupplierService,
     @InjectModel(Transaction.name)
     private transactionModel: Model<TransactionDocument>,
+    private readonly paymentGatewayService: PaymentGatewayService,
   ) {}
 
   @Post('process-payment-response')
@@ -49,7 +51,10 @@ export class ArbPgController {
     if (!transaction) {
       throw new BadRequestException(`Something went wrong`);
     }
-    await this.arbPgService.init(transaction.supplierId.toString());
+    const paymentGateway = await this.paymentGatewayService.findOneBySupplier(
+      transaction.supplierId.toString(),
+    );
+    await this.arbPgService.init(paymentGateway);
 
     const transObj = this.arbPgService.parseTransResponse(
       this.arbPgService.aesDecryption(paymentDetails.trandata),
