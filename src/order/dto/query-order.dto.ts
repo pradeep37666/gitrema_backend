@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
   IsArray,
   IsEnum,
@@ -77,4 +77,11 @@ export class QueryCustomerOrderDto extends QueryOrderDto {
   @IsMongoId()
   @IsOptional()
   supplierId: string;
+}
+
+export class QueryKitchenDisplayDto extends QueryOrderDto {
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  restaurantId: string;
 }
