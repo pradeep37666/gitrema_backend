@@ -1,17 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 import { CreateRawMaterialComponentDto } from './create-raw-material-component.dto';
-import { Type } from 'class-transformer';
 
-export class CreateCostSimulatorDto {
+export class CreateRawMaterialDto {
   @ApiProperty()
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
@@ -49,9 +51,10 @@ export class CreateCostSimulatorDto {
       message: i18nValidationMessage('validation.MUST_BE_NUMBER'),
     },
   )
-  perQuantity: number;
+  quantity: number;
 
   @ApiProperty()
+  @ValidateIf((o) => !o.components)
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
@@ -61,16 +64,24 @@ export class CreateCostSimulatorDto {
       message: i18nValidationMessage('validation.MUST_BE_NUMBER'),
     },
   )
-  sellPrice: number;
+  unitPrice: number;
 
-  @ApiProperty({ type: [CreateRawMaterialComponentDto] })
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber(
+    {},
+    {
+      message: i18nValidationMessage('validation.MUST_BE_NUMBER'),
+    },
+  )
+  changeSimulation: number;
+
+  @ApiProperty({ type: [CreateRawMaterialComponentDto], required: false })
   @IsArray({
     message: i18nValidationMessage('validation.MUST_BE_ARRAY'),
   })
   @ValidateNested({ each: true })
   @Type(() => CreateRawMaterialComponentDto)
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.NOT_EMPTY'),
-  })
+  @IsOptional()
   components: CreateRawMaterialComponentDto[];
 }
