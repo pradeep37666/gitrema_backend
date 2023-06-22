@@ -18,7 +18,11 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
-import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
+import {
+  QueryCustomerOrderDto,
+  QueryKitchenDisplayDto,
+  QueryOrderDto,
+} from './dto/query-order.dto';
 import {
   Supplier,
   SupplierDocument,
@@ -174,6 +178,7 @@ export class OrderService {
       const kitchenQueue = await this.kitchenQueueModel.findOne(
         {
           restaurantId: orderData.restaurantId,
+          default: true,
         },
         {},
         { sort: { _id: -1 } },
@@ -302,7 +307,7 @@ export class OrderService {
 
   async kitchenDisplay(
     req: any,
-    query: QueryOrderDto,
+    query: QueryKitchenDisplayDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     const queryToApply: any = { ...query };
@@ -356,6 +361,13 @@ export class OrderService {
         ],
       },
     );
+    if (user && user.kitchenQueue) {
+      orders.docs.forEach((d) => {
+        d.items = d.items.filter(
+          (di) => di.kitchenQueueId.toString() == user.kitchenQueue.toString(),
+        );
+      });
+    }
     return orders;
   }
 

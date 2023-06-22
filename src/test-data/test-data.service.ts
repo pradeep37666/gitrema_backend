@@ -215,7 +215,7 @@ export class TestDataService {
       restaurantId: restaurant._id,
       name: 'Default Cashier',
       nameAr: 'Default Cashier',
-      userId: user._id,
+      default: true,
     };
     const kitchenQueue = await this.kitchenQueueService.create(req, dto);
     this.userService.update(user._id.toString(), {

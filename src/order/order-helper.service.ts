@@ -261,7 +261,7 @@ export class OrderHelperService {
         itemTaxableAmount: roundOffNumber(itemTaxableAmount),
         tax: roundOffNumber(tax),
         kitchenQueueId:
-          menuItem.categoryId.kitchenQueueId ?? dto.kitchenQueueId,
+          menuItem.categoryId.kitchenQueueId ?? dto.kitchenQueueId ?? null,
       };
 
       //prepare additions

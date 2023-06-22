@@ -36,14 +36,10 @@ export class KitchenQueue {
   paused: boolean;
 
   @Prop({ default: true })
-  active: boolean;
+  default: boolean;
 
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    index: true,
-    ref: 'User',
-  })
-  userId: UserDocument;
+  @Prop({ default: true })
+  active: boolean;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
