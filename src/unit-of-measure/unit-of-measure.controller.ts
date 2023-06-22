@@ -38,6 +38,7 @@ export class UnitOfMeasureController {
   }
 
   @Get()
+  @Public()
   @PermissionGuard(PermissionSubject.UnitOfMeasure, Permission.Common.LIST)
   async findAll(
     @Req() req,

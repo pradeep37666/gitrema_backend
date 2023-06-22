@@ -11,25 +11,7 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 import { CreateRawMaterialComponentDto } from './create-raw-material-component.dto';
 import { Type } from 'class-transformer';
 
-export class CreateCostSimulatorDto {
-  @ApiProperty()
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.NOT_EMPTY'),
-  })
-  @IsString({
-    message: i18nValidationMessage('validation.MUST_BE_STRING'),
-  })
-  name: string;
-
-  @ApiProperty()
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.NOT_EMPTY'),
-  })
-  @IsString({
-    message: i18nValidationMessage('validation.MUST_BE_STRING'),
-  })
-  nameAr: string;
-
+export class CreateProductReportDto {
   @ApiProperty({})
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
@@ -37,7 +19,7 @@ export class CreateCostSimulatorDto {
   @IsMongoId({
     message: i18nValidationMessage('validation.MUST_BE_MONGO_ID'),
   })
-  uom: string;
+  productId: string;
 
   @ApiProperty()
   @IsNotEmpty({
@@ -49,7 +31,7 @@ export class CreateCostSimulatorDto {
       message: i18nValidationMessage('validation.MUST_BE_NUMBER'),
     },
   )
-  perQuantity: number;
+  quantitiesSold: number;
 
   @ApiProperty()
   @IsNotEmpty({
@@ -61,16 +43,5 @@ export class CreateCostSimulatorDto {
       message: i18nValidationMessage('validation.MUST_BE_NUMBER'),
     },
   )
-  sellPrice: number;
-
-  @ApiProperty({ type: [CreateRawMaterialComponentDto] })
-  @IsArray({
-    message: i18nValidationMessage('validation.MUST_BE_ARRAY'),
-  })
-  @ValidateNested({ each: true })
-  @Type(() => CreateRawMaterialComponentDto)
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.NOT_EMPTY'),
-  })
-  components: CreateRawMaterialComponentDto[];
+  salesVolume: number;
 }

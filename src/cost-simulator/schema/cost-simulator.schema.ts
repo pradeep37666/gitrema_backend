@@ -1,21 +1,19 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { MaterialDocument } from 'src/material/schemas/material.schema';
-import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
+
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
+
+import {
+  RecipeSimulationMaterial,
+  RecipeSimulationMaterialSchema,
+} from './recipe-simulation-material.schema';
+import * as paginate from 'mongoose-paginate-v2';
 
 export type CostSimulatorDocument = CostSimulator & Document;
 
 @Schema({ timestamps: true })
 export class CostSimulator {
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Supplier',
-    required: true,
-  })
-  supplierId: SupplierDocument;
-
   @Prop({ default: 1 })
   perQuantity: number;
 
@@ -33,6 +31,9 @@ export class CostSimulator {
 
   @Prop({ required: true })
   simulatedUnitProfit: number;
+
+  @Prop({ required: true })
+  profitMargin: number;
 
   @Prop({ required: true })
   simulatedProfitMargin: number;
@@ -54,10 +55,9 @@ export class CostSimulator {
   @Prop({ required: true })
   nameAr: string;
 
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    index: true,
-    default: null,
-  })
-  addedBy: UserDocument;
+  @Prop({ type: [RecipeSimulationMaterialSchema], default: [] })
+  components: RecipeSimulationMaterial[];
 }
+
+export const CostSimulatorSchema = SchemaFactory.createForClass(CostSimulator);
+CostSimulatorSchema.plugin(paginate);
