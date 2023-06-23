@@ -242,7 +242,7 @@ export class OrderService {
     const order = await this.orderModel.create({
       ...orderData,
       supplierId: req.user.supplierId,
-      addedBy: req.user.userId,
+      addedBy: req.user.userId ?? null,
     });
 
     // post order create

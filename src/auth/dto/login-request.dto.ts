@@ -97,4 +97,5 @@ export class LoggedInUserPayload {
   roleId: any;
   isCustomer?: boolean;
   userObj?: any;
+  time?: any;
 }

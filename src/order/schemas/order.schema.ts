@@ -230,6 +230,7 @@ export class Order {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
+    default: null,
   })
   addedBy: UserDocument;
 
