@@ -55,6 +55,7 @@ import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 import { PrinterType } from 'src/printer/enum/en';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { ObjectId } from 'mongoose';
 
 @Injectable()
 export class OrderService {
@@ -326,7 +327,10 @@ export class OrderService {
         $elemMatch: {
           kitchenQueueId: user.kitchenQueue,
           preparationStatus: {
-            $in: [PreparationStatus.NotStarted, PreparationStatus.NotStarted],
+            $in: [
+              PreparationStatus.NotStarted,
+              PreparationStatus.StartedPreparing,
+            ],
           },
         },
       };
