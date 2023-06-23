@@ -324,7 +324,7 @@ export class OrderService {
     if (user && user.kitchenQueue) {
       queryToApply['items.kitchenQueueId'] = user.kitchenQueue;
       queryToApply['items.preparationStatus'] = {
-        $ne: PreparationStatus.OnTable,
+        $in: [PreparationStatus.NotStarted, PreparationStatus.NotStarted],
       };
     }
     console.log(queryToApply);
@@ -340,6 +340,9 @@ export class OrderService {
         supplierId: req.user.supplierId,
         groupId: null,
         ...queryToApply,
+        status: {
+          $in: [OrderStatus.SentToKitchen, OrderStatus.StartedPreparing],
+        },
       },
       {
         sort: paginateOptions.sortBy
@@ -680,11 +683,24 @@ export class OrderService {
           { 'element._id': new mongoose.Types.ObjectId(dto.orderItemId) },
         ],
       };
+    } else {
+      const user = await this.userModel.findById(req.user.userId);
+      if (user && user.kitchenQueue) {
+        arrayFilter = {
+          arrayFilters: [
+            {
+              'element.kitchenQueueId': new mongoose.Types.ObjectId(
+                user.kitchenQueue.toString(),
+              ),
+            },
+          ],
+        };
+      }
     }
     await this.orderModel.updateMany({ _id: dto.orderId }, dataToSet, {
       ...arrayFilter,
     });
-    this.orderHelperService.postKitchenQueueProcessing(order, dto);
+    await this.orderHelperService.postKitchenQueueProcessing(order, dto);
     return true;
   }
 
