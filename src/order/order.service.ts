@@ -175,22 +175,19 @@ export class OrderService {
 
     // check for kitchen queue
     if (!orderData.kitchenQueueId) {
-      const kitchenQueue = await this.kitchenQueueModel.findOne(
-        {
-          restaurantId: orderData.restaurantId,
-          default: true,
-        },
-        {},
-        { sort: { _id: -1 } },
-      );
+      const kitchenQueue = await this.kitchenQueueModel.findOne({
+        restaurantId: orderData.restaurantId,
+        default: true,
+      });
       if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
     }
+    console.log('Kitchen Queue', orderData.kitchenQueueId);
 
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
       orderData,
     );
-
+    console.log(orderData.items);
     orderData.tableFee = {
       fee: 0,
       netBeforeTax: 0,
