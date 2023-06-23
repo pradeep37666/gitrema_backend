@@ -373,6 +373,24 @@ export class AuthService {
     return { accessToken: await this.generateAuthToken(payload), supplier };
   }
 
+  async getNoAuthToken(supplierId: string): Promise<any> {
+    const supplier = await this.supplierService.getOne(supplierId);
+    if (!supplier) {
+      throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
+    }
+    const role = await this.roleModel.findOne({ slug: RoleSlug.NoAuth }).lean();
+    if (!role)
+      throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
+    const payload = {
+      userId: '',
+      supplierId: supplier._id,
+      roleId: role._id,
+      time: new Date(),
+    };
+
+    return { accessToken: await this.generateAuthToken(payload), supplier };
+  }
+
   async generateAuthToken(payload: LoggedInUserPayload) {
     return await this.jwtService.sign(payload);
   }
