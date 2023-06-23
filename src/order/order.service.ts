@@ -322,9 +322,13 @@ export class OrderService {
     }
     const user = await this.userModel.findById(req.user.userId);
     if (user && user.kitchenQueue) {
-      queryToApply['items.kitchenQueueId'] = user.kitchenQueue;
-      queryToApply['items.preparationStatus'] = {
-        $in: [PreparationStatus.NotStarted, PreparationStatus.NotStarted],
+      queryToApply['items'] = {
+        $elemMatch: {
+          kitchenQueueId: user.kitchenQueue,
+          preparationStatus: {
+            $in: [PreparationStatus.NotStarted, PreparationStatus.NotStarted],
+          },
+        },
       };
     }
     console.log(queryToApply);
