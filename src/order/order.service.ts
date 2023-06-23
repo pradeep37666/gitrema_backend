@@ -325,9 +325,12 @@ export class OrderService {
     }
     const user = await this.userModel.findById(req.user.userId);
     if (user && user.kitchenQueue) {
-      queryToApply.items.kitchenQueueId = user.kitchenQueue;
-      queryToApply.items.preparationStatus = { $ne: PreparationStatus.OnTable };
+      queryToApply['items.kitchenQueueId'] = user.kitchenQueue;
+      queryToApply['items.preparationStatus'] = {
+        $ne: PreparationStatus.OnTable,
+      };
     }
+    console.log(queryToApply);
     if (paginateOptions.pagination == false) {
       paginateOptions = {
         pagination: true,
