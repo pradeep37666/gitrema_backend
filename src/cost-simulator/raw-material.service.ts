@@ -78,6 +78,14 @@ export class RawMaterialService {
               _id: 1,
             },
           },
+          {
+            path: 'components.materialId',
+            populate: [
+              {
+                path: 'components.materialId',
+              },
+            ],
+          },
         ],
       },
     );
