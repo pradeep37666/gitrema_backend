@@ -83,6 +83,42 @@ export class CostSimulatorService {
               _id: 1,
             },
           },
+          {
+            path: 'components.materialId',
+            populate: [
+              {
+                path: 'components.materialId',
+                select: {
+                  name: 1,
+                  nameAr: 1,
+                  uom: 1,
+                  unitPrice: 1,
+                },
+              },
+              {
+                path: 'components.uom',
+                select: {
+                  name: 1,
+                  nameAr: 1,
+                  _id: 1,
+                },
+              },
+            ],
+            select: {
+              name: 1,
+              nameAr: 1,
+              uom: 1,
+              unitPrice: 1,
+            },
+          },
+          {
+            path: 'components.uom',
+            select: {
+              name: 1,
+              nameAr: 1,
+              _id: 1,
+            },
+          },
         ],
       },
     );
