@@ -45,6 +45,7 @@ export class RawMaterialService {
     return await this.rawMaterialModel.create({
       ...dto,
       simulatedPrice,
+      totalPrice: dto.unitPrice * dto.quantity,
     });
   }
 
@@ -83,8 +84,36 @@ export class RawMaterialService {
             populate: [
               {
                 path: 'components.materialId',
+                select: {
+                  name: 1,
+                  nameAr: 1,
+                  uom: 1,
+                  unitPrice: 1,
+                },
+              },
+              {
+                path: 'components.uom',
+                select: {
+                  name: 1,
+                  nameAr: 1,
+                  _id: 1,
+                },
               },
             ],
+            select: {
+              name: 1,
+              nameAr: 1,
+              uom: 1,
+              unitPrice: 1,
+            },
+          },
+          {
+            path: 'components.uom',
+            select: {
+              name: 1,
+              nameAr: 1,
+              _id: 1,
+            },
           },
         ],
       },
@@ -124,7 +153,7 @@ export class RawMaterialService {
     }
     const rawMaterial = await this.rawMaterialModel.findByIdAndUpdate(
       rawMaterialId,
-      { ...dto, simulatedPrice },
+      { ...dto, simulatedPrice, totalPrice: dto.unitPrice * dto.quantity },
       {
         new: true,
       },

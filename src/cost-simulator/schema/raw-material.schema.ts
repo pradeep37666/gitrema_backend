@@ -5,7 +5,10 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import * as paginate from 'mongoose-paginate-v2';
-import { RecipeSimulationMaterial, RecipeSimulationMaterialSchema } from './recipe-simulation-material.schema';
+import {
+  RecipeSimulationMaterial,
+  RecipeSimulationMaterialSchema,
+} from './recipe-simulation-material.schema';
 
 export type RawMaterialDocument = RawMaterial & Document;
 
@@ -30,6 +33,9 @@ export class RawMaterial {
 
   @Prop({ required: true })
   unitPrice: number;
+
+  @Prop({ required: true })
+  totalPrice: number;
 
   @Prop({ default: 0 })
   changeSimulation: number;
