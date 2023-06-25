@@ -117,7 +117,7 @@ export class TableLogService {
       }
       if (
         (await this.orderModel.count({
-          paymentStatus: { $ne: OrderPaymentStatus.Paid },
+          paymentStatus: OrderPaymentStatus.NotPaid,
           status: { $nin: [OrderStatus.Cancelled, OrderStatus.Closed] },
           tableId: tableLog.tableId,
         })) > 0

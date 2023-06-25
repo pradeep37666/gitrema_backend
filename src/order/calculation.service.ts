@@ -152,6 +152,9 @@ export class CalculationService {
         orderData.summary?.totalPaid;
       if (summary.remainingAmountToCollect < 0)
         summary.remainingAmountToCollect = 0;
+    } else {
+      summary.remainingAmountToCollect =
+        summary.totalWithTax + (orderData.tip ?? 0);
     }
     return summary;
   }

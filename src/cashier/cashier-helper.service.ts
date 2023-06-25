@@ -37,7 +37,7 @@ export class CashierHelperService {
     if (cashier.default == true) {
       await this.cashierModel.updateMany(
         {
-          supplierId: cashier.supplierId,
+          restaurantId: cashier.restaurantId,
           _id: { $ne: cashier._id },
         },
         {
