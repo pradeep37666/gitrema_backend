@@ -31,5 +31,5 @@ export class CreateCashierDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  default: boolean;
+  default?: boolean;
 }
