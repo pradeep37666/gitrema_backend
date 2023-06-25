@@ -128,10 +128,11 @@ export class PaymentService {
         amount: amountToCollect,
         paymentGateway,
         paymentMethod: paymentRequestDetails.paymentMethod,
-        status:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Cash
-            ? PaymentStatus.Success
-            : PaymentStatus.Pending,
+        status: [PaymentMethod.Cash, PaymentMethod.Card].includes(
+          paymentRequestDetails.paymentMethod,
+        )
+          ? PaymentStatus.Success
+          : PaymentStatus.Pending,
         cashierId,
         uuId: uuidv4(),
       });
@@ -151,10 +152,11 @@ export class PaymentService {
       });
     } else {
       transaction.set({
-        status:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Cash
-            ? PaymentStatus.Success
-            : PaymentStatus.Pending,
+        status: [PaymentMethod.Cash, PaymentMethod.Card].includes(
+          paymentRequestDetails.paymentMethod,
+        )
+          ? PaymentStatus.Success
+          : PaymentStatus.Pending,
         paymentGateway,
         paymentMethod: paymentRequestDetails.paymentMethod,
       });
