@@ -87,7 +87,9 @@ export class PaymentService {
 
     let amountToCollect =
       paymentRequestDetails.amount ??
-      order.summary.totalWithTax + (order.tip ?? 0);
+      order.summary.totalWithTax +
+        (order.tip ?? 0) -
+        (order.summary.totalPaid ?? 0);
     if (paymentRequestDetails.transactionId) {
       transaction = await this.transactionModel.findById(
         paymentRequestDetails.transactionId,
