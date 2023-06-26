@@ -83,6 +83,9 @@ export class User {
   @Prop({ default: false })
   isBlocked: boolean;
 
+  @Prop({ default: false })
+  isWaiter: boolean;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
