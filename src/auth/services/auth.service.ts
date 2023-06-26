@@ -382,7 +382,7 @@ export class AuthService {
     if (!role)
       throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
     const payload = {
-      userId: '',
+      userId: null,
       supplierId: supplier._id,
       roleId: role._id,
       time: new Date(),
