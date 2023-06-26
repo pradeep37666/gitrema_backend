@@ -22,11 +22,13 @@ import { TableDocument } from './schemas/table.schema';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import {
   QueryReadyToServeItemsDto,
+  QuerySingleTableDto,
   QueryTableDto,
 } from './dto/query-table.dto';
 import { TableLogDto } from './dto/table-log.dto';
 import { TableLogService } from './table-log.service';
 import { TableLogDocument } from './schemas/table-log.schema';
+import { OrderPaymentStatus } from 'src/order/enum/en.enum';
 
 @Controller('table')
 @ApiTags('Tables')
@@ -56,8 +58,11 @@ export class TableController {
 
   @Get(':tableId')
   @PermissionGuard(PermissionSubject.Table, Permission.Common.FETCH)
-  async findOne(@Param('tableId') tableId: string) {
-    return await this.tableService.findOne(tableId);
+  async findOne(
+    @Param('tableId') tableId: string,
+    @Query() query: QuerySingleTableDto,
+  ) {
+    return await this.tableService.findOne(tableId, query);
   }
 
   @Patch(':tableId')

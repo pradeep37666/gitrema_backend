@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 import mongoose, { ObjectId } from 'mongoose';
 import { TableStatus } from '../enum/en.enum';
+import { OrderPaymentStatus } from 'src/order/enum/en.enum';
 
 export class QueryTableDto {
   @ApiProperty({ type: String, required: false })
@@ -43,4 +44,15 @@ export class QueryReadyToServeItemsDto {
   @IsMongoId()
   @IsOptional()
   tableId: any;
+}
+
+export class QuerySingleTableDto {
+  @ApiProperty({
+    type: OrderPaymentStatus,
+    required: false,
+    enum: OrderPaymentStatus,
+  })
+  @IsEnum(OrderPaymentStatus)
+  @IsOptional()
+  paymentStatus: OrderPaymentStatus;
 }
