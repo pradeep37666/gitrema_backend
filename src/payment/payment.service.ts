@@ -115,6 +115,7 @@ export class PaymentService {
       req,
       paymentRequestDetails.cashierId,
       true,
+      order.restaurantId,
     );
     let paymentGateway = null;
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Online)
@@ -240,6 +241,7 @@ export class PaymentService {
       req,
       dto.cashierId,
       true,
+      order.restaurantId,
     );
     const transaction = await this.transactionModel.create({
       supplierId: order.supplierId,
