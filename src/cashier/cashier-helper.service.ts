@@ -53,12 +53,17 @@ export class CashierHelperService {
     return records.reduce((prev, acc) => prev + acc.amount, 0);
   }
 
-  async resolveCashierId(req: any, cashierId, autoStart = false) {
+  async resolveCashierId(
+    req: any,
+    cashierId,
+    autoStart = false,
+    restaurantId = null,
+  ) {
     let cashier = null;
     if (!cashierId) {
       if (req.user.isCustomer) {
         cashier = await this.cashierModel.findOne({
-          supplierId: req.user.supplierId,
+          restaurantId,
           default: true,
         });
         if (!cashier)
@@ -70,6 +75,18 @@ export class CashierHelperService {
       } else {
         const user = await this.userModel.findById(req.user.userId);
         if (user) cashierId = user.cashier;
+        if (!cashierId) {
+          cashier = await this.cashierModel.findOne({
+            restaurantId,
+            default: true,
+          });
+          if (!cashier)
+            throw new BadRequestException(
+              VALIDATION_MESSAGES.NoCashierAvailable.key,
+            );
+
+          cashierId = cashier._id;
+        }
       }
     }
 
