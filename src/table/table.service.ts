@@ -19,12 +19,17 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
-import { QueryTableDto } from './dto/query-table.dto';
+import { QuerySingleTableDto, QueryTableDto } from './dto/query-table.dto';
 import { TableLog, TableLogDocument } from './schemas/table-log.schema';
-import { OrderStatus } from 'src/order/enum/en.enum';
+import {
+  OrderPaymentStatus,
+  OrderStatus,
+  PreparationStatus,
+} from 'src/order/enum/en.enum';
 import { TableLogDto } from './dto/table-log.dto';
 import { TableStatus } from './enum/en.enum';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { match } from 'assert';
 
 @Injectable()
 export class TableService {
@@ -131,8 +136,12 @@ export class TableService {
                   },
                 },
               },
+
               totalPaid: { $sum: '$orders.summary.totalPaid' },
               total: { $sum: '$orders.summary.totalWithTax' },
+              remianingAmount: {
+                $sum: '$orders.summary.remainingAmountToCollect',
+              },
             },
           },
           {
@@ -152,10 +161,20 @@ export class TableService {
     );
   }
 
-  async findOne(tableId: string): Promise<TableDocument> {
+  async findOne(
+    tableId: string,
+    query: QuerySingleTableDto,
+  ): Promise<TableDocument> {
+    let orderQuery: any = {};
+    if (query.paymentStatus) {
+      orderQuery.paymentStatus = query.paymentStatus;
+    }
     const exists = await this.tableModel.findById(tableId).populate([
       { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
-      { path: 'currentTableLog', populate: [{ path: 'orders' }] },
+      {
+        path: 'currentTableLog',
+        populate: [{ path: 'orders', match: { ...orderQuery } }],
+      },
     ]);
 
     if (!exists) {
