@@ -147,16 +147,18 @@ export class TableLogService {
   }
 
   async itemsReadyToServe(req, query: QueryReadyToServeItemsDto) {
+    let waiterQuery = {};
+    if (req.user.isWaiter) {
+      waiterQuery = { waiterId: req.user.userId };
+    }
     const orders = await this.orderModel
-      .find(
-        {
-          ...query,
-          supplierId: req.user.supplierId,
-          'items.preparationStatus': PreparationStatus.DonePreparing,
-          orderType: OrderType.DineIn,
-        },
-        {},
-      )
+      .find({
+        ...query,
+        ...waiterQuery,
+        supplierId: req.user.supplierId,
+        'items.preparationStatus': PreparationStatus.DonePreparing,
+        orderType: OrderType.DineIn,
+      })
       .populate([
         {
           path: 'tableId',
@@ -225,54 +227,7 @@ export class TableLogService {
         response.push(table);
       }
     }
-    //   if (!response[orders[i].tableId._id.toString()]) {
-    //     response[orders[i].tableId._id.toString()] = {
-    //       table: orders[i].tableId,
-    //       kitchenQueues: {},
-    //     };
-    //   }
-    //   orders[i].items.forEach((oi) => {
-    //     if (oi.preparationStatus == PreparationStatus.DonePreparing) {
-    //       let kitchenQueue: any = {
-    //         _id: 'undefined',
-    //         name: 'undefined',
-    //       };
-    //       if (oi.kitchenQueueId) kitchenQueue = oi.kitchenQueueId;
-    //       if (
-    //         !response[orders[i].tableId._id.toString()].kitchenQueues[
-    //           kitchenQueue._id.toString()
-    //         ]
-    //       ) {
-    //         response[orders[i].tableId._id.toString()].kitchenQueues[
-    //           kitchenQueue._id.toString()
-    //         ] = {
-    //           ...kitchenQueue,
-    //           orders: {},
-    //         };
-    //       }
-    //       if (
-    //         !response[orders[i].tableId._id.toString()].kitchenQueues[
-    //           kitchenQueue._id.toString()
-    //         ].orders[orders[i]._id.toString()]
-    //       ) {
-    //         const order = orders[i];
-    //         order.items = [];
-    //         response[orders[i].tableId._id.toString()].kitchenQueues[
-    //           kitchenQueue._id.toString()
-    //         ].orders[orders[i]._id.toString()] = order;
-    //       }
-    //       response[orders[i].tableId._id.toString()].kitchenQueues[
-    //         kitchenQueue._id.toString()
-    //       ].orders[orders[i]._id.toString()].items.push(oi);
-    //     }
-    //   });
-    // }
-    // const res = [];
-    // console.log(Object.values(response));
-    // Object.values(response).forEach((r) => {
-    //   r.kitchenQueues = Object.values(r.kitchenQueues);
-    //   res.push(r);
-    // });
+
     return response;
   }
 

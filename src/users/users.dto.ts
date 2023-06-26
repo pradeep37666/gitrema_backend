@@ -64,6 +64,11 @@ export class UserCreateDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  isWaiter?: boolean;
 }
 
 export class UserUpdateDto extends PartialType(
