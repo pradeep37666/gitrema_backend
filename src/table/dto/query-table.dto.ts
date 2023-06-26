@@ -32,3 +32,15 @@ export class QueryTableDto {
   @IsEnum(TableStatus)
   status: TableStatus[];
 }
+
+export class QueryReadyToServeItemsDto {
+  @ApiProperty({ type: String, required: true })
+  @IsMongoId()
+  @IsNotEmpty()
+  restaurantId: any;
+
+  @ApiProperty({ type: String, required: false })
+  @IsMongoId()
+  @IsOptional()
+  tableId: any;
+}
