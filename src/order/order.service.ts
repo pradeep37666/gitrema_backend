@@ -56,6 +56,7 @@ import { PrinterType } from 'src/printer/enum/en';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { ObjectId } from 'mongoose';
+import { TableHelperService } from 'src/table/table-helper.service';
 
 @Injectable()
 export class OrderService {
@@ -84,6 +85,7 @@ export class OrderService {
     private readonly cashierModel: Model<CashierDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    private readonly tableHelperService: TableHelperService,
   ) {}
 
   async create(
@@ -559,6 +561,7 @@ export class OrderService {
       supplier._id,
     );
 
+    console.log(groupOrder.items, groupOrder.summary);
     const groupOrderObj = await this.orderModel.create(groupOrder);
 
     await this.orderModel.updateMany(
@@ -567,6 +570,12 @@ export class OrderService {
       },
       { $set: { groupId: groupOrderObj._id, status: OrderStatus.Cancelled } },
     );
+    if (groupOrderObj.tableId) {
+      const tableLog =
+        await this.tableHelperService.addOrderToTableLogWithAutoStart(
+          groupOrderObj,
+        );
+    }
     return groupOrderObj;
   }
 
