@@ -484,7 +484,7 @@ export class OrderService {
         ...pagination,
         populate: [
           { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
-          { path: 'customerId', select: { name: 1 } },
+          { path: 'customerId' },
           { path: 'waiterId', select: { name: 1 } },
           { path: 'tableId', select: { name: 1, nameAr: 1 } },
           { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
