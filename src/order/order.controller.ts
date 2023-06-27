@@ -19,7 +19,11 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { OrderDocument } from './schemas/order.schema';
 import { PaginateResult } from 'mongoose';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
+import {
+  QueryCustomerOrderDto,
+  QueryKitchenDisplayDto,
+  QueryOrderDto,
+} from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
@@ -63,10 +67,19 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Order.KitchenDisplay)
   async kitchen(
     @Req() req,
-    @Query() query: QueryOrderDto,
+    @Query() query: QueryKitchenDisplayDto,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     return await this.orderService.kitchenDisplay(req, query, paginateOptions);
+  }
+
+  @Get('kitchen-dashboard')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.KitchenDisplay)
+  async kitchenDashboard(
+    @Req() req,
+    @Query() query: QueryKitchenDisplayDto,
+  ): Promise<any> {
+    return await this.orderService.kitchenDashboard(req, query);
   }
 
   @Get('customer')

@@ -79,7 +79,7 @@ export class QueryCustomerOrderDto extends QueryOrderDto {
   supplierId: string;
 }
 
-export class QueryKitchenDisplayDto extends QueryOrderDto {
+export class QueryKitchenDisplayDto {
   @ApiProperty()
   @IsMongoId()
   @IsNotEmpty()

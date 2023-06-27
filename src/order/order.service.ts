@@ -305,6 +305,87 @@ export class OrderService {
     return orders;
   }
 
+  async kitchenDashboard(req: any, query: QueryKitchenDisplayDto) {
+    const queryToApply: any = { ...query };
+    const user = await this.userModel.findById(req.user.userId);
+    if (user && user.kitchenQueue) {
+      queryToApply['items'] = {
+        $elemMatch: {
+          kitchenQueueId: user.kitchenQueue,
+          preparationStatus: {
+            $in: [
+              PreparationStatus.NotStarted,
+              PreparationStatus.StartedPreparing,
+            ],
+          },
+        },
+      };
+    }
+    const totalOrders = await this.orderModel.count({
+      restaurantId: query.restaurantId,
+      supplierId: req.user.supplierId,
+      groupId: null,
+      ...queryToApply,
+      status: {
+        $in: [OrderStatus.SentToKitchen, OrderStatus.StartedPreparing],
+      },
+    });
+
+    const activeOrders = await this.orderModel.count({
+      restaurantId: query.restaurantId,
+      supplierId: req.user.supplierId,
+      groupId: null,
+      ...queryToApply,
+      status: {
+        $in: [OrderStatus.StartedPreparing],
+      },
+    });
+
+    const priorityOrdersRes = await this.orderModel.aggregate([
+      {
+        $match: {
+          restaurantId: new mongoose.Types.ObjectId(query.restaurantId),
+          supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          groupId: null,
+          ...queryToApply,
+          status: {
+            $in: [OrderStatus.StartedPreparing],
+          },
+        },
+      },
+      {
+        $project: {
+          orders: {
+            $size: {
+              $filter: {
+                input: '$preparationDetails',
+                as: 'p',
+                cond: {
+                  $gte: [
+                    {
+                      $dateAdd: {
+                        startDate: '$$p.actualStartTime',
+                        unit: 'minute',
+                        amount: '$$p.preparationTime',
+                      },
+                    },
+                    new Date(),
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    ]);
+    const priorityOrders =
+      priorityOrdersRes && priorityOrdersRes.length > 0
+        ? priorityOrdersRes[0].orders
+        : 0;
+
+    return { totalOrders, activeOrders, priorityOrders };
+  }
+
   async kitchenDisplay(
     req: any,
     query: QueryKitchenDisplayDto,
@@ -312,17 +393,6 @@ export class OrderService {
   ): Promise<PaginateResult<OrderDocument>> {
     const queryToApply: any = { ...query };
 
-    if (query.search) {
-      queryToApply.$or = [
-        { name: { $regex: query.search, $options: 'i' } },
-        { contactNumber: { $regex: query.search, $options: 'i' } },
-        { orderNumber: { $regex: query.search, $options: 'i' } },
-      ];
-    }
-    if (query.notBelongingToTable) {
-      queryToApply.tableId = null;
-      delete queryToApply.notBelongingToTable;
-    }
     const user = await this.userModel.findById(req.user.userId);
     if (user && user.kitchenQueue) {
       queryToApply['items'] = {
