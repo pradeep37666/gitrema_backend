@@ -495,13 +495,15 @@ export class OrderService {
   }
 
   async findOne(orderId: string): Promise<OrderDocument> {
-    const exists = await this.orderModel.findById(orderId).populate([
-      { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
-      { path: 'customerId', select: { name: 1 } },
-      { path: 'waiterId', select: { name: 1 } },
-      { path: 'tableId', select: { name: 1, nameAr: 1 } },
-      { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
-    ]);
+    const exists = await this.orderModel
+      .findById(orderId)
+      .populate([
+        { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
+        { path: 'customerId' },
+        { path: 'waiterId', select: { name: 1 } },
+        { path: 'tableId', select: { name: 1, nameAr: 1 } },
+        { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
+      ]);
 
     if (!exists) {
       throw new NotFoundException();
