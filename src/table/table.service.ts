@@ -103,6 +103,75 @@ export class TableService {
           },
           {
             $addFields: {
+              orderItems: {
+                $map: {
+                  input: '$orders',
+                  as: 'order',
+                  in: {
+                    items: {
+                      $size: {
+                        $filter: {
+                          input: '$$order.items',
+                          as: 'item',
+                          cond: {
+                            $eq: [
+                              '$$item.preparationStatus',
+                              PreparationStatus.DonePreparing,
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              servedOrderItems: {
+                $map: {
+                  input: '$orders',
+                  as: 'order',
+                  in: {
+                    items: {
+                      $size: {
+                        $filter: {
+                          input: '$$order.items',
+                          as: 'item',
+                          cond: {
+                            $eq: [
+                              '$$item.preparationStatus',
+                              PreparationStatus.OnTable,
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              pendingOrderItems: {
+                $map: {
+                  input: '$orders',
+                  as: 'order',
+                  in: {
+                    items: {
+                      $size: {
+                        $filter: {
+                          input: '$$order.items',
+                          as: 'item',
+                          cond: {
+                            $in: [
+                              '$$item.preparationStatus',
+                              [
+                                PreparationStatus.NotStarted,
+                                PreparationStatus.StartedPreparing,
+                              ],
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
               newOrders: {
                 $size: {
                   $filter: {
@@ -128,6 +197,7 @@ export class TableService {
                   },
                 },
               },
+
               onTableOrders: {
                 $size: {
                   $filter: {
@@ -145,8 +215,18 @@ export class TableService {
             },
           },
           {
+            $addFields: {
+              itemsReadyToPickup: { $sum: '$orderItems.items' },
+              itemsServed: { $sum: '$servedOrderItems.items' },
+              itemsPending: { $sum: '$pendingOrderItems.items' },
+            },
+          },
+          {
             $project: {
               orders: 0,
+              orderItems: 0,
+              servedOrderItems: 0,
+              pendingOrderItems: 0,
             },
           },
         ],
