@@ -268,7 +268,7 @@ export class OrderHelperService {
       // copy menu addition attributes needed in order schema
       for (const j in additions) {
         const menuAddition = menuAdditions.find((ma) => {
-          return ma._id.toString() == additions[j].menuAdditionId;
+          return ma._id.toString() == additions[j].menuAdditionId.toString();
         });
         preparedAdditions[j] = {
           ...additions[j],
@@ -276,8 +276,8 @@ export class OrderHelperService {
         };
         if (additions[j].options) {
           // only set the selected options
-          const additionOptionIds = additions[j].options.map(
-            (ao) => ao.optionId,
+          const additionOptionIds = additions[j].options.map((ao) =>
+            ao.optionId.toString(),
           );
           preparedAdditions[j].options = menuAddition.options.filter((mao) => {
             return additionOptionIds.includes(mao._id.toString());
@@ -384,6 +384,11 @@ export class OrderHelperService {
         order.contactNumber = customer.phoneNumber;
         order.name = customer.name;
         order.save();
+
+        if (order.orderType == OrderType.Delivery) {
+          customer.deliveryAddress = order.deliveryAddress;
+          customer.save();
+        }
       }
     }
 

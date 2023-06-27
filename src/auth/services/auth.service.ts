@@ -106,6 +106,7 @@ export class AuthService {
       userId: user._id,
       supplierId: user.supplierId?._id,
       roleId: user.role._id,
+      isWaiter: user.isWaiter ?? false,
     };
 
     return await this.generateAuthToken(payload);
@@ -137,6 +138,7 @@ export class AuthService {
           supplierId: user.supplierId,
           restaurantId: user.restaurantId,
           roleId: user.role._id,
+          isWaiter: user.isWaiter ?? false,
         };
 
         return { user, accessToken: await this.generateAuthToken(payload) };
