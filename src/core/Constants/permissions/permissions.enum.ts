@@ -53,6 +53,7 @@ export enum PermissionSubject {
   PaymentGateway = 'PaymentGateway',
   CustomerCondition = 'CustomerCondition',
   Printer = 'Printer',
+  Restricted = 'Restricted',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
@@ -62,6 +63,7 @@ export enum SubjectsRestrictedForSupplier {
   Package = 'Package',
   UnitOfMeasure = 'Units Of Measure',
   PaymentGateway = 'PaymentGateway',
+  Restricted = 'Restricted',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
@@ -110,4 +112,8 @@ export enum ReportPermission {
 
 export enum SupplierPermission {
   ListVendors = 'List Vendors',
+}
+
+export enum RestrictedPermission {
+  Publish = 'Publish',
 }

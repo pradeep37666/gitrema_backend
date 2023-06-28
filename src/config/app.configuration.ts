@@ -8,4 +8,5 @@ export default registerAs('app', () => ({
   frontendBaseUrl: process.env.FRONTEND_BASE_URL,
   whatsappBaseUrl: process.env.WHATSAPP_BASE_URL,
   port: process.env.APP_PORT,
+  superAdminToken: process.env.PROD_SUPER_ADMIN_TOKEN,
 }));

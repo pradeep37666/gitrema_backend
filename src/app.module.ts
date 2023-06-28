@@ -88,6 +88,7 @@ import { CustomerConditionModule } from './customer-condition/customer-condition
 import { InventoryReportModule } from './inventory-report/inventory-report.module';
 import { CostSimulatorModule } from './cost-simulator/cost-simulator.module';
 import { PrinterModule } from './printer/printer.module';
+import { PublishModule } from './publish/publish.module';
 
 @Module({
   imports: [
@@ -187,6 +188,7 @@ import { PrinterModule } from './printer/printer.module';
     CustomerConditionModule,
     InventoryReportModule,
     CostSimulatorModule,
+    PublishModule,
   ],
   controllers: [AppController],
   providers: [
