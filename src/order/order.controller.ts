@@ -33,6 +33,7 @@ import {
 } from './dto/kitchen-queue-process.dto';
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
+import { DateDto } from './dto/date.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -71,6 +72,11 @@ export class OrderController {
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     return await this.orderService.kitchenDisplay(req, query, paginateOptions);
+  }
+
+  @Post('date')
+  async date(@Req() req, @Body() dto: DateDto): Promise<boolean> {
+    return await this.orderService.dateRangeCalculator(req, dto);
   }
 
   @Get('kitchen-dashboard')
