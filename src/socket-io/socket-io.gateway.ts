@@ -41,12 +41,17 @@ export class SocketIoGateway {
   }
 
   async emit(supplierId: string, event: SocketEvents, data: any, room = null) {
+    console.log(`Event received to fire ${event} with data-`, data);
     if (room) {
       this.server.to(room).emit(event, data);
     } else {
       const roles = await this.roleModel.find({ events: event });
       for (const i in roles) {
         this.server.to(`${supplierId}_${roles[i]._id}`).emit(event, data);
+        console.log(
+          `Event ${event} for ${roles[i].name} fired with data-`,
+          data,
+        );
       }
     }
   }
