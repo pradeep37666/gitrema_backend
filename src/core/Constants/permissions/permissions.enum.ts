@@ -101,6 +101,7 @@ export enum OrderPermissions {
   OnTable = 'On Table',
   Change = 'Change',
   KitchenDisplay = 'Kitchen Display',
+  ChefInquiry = 'ChefInquiry',
 }
 
 export enum UserPermission {

@@ -172,7 +172,7 @@ export class OrderController {
   }
 
   @Patch(':orderId/add-chef-inquiry-comment')
-  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.ChefInquiry)
   async addChefInquiryComment(
     @Req() req,
     @Param('orderId') orderId: string,
