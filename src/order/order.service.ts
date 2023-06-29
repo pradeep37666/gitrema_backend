@@ -137,14 +137,24 @@ export class OrderService {
               hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
               minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
             });
-          if (
-            parseInt(endArr[0]) < parseInt(startArr[0]) ||
-            (parseInt(endArr[0]) == parseInt(startArr[0]) &&
-              parseInt(endArr[1]) <= parseInt(startArr[1]))
-          ) {
-            endDate.add(24, 'hours');
-          }
+          // if (
+          //   parseInt(endArr[0]) < parseInt(startArr[0]) ||
+          //   (parseInt(endArr[0]) == parseInt(startArr[0]) &&
+          //     parseInt(endArr[1]) <= parseInt(startArr[1]))
+          // ) {
+          //   startDate.subtract(24, 'hours'); // problem is here
+          // }
           const currentDate = moment().tz(supplier.timezone ?? TIMEZONE);
+          if (endDate.isBefore(startDate)) {
+            // special case where end date is less than start date so we need to  adjust the date
+            if (currentDate.isBefore(startDate)) {
+              // after 00:00
+              startDate.subtract(24, 'hours'); // we need to subtract because startdate is becoming bext date after 00:00
+            } else {
+              // before 00:00
+              endDate.add(24, 'hours'); // we need to add because end hours / mins are less than start hours and / mins
+            }
+          }
           console.log(currentDate, startDate, endDate);
           if (
             currentDate.isSameOrAfter(startDate) &&
@@ -152,6 +162,24 @@ export class OrderService {
           ) {
             return true;
           }
+          // const currentHour = moment()
+          //   .tz(supplier.timezone ?? TIMEZONE)
+          //   .hour();
+          // const currentMin = moment()
+          //   .tz(supplier.timezone ?? TIMEZONE)
+          //   .minute();
+          // if (
+          //   parseInt(endArr[0]) < parseInt(startArr[0]) &&
+          //   currentHour < parseInt(endArr[0]) && currentMin
+          // ) {
+          //   return true;
+          // } else if (
+          //   parseInt(endArr[0]) > parseInt(startArr[0]) &&
+          //   currentHour < parseInt(endArr[0]) &&
+          //   currentHour >= parseInt(startArr[0])
+          // ) {
+          //   return true;
+          // }
         });
         if (!matchedPeriod) {
           throw new BadRequestException(
