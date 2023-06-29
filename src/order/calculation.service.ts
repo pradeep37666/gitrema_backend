@@ -386,7 +386,7 @@ export class CalculationService {
 
   async identifyOrdersToRecalculateAfterSentToKitchen(orderData) {
     console.log('Inside After Sent To Kitchen');
-    //if (!orderData.kitchenQueueId) return; // skipping the further execution as kitchen queue does not exist
+    if (!orderData.kitchenQueueId) return; // skipping the further execution as kitchen queue does not exist
     const ordersToRecalculate = await this.orderModel.find(
       {
         // isScheduled: false,
@@ -423,11 +423,6 @@ export class CalculationService {
         preparationDetails.kitchenSortingNumber,
       );
     }
-    this.socketGateway.emit(
-      orderData.supplierId.toString(),
-      SocketEvents.KitchenQueue,
-      { KitchenQueueId: orderData.kitchenQueueId, orderListRefresh: true },
-    );
   }
 
   async identifyOrdersToRecalculateAfterCompleted(orderData) {

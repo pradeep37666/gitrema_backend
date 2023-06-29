@@ -478,6 +478,7 @@ export class OrderHelperService {
           order.save();
           //console.log(order);
         }
+        this.notifyKitchenQueue(order);
       } else if (dto.status == OrderStatus.OnTable) {
         this.storeOrderStateActivity(
           order,
@@ -670,6 +671,18 @@ export class OrderHelperService {
         SocketEvents.OrderPrepared,
         dataToNotify,
       );
+    }
+  }
+  async notifyKitchenQueue(order: OrderDocument) {
+    let kitchenQueues = order.items.map((oi) => oi.kitchenQueueId);
+    for (const i in kitchenQueues) {
+      if (kitchenQueues[i]) {
+        this.socketGateway.emit(
+          order.supplierId.toString(),
+          SocketEvents.KitchenQueue,
+          { KitchenQueueId: kitchenQueues[i], orderListRefresh: true },
+        );
+      }
     }
   }
 }
