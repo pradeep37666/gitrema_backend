@@ -34,7 +34,10 @@ import {
   PreparationStatus,
 } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
-import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import {
+  getRandomTime,
+  roundOffNumber,
+} from 'src/core/Helpers/universal.helper';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
@@ -57,8 +60,6 @@ import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { ObjectId } from 'mongoose';
 import { TableHelperService } from 'src/table/table-helper.service';
-import { DateDto } from './dto/date.dto';
-import { domainToUnicode } from 'url';
 
 @Injectable()
 export class OrderService {
@@ -280,50 +281,69 @@ export class OrderService {
     return order;
   }
 
-  async dateRangeCalculator(req, dto: DateDto) {
-    const startArr = dto.start.split(':');
-    const endArr = dto.end.split(':');
-    if (
-      startArr.length == 2 &&
-      endArr.length == 2 &&
-      parseInt(startArr[0]) == parseInt(endArr[0]) &&
-      parseInt(startArr[1]) == parseInt(endArr[1])
-    ) {
-      return true;
-    }
-
-    const startDate = moment()
-      .tz(TIMEZONE)
-      .set({
-        hour: startArr.length == 2 ? parseInt(startArr[0]) : 0,
-        minute: startArr.length == 2 ? parseInt(startArr[1]) : 0,
-      });
-
-    const endDate = moment()
-      .tz(TIMEZONE)
-      .set({
-        hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
-        minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
-      });
-    const currentDate = moment().tz(TIMEZONE);
-    if (endDate.isBefore(startDate)) {
-      // special case where end date is less than start date so we need to  adjust the date
-      if (currentDate.isBefore(startDate)) {
-        // after 00:00
-        startDate.subtract(24, 'hours'); // we need to subtract because startdate is becoming bext date after 00:00
-      } else {
-        // before 00:00
-        endDate.add(24, 'hours'); // we need to add because end hours / mins are less than start hours and / mins
+  async dateRangeCalculator(req) {
+    const response = [];
+    for (let i = 0; i < 99; i++) {
+      const start = getRandomTime();
+      const end = getRandomTime();
+      const current = getRandomTime();
+      const startArr = start.split(':');
+      const endArr = end.split(':');
+      const currentArr = current.split(':');
+      const res = {
+        start,
+        end,
+        current,
+        result: false,
+      };
+      if (
+        startArr.length == 2 &&
+        endArr.length == 2 &&
+        parseInt(startArr[0]) == parseInt(endArr[0]) &&
+        parseInt(startArr[1]) == parseInt(endArr[1])
+      ) {
+        res.result = true;
       }
+
+      const startDate = moment()
+        .tz(TIMEZONE)
+        .set({
+          hour: startArr.length == 2 ? parseInt(startArr[0]) : 0,
+          minute: startArr.length == 2 ? parseInt(startArr[1]) : 0,
+        });
+
+      const endDate = moment()
+        .tz(TIMEZONE)
+        .set({
+          hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
+          minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
+        });
+      const currentDate = moment()
+        .tz(TIMEZONE)
+        .set({
+          hours: currentArr.length == 2 ? parseInt(currentArr[0]) : 0,
+          minutes: currentArr.length == 2 ? parseInt(currentArr[1]) : 0,
+        });
+      if (endDate.isBefore(startDate)) {
+        // special case where end date is less than start date so we need to  adjust the date
+        if (currentDate.isBefore(startDate)) {
+          // after 00:00
+          startDate.subtract(24, 'hours'); // we need to subtract because startdate is becoming bext date after 00:00
+        } else {
+          // before 00:00
+          endDate.add(24, 'hours'); // we need to add because end hours / mins are less than start hours and / mins
+        }
+      }
+      console.log(currentDate, startDate, endDate);
+      if (
+        currentDate.isSameOrAfter(startDate) &&
+        currentDate.isSameOrBefore(endDate)
+      ) {
+        res.result = true;
+      }
+      response.push(res);
     }
-    console.log(currentDate, startDate, endDate);
-    if (
-      currentDate.isSameOrAfter(startDate) &&
-      currentDate.isSameOrBefore(endDate)
-    ) {
-      return true;
-    }
-    return false;
+    return response;
   }
 
   async findAll(

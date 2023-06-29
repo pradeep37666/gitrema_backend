@@ -33,7 +33,7 @@ import {
 } from './dto/kitchen-queue-process.dto';
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
-import { DateDto } from './dto/date.dto';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -75,8 +75,9 @@ export class OrderController {
   }
 
   @Post('date')
-  async date(@Req() req, @Body() dto: DateDto): Promise<boolean> {
-    return await this.orderService.dateRangeCalculator(req, dto);
+  @Public()
+  async date(@Req() req): Promise<any> {
+    return await this.orderService.dateRangeCalculator(req);
   }
 
   @Get('kitchen-dashboard')
