@@ -10,6 +10,7 @@ export enum PermissionSubject {
   CustomFields = 'Custom Fields',
   Restaurant = 'Restaurant',
   Table = 'Table',
+  TableLog = 'Table Log',
   MenuCategory = 'Menu Category',
   MenuAddition = 'Menu Addition',
   MenuItem = 'Menu Item',
