@@ -87,19 +87,19 @@ export class TableController {
   }
 
   @Patch(':tableId/update-log')
-  @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
+  @PermissionGuard(PermissionSubject.TableLog, Permission.Common.UPDATE)
   async updateLog(@Param('tableId') tableId: string, @Body() dto: TableLogDto) {
     return await this.tableLogService.updateLog(tableId, dto);
   }
 
   @Get(':tableId/current-log')
-  @PermissionGuard(PermissionSubject.Table, Permission.Common.FETCH)
+  @PermissionGuard(PermissionSubject.TableLog, Permission.Common.FETCH)
   async currentLog(@Param('tableId') tableId: string) {
     return await this.tableLogService.current(tableId);
   }
 
   @Get(':tableId/logs')
-  @PermissionGuard(PermissionSubject.Table, Permission.Common.FETCH)
+  @PermissionGuard(PermissionSubject.TableLog, Permission.Common.FETCH)
   async logs(
     @Req() req,
     @Param('tableId') tableId: string,
