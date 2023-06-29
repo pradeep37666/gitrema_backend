@@ -102,6 +102,7 @@ export enum OrderPermissions {
   Change = 'Change',
   KitchenDisplay = 'Kitchen Display',
   ChefInquiry = 'ChefInquiry',
+  KitchenQueueProcess = 'Kitchen Queue Process',
 }
 
 export enum UserPermission {

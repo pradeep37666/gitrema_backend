@@ -50,6 +50,11 @@ export class CreateMenuItemDTO {
   @IsNotEmpty()
   categoryId: string;
 
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  uomSell?: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsString()

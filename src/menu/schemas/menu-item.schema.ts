@@ -9,6 +9,7 @@ import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuAdditionDocument } from './menu-addition.schema';
 import { CalculationType } from 'src/core/Constants/enum';
 import { ImportDocument } from 'src/import/schemas/import.schema';
+import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 
 export type MenuItemDocument = MenuItem & Document;
 
@@ -44,6 +45,14 @@ export class MenuItem {
     default: null,
   })
   restaurantId: RestaurantDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'UnitOfMeasure',
+    default: null,
+  })
+  uomSell?: UnitOfMeasureDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
