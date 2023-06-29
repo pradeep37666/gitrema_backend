@@ -664,6 +664,7 @@ export class OrderHelperService {
         OrderEvents.DonePreparing,
         order,
       );
+      //console.log(`Socket Event ${}`);
       this.socketGateway.emit(
         order.supplierId.toString(),
         SocketEvents.OrderPrepared,
