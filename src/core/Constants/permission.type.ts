@@ -10,6 +10,7 @@ export const Permission = {
   Report: PermissionEnum.ReportPermission,
   Supplier: PermissionEnum.SupplierPermission,
   Restricted: PermissionEnum.RestrictedPermission,
+  Payment: PermissionEnum.PaymentPermission,
 };
 export const PermissionActions = {
   ...PermissionEnum.CommonPermissions,
@@ -21,6 +22,7 @@ export const PermissionActions = {
   ...PermissionEnum.ReportPermission,
   ...PermissionEnum.SupplierPermission,
   ...PermissionEnum.RestrictedPermission,
+  ...PermissionEnum.PaymentPermission,
 };
 
 export type PermissionActions =
@@ -32,4 +34,5 @@ export type PermissionActions =
   | PermissionEnum.UserPermission
   | PermissionEnum.ReportPermission
   | PermissionEnum.SupplierPermission
-  | PermissionEnum.RestrictedPermission;
+  | PermissionEnum.RestrictedPermission
+  | PermissionEnum.PaymentPermission;
