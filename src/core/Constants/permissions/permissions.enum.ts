@@ -54,6 +54,7 @@ export enum PermissionSubject {
   CustomerCondition = 'CustomerCondition',
   Printer = 'Printer',
   Restricted = 'Restricted',
+  Payment = 'Payment',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
@@ -116,4 +117,10 @@ export enum SupplierPermission {
 
 export enum RestrictedPermission {
   Publish = 'Publish',
+}
+
+export enum PaymentPermission {
+  CollectPayment = 'Collect Payment',
+  Refund = 'Refund',
+  Split = 'Split',
 }
