@@ -200,7 +200,10 @@ export class OrderController {
   }
 
   @Post('kitchen-queue-process')
-  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  @PermissionGuard(
+    PermissionSubject.Order,
+    Permission.Order.KitchenQueueProcess,
+  )
   async kitchenQueueProcess(@Req() req, @Body() dto: KitchenQueueProcessDto) {
     return await this.orderService.kitchenQueueProcess(req, dto);
   }
