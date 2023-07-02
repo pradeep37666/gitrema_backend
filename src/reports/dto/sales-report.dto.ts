@@ -23,7 +23,15 @@ export class SalesReportDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @ShouldBeBefore('endDate')
-  @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
+  @Transform(
+    ({ value }) =>
+      new Date(
+        moment
+          .utc(value)
+
+          .format('YYYY-MM-DD'),
+      ),
+  )
   @IsDate()
   startDate: Date;
 
@@ -31,7 +39,15 @@ export class SalesReportDto {
   @IsOptional()
   @ShouldBeBeforeNow()
   @ShouldBeAfter('startDate')
-  @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
+  @Transform(
+    ({ value }) =>
+      new Date(
+        moment
+          .utc(value)
+
+          .format('YYYY-MM-DD'),
+      ),
+  )
   @IsDate()
   endDate: Date;
 }

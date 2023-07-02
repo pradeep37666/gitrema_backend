@@ -39,17 +39,20 @@ export class PaymentReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
     const records = await this.transactionModel.aggregate([

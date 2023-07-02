@@ -39,19 +39,23 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const order = await this.orderModel.aggregate([
       {
         $match: {
@@ -176,19 +180,23 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const order = await this.orderModel.aggregate([
       {
         $match: {
@@ -315,19 +323,21 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      const endDate = dto.startDate;
+      endDate.setUTCHours(23);
+      endDate.setUTCMinutes(60);
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.startDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: endDate,
       };
     }
+    console.log(queryToApply);
     const order = await this.orderModel.aggregate([
       {
         $match: {
@@ -369,19 +379,23 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const order = await this.orderModel.aggregate([
       {
         $match: {
@@ -423,19 +437,23 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const order = await this.orderModel.aggregate([
       {
         $match: {
@@ -468,25 +486,29 @@ export class SalesReportService {
   }
 
   async itemSaleReport(req, dto: SalesTrendReportDailyDto) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
     let queryToApply: any = {};
     if (dto.restaurantIds && dto.restaurantIds.length > 0)
       queryToApply.restaurantId = {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      const endDate = dto.startDate;
+      endDate.setUTCHours(23);
+      endDate.setUTCMinutes(60);
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.startDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: endDate,
       };
     }
+    console.log(queryToApply);
     const records = await this.orderModel.aggregate([
       {
         $match: {
@@ -560,19 +582,21 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      const endDate = dto.startDate;
+      endDate.setUTCHours(23);
+      endDate.setUTCMinutes(60);
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.startDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: endDate,
       };
     }
+    console.log(queryToApply);
     const records = await this.orderModel.aggregate([
       {
         $match: {
@@ -615,25 +639,29 @@ export class SalesReportService {
   }
 
   async categorySaleReport(req, dto: SalesTrendReportDailyDto) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
     let queryToApply: any = {};
     if (dto.restaurantIds && dto.restaurantIds.length > 0)
       queryToApply.restaurantId = {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      const endDate = dto.startDate;
+      endDate.setUTCHours(23);
+      endDate.setUTCMinutes(60);
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.startDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: endDate,
       };
     }
+    console.log(queryToApply);
     const records = await this.orderModel.aggregate([
       {
         $match: {
@@ -695,19 +723,21 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      const endDate = dto.startDate;
+      endDate.setUTCHours(23);
+      endDate.setUTCMinutes(60);
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.startDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: endDate,
       };
     }
+    console.log(queryToApply);
     const records = await this.orderModel.aggregate([
       {
         $match: {
@@ -774,25 +804,31 @@ export class SalesReportService {
   }
 
   async additionSaleReport(req, dto: SalesReportDto) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
     let queryToApply: any = {};
     if (dto.restaurantIds && dto.restaurantIds.length > 0)
       queryToApply.restaurantId = {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const records = await this.orderModel.aggregate([
       {
         $match: {
@@ -831,25 +867,31 @@ export class SalesReportService {
   }
 
   async teamSalesReport(req, dto: SalesReportDto) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
     let queryToApply: any = {};
     if (dto.restaurantIds && dto.restaurantIds.length > 0)
       queryToApply.restaurantId = {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const orders = await this.orderModel.aggregate([
       {
         $match: {
@@ -897,25 +939,31 @@ export class SalesReportService {
   }
 
   async discountSalesReport(req, dto: SalesReportDto) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
     let queryToApply: any = {};
     if (dto.restaurantIds && dto.restaurantIds.length > 0)
       queryToApply.restaurantId = {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const orders = await this.orderModel.aggregate([
       {
         $match: {
@@ -947,25 +995,31 @@ export class SalesReportService {
   }
 
   async salesTaxReport(req, dto: SalesReportDto) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
     let queryToApply: any = {};
     if (dto.restaurantIds && dto.restaurantIds.length > 0)
       queryToApply.restaurantId = {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate && dto.endDate) {
+      dto.startDate.setUTCHours(0);
+      dto.startDate.setUTCMinutes(0);
+      dto.startDate = new Date(
+        dto.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      dto.endDate.setUTCHours(23);
+      dto.endDate.setUTCMinutes(60);
+      dto.endDate = new Date(
+        dto.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+
       queryToApply.createdAt = {
-        $gte: moment(dto.startDate).set({
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }),
-        $lte: moment(dto.endDate).set({
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        }),
+        $gte: dto.startDate,
+        $lte: dto.endDate,
       };
     }
+    console.log(queryToApply);
     const orders = await this.orderModel.aggregate([
       {
         $match: {
