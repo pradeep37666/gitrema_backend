@@ -1,13 +1,25 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsDate, IsOptional } from 'class-validator';
+import {
+  IsArray,
+  IsDate,
+  IsMongoId,
+  IsOptional,
+  isMongoId,
+} from 'class-validator';
 import * as moment from 'moment';
 
 import { ShouldBeAfter } from 'src/core/Validators/ShouldBeAfter.validator';
 import { ShouldBeBefore } from 'src/core/Validators/ShouldBeBefore.validator';
 import { ShouldBeBeforeNow } from 'src/core/Validators/ShouldBeBeforeNow.validator';
 
-export class PayoutPreviewDto {
+export class SalesReportDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  restaurantIds: string[];
+
   @ApiProperty({ required: false })
   @IsOptional()
   @ShouldBeBefore('endDate')
@@ -23,3 +35,7 @@ export class PayoutPreviewDto {
   @IsDate()
   endDate: Date;
 }
+
+export class SalesTrendReportDailyDto extends OmitType(SalesReportDto, [
+  'endDate',
+] as const) {}

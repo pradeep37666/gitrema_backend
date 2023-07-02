@@ -17,7 +17,7 @@ export class ShouldBeAfterConstraint implements ValidatorConstraintInterface {
     )[relatedPropertyName] as Date;
 
     if (relatedValue) {
-      return date.getTime() <= relatedValue.getTime();
+      return date.getTime() >= relatedValue.getTime();
     }
 
     return false;

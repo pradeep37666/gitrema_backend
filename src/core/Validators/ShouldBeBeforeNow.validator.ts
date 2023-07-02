@@ -13,7 +13,7 @@ export class ShouldBeBeforeNowConstraint
   implements ValidatorConstraintInterface
 {
   async validate(date: Date) {
-    return Date.now() > date.getTime();
+    return Date.now() >= date.getTime();
   }
 
   defaultMessage(args: ValidationArguments) {

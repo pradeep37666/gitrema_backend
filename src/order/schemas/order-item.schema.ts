@@ -6,6 +6,8 @@ import { MenuAdditionDocument } from 'src/menu/schemas/menu-addition.schema';
 import { Alergies } from 'src/menu/enum/en.enum';
 import { PreparationStatus } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
+import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
+import { MenuCategoryDocument } from 'src/menu/schemas/menu-category.schema';
 
 export type OrderItemDocument = OrderItem & Document;
 
@@ -87,6 +89,14 @@ class MenuItem {
   })
   menuItemId: MenuItemDocument;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'MenuCategory',
+    index: true,
+    required: true,
+  })
+  categoryId: MenuCategoryDocument;
+
   @Prop({ required: true })
   name: string;
 
@@ -101,6 +111,14 @@ class MenuItem {
 
   @Prop({ required: true })
   unitPriceBeforeDiscount: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'UnitOfMeasure',
+    default: null,
+  })
+  uomSell: UnitOfMeasureDocument;
 
   // @Prop({ default: 1 })
   // quantity: number;
