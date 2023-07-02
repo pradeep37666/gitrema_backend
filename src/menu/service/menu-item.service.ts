@@ -83,6 +83,11 @@ export class MenuItemService {
         lean: true,
         ...paginateOptions,
         ...pagination,
+        populate: [
+          {
+            path: 'uomSell',
+          },
+        ],
       },
     );
     return menuItems;
