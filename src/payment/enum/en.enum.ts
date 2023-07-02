@@ -3,6 +3,9 @@ export enum PaymentMethod {
   Online = 'Online',
   Card = 'Card',
   POS = 'POS',
+  HungerStation = 'HungerStation',
+  Jahez = 'Jahez',
+  Toyo = 'Toyo',
 }
 
 export enum SplitType {

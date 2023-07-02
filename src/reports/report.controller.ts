@@ -5,6 +5,8 @@ import {
   Query,
   Header,
   StreamableFile,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
@@ -24,13 +26,23 @@ import { ReportOrderKitchenDto } from './dto/report-order-kitchen.dto';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { ReportPaymentDto } from './dto/report-payment.dto';
 import { PayoutPreviewDto } from './dto/payout-preview.dto';
+import {
+  SalesReportDto,
+  SalesTrendReportDailyDto,
+} from './dto/sales-report.dto';
+import { SalesReportService } from './sales-report.service';
+import { PaymentReportService } from './payment-report.service';
 
 @Controller('report')
 @ApiTags('Reports')
 @ApiBearerAuth('access-token')
 @ApiHeader({ name: 'lang' })
 export class ReportController {
-  constructor(private readonly reportService: ReportService) {}
+  constructor(
+    private readonly reportService: ReportService,
+    private readonly salesReportService: SalesReportService,
+    private readonly paymentReportService: PaymentReportService,
+  ) {}
 
   @Get('order/general')
   @PermissionGuard(PermissionSubject.Order, Permission.Common.LIST)
@@ -280,5 +292,86 @@ export class ReportController {
     @Query() query: PayoutPreviewDto,
   ) {
     return await this.reportService.exportPayoutAggregatePreview(req, query);
+  }
+
+  @Post('sales-summary')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async salesPreview(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.salesSummary(req, dto);
+  }
+  @Post('hourly-sales-summary')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async hourlySaleSummary(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.salesSummaryHourlyData(req, dto);
+  }
+
+  @Post('daily-sales-trend')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async dailySaleTrend(@Req() req, @Body() dto: SalesTrendReportDailyDto) {
+    return await this.salesReportService.dailySalesTrend(req, dto);
+  }
+
+  @Post('weekly-sales-trend')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async weeklySaleTrend(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.weeklySalesTrend(req, dto);
+  }
+
+  @Post('yearly-sales-trend')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async yearlySaleTrend(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.yearlySalesTrend(req, dto);
+  }
+
+  @Post('payments-by-paymentmethod')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async paymentReportByPaymentMethod(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.paymentReportService.paymentByPaymentMethod(req, dto);
+  }
+
+  @Post('item-sales')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async itemSales(@Req() req, @Body() dto: SalesTrendReportDailyDto) {
+    return await this.salesReportService.itemSaleReport(req, dto);
+  }
+  @Post('item-sales-hourly')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async itemSalesHourly(@Req() req, @Body() dto: SalesTrendReportDailyDto) {
+    return await this.salesReportService.itemSaleHourlyReport(req, dto);
+  }
+
+  @Post('category-sales')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async categorySales(@Req() req, @Body() dto: SalesTrendReportDailyDto) {
+    return await this.salesReportService.categorySaleReport(req, dto);
+  }
+  @Post('category-sales-hourly')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async categorySalesHourly(@Req() req, @Body() dto: SalesTrendReportDailyDto) {
+    return await this.salesReportService.categorySaleHourlyReport(req, dto);
+  }
+
+  @Post('addition-sales')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async additionSales(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.additionSaleReport(req, dto);
+  }
+
+  @Post('team-sales')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async teamSales(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.teamSalesReport(req, dto);
+  }
+
+  @Post('discount-sales')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async discountSales(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.discountSalesReport(req, dto);
+  }
+
+  @Post('sales-tax')
+  //@PermissionGuard(PermissionSubject.Report, Permission.Report.PayoutPreview)
+  async salesTax(@Req() req, @Body() dto: SalesReportDto) {
+    return await this.salesReportService.salesTaxReport(req, dto);
   }
 }

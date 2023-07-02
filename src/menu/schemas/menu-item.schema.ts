@@ -52,7 +52,7 @@ export class MenuItem {
     ref: 'UnitOfMeasure',
     default: null,
   })
-  uomSell?: UnitOfMeasureDocument;
+  uomSell: UnitOfMeasureDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
