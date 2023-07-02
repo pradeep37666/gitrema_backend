@@ -37,7 +37,6 @@ export class SalesReportDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @ShouldBeBeforeNow()
   @ShouldBeAfter('startDate')
   @Transform(
     ({ value }) =>
@@ -54,4 +53,19 @@ export class SalesReportDto {
 
 export class SalesTrendReportDailyDto extends OmitType(SalesReportDto, [
   'endDate',
-] as const) {}
+  'startDate',
+] as const) {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Transform(
+    ({ value }) =>
+      new Date(
+        moment
+          .utc(value)
+
+          .format('YYYY-MM-DD'),
+      ),
+  )
+  @IsDate()
+  startDate: Date;
+}
