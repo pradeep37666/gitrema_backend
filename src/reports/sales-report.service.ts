@@ -323,14 +323,16 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      let endDate = dto.startDate;
       dto.startDate.setUTCHours(0);
       dto.startDate.setUTCMinutes(0);
       dto.startDate = new Date(
         dto.startDate.toLocaleString('en', { timeZone: timezone }),
       );
-      const endDate = dto.startDate;
+
       endDate.setUTCHours(23);
       endDate.setUTCMinutes(60);
+      endDate = new Date(endDate.toLocaleString('en', { timeZone: timezone }));
 
       queryToApply.createdAt = {
         $gte: dto.startDate,
@@ -494,14 +496,16 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      let endDate = dto.startDate;
       dto.startDate.setUTCHours(0);
       dto.startDate.setUTCMinutes(0);
       dto.startDate = new Date(
         dto.startDate.toLocaleString('en', { timeZone: timezone }),
       );
-      const endDate = dto.startDate;
+
       endDate.setUTCHours(23);
       endDate.setUTCMinutes(60);
+      endDate = new Date(endDate.toLocaleString('en', { timeZone: timezone }));
 
       queryToApply.createdAt = {
         $gte: dto.startDate,
@@ -582,14 +586,16 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      let endDate = dto.startDate;
       dto.startDate.setUTCHours(0);
       dto.startDate.setUTCMinutes(0);
       dto.startDate = new Date(
         dto.startDate.toLocaleString('en', { timeZone: timezone }),
       );
-      const endDate = dto.startDate;
+
       endDate.setUTCHours(23);
       endDate.setUTCMinutes(60);
+      endDate = new Date(endDate.toLocaleString('en', { timeZone: timezone }));
 
       queryToApply.createdAt = {
         $gte: dto.startDate,
@@ -647,14 +653,16 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      let endDate = dto.startDate;
       dto.startDate.setUTCHours(0);
       dto.startDate.setUTCMinutes(0);
       dto.startDate = new Date(
         dto.startDate.toLocaleString('en', { timeZone: timezone }),
       );
-      const endDate = dto.startDate;
+
       endDate.setUTCHours(23);
       endDate.setUTCMinutes(60);
+      endDate = new Date(endDate.toLocaleString('en', { timeZone: timezone }));
 
       queryToApply.createdAt = {
         $gte: dto.startDate,
@@ -723,14 +731,16 @@ export class SalesReportService {
         $in: dto.restaurantIds.map((r) => new mongoose.Types.ObjectId(r)),
       };
     if (dto.startDate) {
+      let endDate = dto.startDate;
       dto.startDate.setUTCHours(0);
       dto.startDate.setUTCMinutes(0);
       dto.startDate = new Date(
         dto.startDate.toLocaleString('en', { timeZone: timezone }),
       );
-      const endDate = dto.startDate;
+
       endDate.setUTCHours(23);
       endDate.setUTCMinutes(60);
+      endDate = new Date(endDate.toLocaleString('en', { timeZone: timezone }));
 
       queryToApply.createdAt = {
         $gte: dto.startDate,
