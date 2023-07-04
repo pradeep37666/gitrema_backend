@@ -159,19 +159,19 @@
           class="text-24"
           style="margin: 15px 0px; text-align: center; line-height: 30px"
         >
-          {{#each order.items}}
+          {{#each items}}
           <div style="display: flex; justify-content: space-between; gap: 10px">
             <div style="flex: 1">Item{{math @index "+" 1}}</div>
             <div style="flex: 3">
               <div style="display: flex; flex-direction: column">
-                <div style="direction: ltr">{{this.menuItem.name}}</div>
-                <div style="direction: rtl">{{this.menuItem.nameAr}}</div>
+                <div style="direction: ltr">{{this.name}}</div>
+                <div style="direction: rtl">{{this.nameAr}}</div>
                 <div>{{ this.additionTextAr }}</div>
               </div>
             </div>
             <div style="flex: 1">X{{this.quantity}}</div>
             <div style="flex: 1">
-              {{ math ../multiplier "*" this.amountAfterDiscount}}
+              {{ math ../multiplier "*" this.totalWithTax}}
             </div>
           </div>
           <br />
@@ -189,7 +189,7 @@
           "
         >
           <div>Subtotal | قيمة المنتج</div>
-          <div>{{ math multiplier "*" order.summary.totalTaxableAmount }}</div>
+          <div>{{ math multiplier "*" orderData.totalTaxableAmount }}</div>
         </div>
         <div
           style="
@@ -200,7 +200,7 @@
           "
         >
           <div>VAT 15% Tax | ضريبة</div>
-          <div>{{math multiplier "*" order.summary.totalTax }}</div>
+          <div>{{math multiplier "*" orderData.totalTax }}</div>
         </div>
         <div
           style="
@@ -211,7 +211,7 @@
           "
         >
           <div><b>Total</b></div>
-          <div><b>{{math multiplier "*" order.summary.totalWithTax }}</b></div>
+          <div><b>{{math multiplier "*" orderData.totalWithTax }}</b></div>
         </div>
         <div
           style="display: flex; justify-content: center; margin-bottom: 50px"
