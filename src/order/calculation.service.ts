@@ -141,11 +141,11 @@ export class CalculationService {
     summary.totalTax = (summary.totalTaxableAmount * orderData.taxRate) / 100;
 
     if (orderData.feeRate > 0) {
-      summary.totalFee = (summary.totalWithTax * orderData.feeRate) / 100;
-      summary.taxableFee = summary.totalFee / (1 + orderData.taxRate / 100);
+      summary.taxableFee =
+        summary.totalWithTax -
+        summary.totalWithTax / (1 + orderData.feeRate / 100);
       summary.taxOnFee = (summary.taxableFee * orderData.taxRate) / 100;
-
-      summary.totalWithTax += summary.totalFee;
+      summary.totalFee = summary.taxableFee + summary.taxOnFee;
     }
     summary.totalBeforeDiscount = roundOffNumber(summary.totalBeforeDiscount);
     summary.discount = roundOffNumber(summary.discount);

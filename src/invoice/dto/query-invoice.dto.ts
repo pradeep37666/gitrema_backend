@@ -6,10 +6,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  ValidateIf,
 } from 'class-validator';
 
 export class QueryInvoiceDto {
-  @ApiProperty({ type: String })
+  @ApiProperty({ required: false })
+  @ValidateIf((o) => !o.orderNumber)
   @IsMongoId()
   @IsNotEmpty()
   orderId: string;
@@ -25,8 +27,9 @@ export class QueryInvoiceDto {
   type: InvoiceType;
 
   @ApiProperty({ required: false })
+  @ValidateIf((o) => !o.orderId)
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   orderNumber: string;
 
   @ApiProperty({ required: false })
