@@ -46,18 +46,56 @@ export class CashierLogService {
     private socketGateway: SocketIoGateway,
   ) {}
 
-  async current(cashierId: string): Promise<CashierLogDocument> {
-    const exists = await this.cashierLogModel.findOne(
-      { cashierId },
-      {},
-      { sort: { _id: -1 } },
-    );
+  async current(cashierId: string): Promise<any> {
+    const exists = await this.cashierLogModel
+      .findOne({ cashierId }, {}, { sort: { _id: -1 } })
+      .populate([
+        {
+          path: 'transactions',
+          populate: [
+            {
+              path: 'orderId',
+              select: { items: 0 },
+            },
+          ],
+        },
+      ]);
 
     if (!exists) {
       throw new NotFoundException();
     }
 
-    return exists;
+    return {
+      ...exists.toObject(),
+      dashboard: this.cashierHelperService.prepareDashboardData(exists),
+    };
+  }
+
+  async singleLog(cashierId: string, cashierLogId: string): Promise<any> {
+    const exists = await this.cashierLogModel
+      .findOne({ cashierId, _id: cashierLogId })
+      .populate([
+        {
+          path: 'transactions',
+          populate: [
+            {
+              path: 'orderId',
+              select: {
+                items: 0,
+              },
+            },
+          ],
+        },
+      ]);
+
+    if (!exists) {
+      throw new NotFoundException();
+    }
+
+    return {
+      ...exists.toObject(),
+      dashboard: this.cashierHelperService.prepareDashboardData(exists),
+    };
   }
 
   async logs(
@@ -74,8 +112,18 @@ export class CashierLogService {
         lean: true,
         ...paginateOptions,
         ...pagination,
+        populate: [
+          {
+            path: 'transactions',
+          },
+        ],
+        allowDiskUse: true,
       },
     );
+    cashierLogs.docs.forEach((cashierLog: any) => {
+      cashierLog.dashboard =
+        this.cashierHelperService.prepareDashboardData(cashierLog);
+    });
     return cashierLogs;
   }
 

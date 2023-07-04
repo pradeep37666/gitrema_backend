@@ -13,6 +13,8 @@ import { Cashier, CashierDocument } from './schemas/cashier.schema';
 import { CashierLogService } from './cashier-log.service';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { PaymentMethod } from 'src/payment/enum/en.enum';
+import { CashierLogDocument } from './schemas/cashier-log.schema';
 
 @Injectable()
 export class CashierHelperService {
@@ -51,6 +53,32 @@ export class CashierHelperService {
 
   foldAmount(records: any[]): number {
     return records.reduce((prev, acc) => prev + acc.amount, 0);
+  }
+
+  prepareDashboardData(cashierLog: CashierLogDocument) {
+    const transactions = cashierLog.transactions;
+    const refunds = transactions.filter((t) => t.isRefund);
+    const sales = transactions.filter((t) => !t.isRefund);
+    const cashSales = sales.filter(
+      (s) => s.paymentMethod === PaymentMethod.Cash,
+    );
+    const bankSales = sales.filter(
+      (s) =>
+        s.paymentMethod === PaymentMethod.Online ||
+        s.paymentMethod === PaymentMethod.Card,
+    );
+    const dashboard = {
+      openingBalance: cashierLog.openingBalance,
+      totalRefunds: this.foldAmount(refunds),
+      totalSales: this.foldAmount(sales),
+      salesPaidWithCash: this.foldAmount(cashSales),
+      salesPaidWithCard: cashierLog.openingBalance + this.foldAmount(bankSales),
+      expectedCashAtClose:
+        cashierLog.openingBalance +
+        this.foldAmount(cashSales) -
+        this.foldAmount(refunds),
+    };
+    return dashboard;
   }
 
   async resolveCashierId(
