@@ -46,6 +46,9 @@ export class CalculationService {
       totalRefunded: 0,
       headerDiscount: 0,
       remainingAmountToCollect: 0,
+      taxableFee: 0,
+      taxOnFee: 0,
+      totalFee: 0,
     };
 
     let offer = await this.offerModel.findOne(
@@ -137,6 +140,13 @@ export class CalculationService {
 
     summary.totalTax = (summary.totalTaxableAmount * orderData.taxRate) / 100;
 
+    if (orderData.feeRate > 0) {
+      summary.totalFee = (summary.totalWithTax * orderData.feeRate) / 100;
+      summary.taxableFee = summary.totalFee / (1 + orderData.taxRate / 100);
+      summary.taxOnFee = (summary.taxableFee * orderData.taxRate) / 100;
+
+      summary.totalWithTax += summary.totalFee;
+    }
     summary.totalBeforeDiscount = roundOffNumber(summary.totalBeforeDiscount);
     summary.discount = roundOffNumber(summary.discount);
     summary.totalWithTax = roundOffNumber(summary.totalWithTax);
@@ -156,6 +166,7 @@ export class CalculationService {
       summary.remainingAmountToCollect =
         summary.totalWithTax + (orderData.tip ?? 0);
     }
+
     return summary;
   }
 

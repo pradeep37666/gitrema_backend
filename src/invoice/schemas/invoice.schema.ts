@@ -71,6 +71,11 @@ export class Invoice {
   invoiceNumber: string;
 
   @Prop({
+    required: true,
+  })
+  orderNumber: string;
+
+  @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Order',
     index: true,
