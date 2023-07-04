@@ -110,6 +110,15 @@ export class CashierController {
     return await this.cashierLogService.current(cashierId);
   }
 
+  @Get(':cashierId/:cashierLogId')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async logById(
+    @Param('cashierId') cashierId: string,
+    @Param('cashierLogId') cashierLogId: string,
+  ) {
+    return await this.cashierLogService.singleLog(cashierId, cashierLogId);
+  }
+
   @Get(':cashierId/logs')
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
   async logs(

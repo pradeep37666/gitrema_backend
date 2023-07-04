@@ -158,24 +158,7 @@ export class CashierService {
         status: PaymentStatus.Success,
       },
     });
-    const transactions = activeShift.transactions;
-    const refunds = transactions.filter((t) => t.isRefund);
-    const sales = transactions.filter((t) => !t.isRefund);
-    const cashSales = sales.filter(
-      (s) => s.paymentMethod === PaymentMethod.Cash,
-    );
-    const bankSales = sales.filter(
-      (s) => s.paymentMethod === PaymentMethod.Online,
-    );
-    const dashboard = {
-      openingBalance: activeShift.openingBalance,
-      totalRefunds: this.cashierHelperService.foldAmount(refunds),
-      totalSales: this.cashierHelperService.foldAmount(sales),
-      totalInCash:
-        activeShift.openingBalance +
-        this.cashierHelperService.foldAmount(cashSales),
-      totalInBank: this.cashierHelperService.foldAmount(bankSales),
-    };
-    return dashboard;
+
+    return this.cashierHelperService.prepareDashboardData(activeShift);
   }
 }
