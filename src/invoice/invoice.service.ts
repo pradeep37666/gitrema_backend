@@ -126,6 +126,7 @@ export class InvoiceService {
     // create invoice record
     const invoice = await this.invoiceModel.create({
       ...dto,
+      orderNumber: order.orderNumber,
       addedBy: req?.user?.userId ?? null,
       supplierId: order.supplierId._id,
       restaurantId: order.restaurantId._id,

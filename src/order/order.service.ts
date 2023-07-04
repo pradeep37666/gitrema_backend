@@ -203,6 +203,8 @@ export class OrderService {
     }
     orderData.taxRate = supplier.taxRate ?? 15;
 
+    orderData.feeRate = supplier.feeRate ?? 0;
+
     if (orderData.isScheduled != true) {
       delete orderData.scheduledDateTime;
     }

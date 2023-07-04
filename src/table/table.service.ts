@@ -249,6 +249,9 @@ export class TableService {
     if (query.paymentStatus) {
       orderQuery.paymentStatus = query.paymentStatus;
     }
+    if (query.status) {
+      orderQuery.status = query.status;
+    }
     const exists = await this.tableModel.findById(tableId).populate([
       { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
       {
