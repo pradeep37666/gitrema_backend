@@ -64,8 +64,8 @@ export class QueryCashierLogDto {
 }
 
 export class QueryCashierDto {
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsMongoId()
   restaurantId: string;
 
