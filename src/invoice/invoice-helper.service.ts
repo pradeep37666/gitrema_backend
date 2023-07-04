@@ -101,6 +101,43 @@ export class InvoiceHelperService {
       });
       oi.additionTextAr = message;
     });
+    let items = dto.items;
+    if (!items) {
+      items = [];
+      orderObj.items.forEach((oi) => {
+        let message = '';
+        oi.additions.forEach((oia) => {
+          const options = oia.options.map((o) => {
+            return o.nameAr;
+          });
+          message += `- with ${options.join(',')}`;
+          message += `\n`;
+        });
+
+        items.push({
+          name: oi.menuItem.name,
+          nameAr: oi.menuItem.nameAr,
+          quantity: oi.quantity,
+          additionTextAr: message,
+          totalWithTax: oi.amountAfterDiscount,
+          itemId: oi._id,
+          taxableAmount: oi.itemTaxableAmount,
+          tax: oi.tax,
+        });
+      });
+    }
+
+    const orderData = {
+      totalTaxableAmount: 0,
+      totalWithTax: 0,
+      totalTax: 0,
+    };
+
+    items.forEach((i) => {
+      orderData.totalTaxableAmount += i.taxableAmount;
+      orderData.totalWithTax += i.totalWithTax;
+      orderData.totalTax += i.tax;
+    });
 
     const templateHtml = fs.readFileSync(
       'src/invoice/templates/invoice.v1.html',
@@ -112,13 +149,11 @@ export class InvoiceHelperService {
       qrCode,
       invoiceNumber: dto.invoiceNumber,
       order: orderObj,
+      items,
+      orderData,
       multiplier,
     });
 
-    const items = [];
-    order.items.forEach((oi) => {
-      items.push({ itemId: oi._id, quantity: oi.quantity });
-    });
     const document = await this.uploadDocument(
       html,
       order.supplierId._id + '/' + order.restaurantId._id + '/invoice/',
