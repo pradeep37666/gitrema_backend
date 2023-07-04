@@ -213,4 +213,10 @@ export class OrderController {
   async group(@Req() req, @Body() dto: GroupOrderDto) {
     return await this.orderService.groupOrders(req, dto);
   }
+
+  @Post(':orderId/defer')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  async defer(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.deferOrder(orderId);
+  }
 }

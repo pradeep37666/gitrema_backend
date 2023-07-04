@@ -518,6 +518,10 @@ export class OrderHelperService {
     if (!order.customerId && order.contactNumber) {
       this.setCustomer(order);
     }
+
+    if (dto.items) {
+      await this.invoiceHelperService.regenerateInvoice(order);
+    }
   }
 
   async setCustomer(order: OrderDocument) {

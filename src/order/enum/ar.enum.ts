@@ -26,6 +26,9 @@ export enum OrderPaymentStatus {
   Paid = 'مدفوع',
   Refunded = 'تم الارجاع',
   PartiallyRefunded = 'تم الارجاع جزئياً',
+  Pending = 'الدفع تحت الاجراء',
+  OverPaid = 'دفع فائض',
+  Deferred = 'دفع بالأجل',
 }
 
 export enum InvoiceStatus {
