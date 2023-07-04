@@ -131,6 +131,7 @@ export class InvoiceService {
       imageUrl: invoiceData.imageUrl,
       items: invoiceData.items,
       refInvoiceId: refInvoice ? refInvoice._id : null,
+      isReversedInvoice: cancelledInvoice ? true : false,
     });
 
     this.invoiceHelperService.postInvoiceCreate(invoice, order);

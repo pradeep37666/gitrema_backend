@@ -690,6 +690,30 @@ export class OrderService {
     return modified;
   }
 
+  async deferOrder(orderId: string): Promise<OrderDocument> {
+    const order = await this.orderModel.findById(orderId);
+
+    if (!order) {
+      throw new NotFoundException();
+    }
+    if (order.summary.totalPaid > 0) {
+      throw new BadRequestException(
+        `This order can not be deferred as some amount is already paid`,
+      );
+    }
+    const modified = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      {
+        paymentStatus: OrderPaymentStatus.Deferred,
+        status: OrderStatus.Closed,
+      },
+      {
+        new: true,
+      },
+    );
+    return modified;
+  }
+
   async groupOrders(req: any, dto: GroupOrderDto): Promise<OrderDocument> {
     const orders = await this.orderModel
       .find({

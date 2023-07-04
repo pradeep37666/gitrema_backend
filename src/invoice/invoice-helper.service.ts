@@ -34,6 +34,7 @@ import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
+import { InvoiceService } from './invoice.service';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -60,7 +61,8 @@ export class InvoiceHelperService {
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
     private readonly httpService: HttpService,
-
+    @Inject(forwardRef(() => InvoiceService))
+    private readonly invoiceService: InvoiceService,
     private readonly socketGateway: SocketIoGateway,
     @InjectModel(Printer.name) private printerModel: Model<PrinterDocument>,
   ) {}
@@ -448,5 +450,21 @@ export class InvoiceHelperService {
       .encode();
     console.log(commands);
     return commands;
+  }
+
+  async regenerateInvoice(order: OrderDocument) {
+    const invoice = await this.invoiceModel.findOne({
+      orderId: order._id,
+      type: InvoiceType.Invoice,
+      isReversedInvoice: false,
+      reversedInvoiceId: null,
+    });
+    if (invoice) {
+      await this.invoiceService.cancel(null, invoice._id.toString());
+      await this.invoiceService.create(null, {
+        orderId: order._id,
+        type: InvoiceType.Invoice,
+      });
+    }
   }
 }
