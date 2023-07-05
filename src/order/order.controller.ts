@@ -217,6 +217,6 @@ export class OrderController {
   @Post(':orderId/defer')
   @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
   async defer(@Req() req, @Param('orderId') orderId: string) {
-    return await this.orderService.deferOrder(orderId);
+    return await this.orderService.deferOrder(req, orderId);
   }
 }

@@ -15,6 +15,10 @@ import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { CashierLogDocument } from './schemas/cashier-log.schema';
+import {
+  DeferredTransaction,
+  DeferredTransactionDocument,
+} from 'src/order/schemas/deferred-transaction.schema';
 
 @Injectable()
 export class CashierHelperService {
@@ -25,6 +29,8 @@ export class CashierHelperService {
     private readonly cashierLogService: CashierLogService,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(DeferredTransaction.name)
+    private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
   ) {}
 
   async postCashierCreate(req, cashier: CashierDocument) {
@@ -55,7 +61,14 @@ export class CashierHelperService {
     return records.reduce((prev, acc) => prev + acc.amount, 0);
   }
 
-  prepareDashboardData(cashierLog: CashierLogDocument) {
+  async prepareDashboardData(cashierLog: CashierLogDocument) {
+    const deferredTransactions = await this.deferredTransactionModel.find({
+      cashierId: cashierLog.cashierId,
+      createdAt: {
+        $gte: cashierLog.startedAt,
+        $lte: cashierLog.closedAt ?? new Date(),
+      },
+    });
     const transactions = cashierLog.transactions;
     const refunds = transactions.filter((t) => t.isRefund);
     const sales = transactions.filter((t) => !t.isRefund);
@@ -77,6 +90,7 @@ export class CashierHelperService {
         cashierLog.openingBalance +
         this.foldAmount(cashSales) -
         this.foldAmount(refunds),
+      deferredAmount: this.foldAmount(deferredTransactions),
     };
     return dashboard;
   }
