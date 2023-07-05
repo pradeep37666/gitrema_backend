@@ -60,6 +60,11 @@ import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { ObjectId } from 'mongoose';
 import { TableHelperService } from 'src/table/table-helper.service';
+import { CashierHelperService } from '../cashier/cashier-helper.service';
+import {
+  DeferredTransaction,
+  DeferredTransactionDocument,
+} from './schemas/deferred-transaction.schema';
 
 @Injectable()
 export class OrderService {
@@ -88,7 +93,10 @@ export class OrderService {
     private readonly cashierModel: Model<CashierDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(DeferredTransaction.name)
+    private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
     private readonly tableHelperService: TableHelperService,
+    private readonly cashierHelperService: CashierHelperService,
   ) {}
 
   async create(
@@ -692,7 +700,7 @@ export class OrderService {
     return modified;
   }
 
-  async deferOrder(orderId: string): Promise<OrderDocument> {
+  async deferOrder(req, orderId: string): Promise<OrderDocument> {
     const order = await this.orderModel.findById(orderId);
 
     if (!order) {
@@ -703,6 +711,19 @@ export class OrderService {
         `This order can not be deferred as some amount is already paid`,
       );
     }
+    const cashierId = await this.cashierHelperService.resolveCashierId(
+      req,
+      null,
+      true,
+      order.restaurantId,
+    );
+    await this.deferredTransactionModel.create({
+      supplierId: req.user.supplierId,
+      restaurantId: order.restaurantId,
+      orderId: order._id,
+      cashierId,
+      amount: order.summary.remainingAmountToCollect,
+    });
     const modified = await this.orderModel.findByIdAndUpdate(
       orderId,
       {

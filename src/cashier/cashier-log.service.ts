@@ -77,7 +77,7 @@ export class CashierLogService {
 
     return {
       ...exists.toObject(),
-      dashboard: this.cashierHelperService.prepareDashboardData(exists),
+      dashboard: await this.cashierHelperService.prepareDashboardData(exists),
     };
   }
 
@@ -114,7 +114,7 @@ export class CashierLogService {
 
     return {
       ...exists.toObject(),
-      dashboard: this.cashierHelperService.prepareDashboardData(exists),
+      dashboard: await this.cashierHelperService.prepareDashboardData(exists),
     };
   }
 
@@ -123,7 +123,7 @@ export class CashierLogService {
     cashierId: string,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<CashierLogDocument>> {
-    const cashierLogs = await this.cashierLogModelPag.paginate(
+    const cashierLogs: any = await this.cashierLogModelPag.paginate(
       {
         cashierId,
       },
@@ -135,6 +135,12 @@ export class CashierLogService {
         populate: [
           {
             path: 'transactions',
+            populate: [
+              {
+                path: 'orderId',
+                select: { orderNumber: 1 },
+              },
+            ],
           },
           {
             path: 'userId',
@@ -150,10 +156,13 @@ export class CashierLogService {
         allowDiskUse: true,
       },
     );
-    cashierLogs.docs.forEach((cashierLog: any) => {
-      cashierLog.dashboard =
-        this.cashierHelperService.prepareDashboardData(cashierLog);
-    });
+    for (const i in cashierLogs.docs) {
+      cashierLogs.docs[i].dashboard =
+        await this.cashierHelperService.prepareDashboardData(
+          cashierLogs.docs[i],
+        );
+    }
+
     return cashierLogs;
   }
 

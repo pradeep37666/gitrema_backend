@@ -8,6 +8,10 @@ import { CashierLogService } from './cashier-log.service';
 import { CashierHelperService } from './cashier-helper.service';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
 import { User, UserSchema } from 'src/users/schemas/users.schema';
+import {
+  DeferredTransaction,
+  DeferredTransactionSchema,
+} from 'src/order/schemas/deferred-transaction.schema';
 
 @Module({
   imports: [
@@ -15,6 +19,7 @@ import { User, UserSchema } from 'src/users/schemas/users.schema';
       { name: Cashier.name, schema: CashierSchema },
       { name: CashierLog.name, schema: CashierLogSchema },
       { name: User.name, schema: UserSchema },
+      { name: DeferredTransaction.name, schema: DeferredTransactionSchema },
     ]),
     SocketIoModule,
   ],

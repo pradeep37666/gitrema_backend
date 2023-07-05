@@ -49,6 +49,11 @@ import { User, UserSchema } from 'src/users/schemas/users.schema';
 import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
 import { Printer, PrinterSchema } from 'src/printer/schema/printer.schema';
 import { Cashier, CashierSchema } from 'src/cashier/schemas/cashier.schema';
+import {
+  DeferredTransaction,
+  DeferredTransactionSchema,
+} from './schemas/deferred-transaction.schema';
+import { CashierModule } from 'src/cashier/cashier.module';
 
 @Module({
   imports: [
@@ -71,6 +76,7 @@ import { Cashier, CashierSchema } from 'src/cashier/schemas/cashier.schema';
       { name: Role.name, schema: RoleSchema },
       { name: Printer.name, schema: PrinterSchema },
       { name: Cashier.name, schema: CashierSchema },
+      { name: DeferredTransaction.name, schema: DeferredTransactionSchema },
     ]),
     SocketIoModule,
     TableModule,
@@ -83,6 +89,7 @@ import { Cashier, CashierSchema } from 'src/cashier/schemas/cashier.schema';
     ScheduleModule.forRoot(),
     InventoryModule,
     NotificationModule,
+    CashierModule,
   ],
   controllers: [OrderController],
   providers: [
