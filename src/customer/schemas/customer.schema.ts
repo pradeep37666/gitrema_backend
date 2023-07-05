@@ -40,6 +40,17 @@ export class Customer {
 
   @Prop({ default: null })
   expoToken: string;
+
+  @Prop({ type: Object, default: null })
+  deliveryAddress: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode: number;
+    latitude: number;
+    longitude: number;
+    district: string;
+  };
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);

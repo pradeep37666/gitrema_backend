@@ -19,7 +19,11 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { OrderDocument } from './schemas/order.schema';
 import { PaginateResult } from 'mongoose';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
+import {
+  QueryCustomerOrderDto,
+  QueryKitchenDisplayDto,
+  QueryOrderDto,
+} from './dto/query-order.dto';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { OrderStatus } from './enum/en.enum';
@@ -29,6 +33,7 @@ import {
 } from './dto/kitchen-queue-process.dto';
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
+import { Public } from 'src/core/decorators/public.decorator';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -63,10 +68,25 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Order.KitchenDisplay)
   async kitchen(
     @Req() req,
-    @Query() query: QueryOrderDto,
+    @Query() query: QueryKitchenDisplayDto,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     return await this.orderService.kitchenDisplay(req, query, paginateOptions);
+  }
+
+  @Post('date')
+  @Public()
+  async date(@Req() req): Promise<any> {
+    return await this.orderService.dateRangeCalculator(req);
+  }
+
+  @Get('kitchen-dashboard')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.KitchenDisplay)
+  async kitchenDashboard(
+    @Req() req,
+    @Query() query: QueryKitchenDisplayDto,
+  ): Promise<any> {
+    return await this.orderService.kitchenDashboard(req, query);
   }
 
   @Get('customer')
@@ -152,7 +172,7 @@ export class OrderController {
   }
 
   @Patch(':orderId/add-chef-inquiry-comment')
-  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.ChefInquiry)
   async addChefInquiryComment(
     @Req() req,
     @Param('orderId') orderId: string,
@@ -180,7 +200,10 @@ export class OrderController {
   }
 
   @Post('kitchen-queue-process')
-  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  @PermissionGuard(
+    PermissionSubject.Order,
+    Permission.Order.KitchenQueueProcess,
+  )
   async kitchenQueueProcess(@Req() req, @Body() dto: KitchenQueueProcessDto) {
     return await this.orderService.kitchenQueueProcess(req, dto);
   }
@@ -189,5 +212,11 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
   async group(@Req() req, @Body() dto: GroupOrderDto) {
     return await this.orderService.groupOrders(req, dto);
+  }
+
+  @Post(':orderId/defer')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  async defer(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.deferOrder(req, orderId);
   }
 }

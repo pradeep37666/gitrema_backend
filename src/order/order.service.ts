@@ -18,7 +18,11 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
-import { QueryCustomerOrderDto, QueryOrderDto } from './dto/query-order.dto';
+import {
+  QueryCustomerOrderDto,
+  QueryKitchenDisplayDto,
+  QueryOrderDto,
+} from './dto/query-order.dto';
 import {
   Supplier,
   SupplierDocument,
@@ -30,7 +34,10 @@ import {
   PreparationStatus,
 } from './enum/en.enum';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
-import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import {
+  getRandomTime,
+  roundOffNumber,
+} from 'src/core/Helpers/universal.helper';
 import { MoveOrderItemDto } from './dto/move-order.dto';
 import { GroupOrderDto } from './dto/group-order.dto';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
@@ -51,6 +58,13 @@ import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 import { PrinterType } from 'src/printer/enum/en';
 import { Cashier, CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { ObjectId } from 'mongoose';
+import { TableHelperService } from 'src/table/table-helper.service';
+import { CashierHelperService } from '../cashier/cashier-helper.service';
+import {
+  DeferredTransaction,
+  DeferredTransactionDocument,
+} from './schemas/deferred-transaction.schema';
 
 @Injectable()
 export class OrderService {
@@ -79,6 +93,10 @@ export class OrderService {
     private readonly cashierModel: Model<CashierDocument>,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(DeferredTransaction.name)
+    private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
+    private readonly tableHelperService: TableHelperService,
+    private readonly cashierHelperService: CashierHelperService,
   ) {}
 
   async create(
@@ -193,27 +211,27 @@ export class OrderService {
     }
     orderData.taxRate = supplier.taxRate ?? 15;
 
+    orderData.feeRate = supplier.feeRate ?? 0;
+
     if (orderData.isScheduled != true) {
       delete orderData.scheduledDateTime;
     }
 
     // check for kitchen queue
     if (!orderData.kitchenQueueId) {
-      const kitchenQueue = await this.kitchenQueueModel.findOne(
-        {
-          restaurantId: orderData.restaurantId,
-        },
-        {},
-        { sort: { _id: -1 } },
-      );
+      const kitchenQueue = await this.kitchenQueueModel.findOne({
+        restaurantId: orderData.restaurantId,
+        default: true,
+      });
       if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
     }
+    console.log('Kitchen Queue', orderData.kitchenQueueId);
 
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
       orderData,
     );
-
+    console.log(orderData.items);
     orderData.tableFee = {
       fee: 0,
       netBeforeTax: 0,
@@ -265,12 +283,77 @@ export class OrderService {
     const order = await this.orderModel.create({
       ...orderData,
       supplierId: req.user.supplierId,
-      addedBy: req.user.userId,
+      addedBy: req.user.userId ?? null,
     });
 
     // post order create
     this.orderHelperService.postOrderCreate(req, order);
     return order;
+  }
+
+  async dateRangeCalculator(req) {
+    const response = [];
+    for (let i = 0; i < 99; i++) {
+      const start = getRandomTime();
+      const end = getRandomTime();
+      const current = getRandomTime();
+      const startArr = start.split(':');
+      const endArr = end.split(':');
+      const currentArr = current.split(':');
+      const res = {
+        start,
+        end,
+        current,
+        result: false,
+      };
+      if (
+        startArr.length == 2 &&
+        endArr.length == 2 &&
+        parseInt(startArr[0]) == parseInt(endArr[0]) &&
+        parseInt(startArr[1]) == parseInt(endArr[1])
+      ) {
+        res.result = true;
+      }
+
+      const startDate = moment()
+        .tz(TIMEZONE)
+        .set({
+          hour: startArr.length == 2 ? parseInt(startArr[0]) : 0,
+          minute: startArr.length == 2 ? parseInt(startArr[1]) : 0,
+        });
+
+      const endDate = moment()
+        .tz(TIMEZONE)
+        .set({
+          hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
+          minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
+        });
+      const currentDate = moment()
+        .tz(TIMEZONE)
+        .set({
+          hours: currentArr.length == 2 ? parseInt(currentArr[0]) : 0,
+          minutes: currentArr.length == 2 ? parseInt(currentArr[1]) : 0,
+        });
+      if (endDate.isBefore(startDate)) {
+        // special case where end date is less than start date so we need to  adjust the date
+        if (currentDate.isBefore(startDate)) {
+          // after 00:00
+          startDate.subtract(24, 'hours'); // we need to subtract because startdate is becoming bext date after 00:00
+        } else {
+          // before 00:00
+          endDate.add(24, 'hours'); // we need to add because end hours / mins are less than start hours and / mins
+        }
+      }
+      console.log(currentDate, startDate, endDate);
+      if (
+        currentDate.isSameOrAfter(startDate) &&
+        currentDate.isSameOrBefore(endDate)
+      ) {
+        res.result = true;
+      }
+      response.push(res);
+    }
+    return response;
   }
 
   async findAll(
@@ -328,29 +411,109 @@ export class OrderService {
     return orders;
   }
 
+  async kitchenDashboard(req: any, query: QueryKitchenDisplayDto) {
+    const queryToApply: any = { ...query };
+    const user = await this.userModel.findById(req.user.userId);
+    if (user && user.kitchenQueue) {
+      queryToApply['items'] = {
+        $elemMatch: {
+          kitchenQueueId: user.kitchenQueue,
+          preparationStatus: {
+            $in: [
+              PreparationStatus.NotStarted,
+              PreparationStatus.StartedPreparing,
+            ],
+          },
+        },
+      };
+    }
+    const totalOrders = await this.orderModel.count({
+      restaurantId: query.restaurantId,
+      supplierId: req.user.supplierId,
+      groupId: null,
+      ...queryToApply,
+      status: {
+        $in: [OrderStatus.SentToKitchen, OrderStatus.StartedPreparing],
+      },
+    });
+
+    const activeOrders = await this.orderModel.count({
+      restaurantId: query.restaurantId,
+      supplierId: req.user.supplierId,
+      groupId: null,
+      ...queryToApply,
+      status: {
+        $in: [OrderStatus.StartedPreparing],
+      },
+    });
+
+    const priorityOrdersRes = await this.orderModel.aggregate([
+      {
+        $match: {
+          restaurantId: new mongoose.Types.ObjectId(query.restaurantId),
+          supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          groupId: null,
+          ...queryToApply,
+          status: {
+            $in: [OrderStatus.StartedPreparing],
+          },
+        },
+      },
+      {
+        $project: {
+          orders: {
+            $size: {
+              $filter: {
+                input: '$preparationDetails',
+                as: 'p',
+                cond: {
+                  $gte: [
+                    {
+                      $dateAdd: {
+                        startDate: '$$p.actualStartTime',
+                        unit: 'minute',
+                        amount: '$$p.preparationTime',
+                      },
+                    },
+                    new Date(),
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    ]);
+    const priorityOrders =
+      priorityOrdersRes && priorityOrdersRes.length > 0
+        ? priorityOrdersRes[0].orders
+        : 0;
+
+    return { totalOrders, activeOrders, priorityOrders };
+  }
+
   async kitchenDisplay(
     req: any,
-    query: QueryOrderDto,
+    query: QueryKitchenDisplayDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<OrderDocument>> {
     const queryToApply: any = { ...query };
 
-    if (query.search) {
-      queryToApply.$or = [
-        { name: { $regex: query.search, $options: 'i' } },
-        { contactNumber: { $regex: query.search, $options: 'i' } },
-        { orderNumber: { $regex: query.search, $options: 'i' } },
-      ];
-    }
-    if (query.notBelongingToTable) {
-      queryToApply.tableId = null;
-      delete queryToApply.notBelongingToTable;
-    }
     const user = await this.userModel.findById(req.user.userId);
     if (user && user.kitchenQueue) {
-      queryToApply.items.kitchenQueueId = user.kitchenQueue;
-      queryToApply.items.preparationStatus = { $ne: PreparationStatus.OnTable };
+      queryToApply['items'] = {
+        $elemMatch: {
+          kitchenQueueId: user.kitchenQueue,
+          preparationStatus: {
+            $in: [
+              PreparationStatus.NotStarted,
+              PreparationStatus.StartedPreparing,
+            ],
+          },
+        },
+      };
     }
+    console.log(queryToApply);
     if (paginateOptions.pagination == false) {
       paginateOptions = {
         pagination: true,
@@ -363,6 +526,9 @@ export class OrderService {
         supplierId: req.user.supplierId,
         groupId: null,
         ...queryToApply,
+        status: {
+          $in: [OrderStatus.SentToKitchen, OrderStatus.StartedPreparing],
+        },
       },
       {
         sort: paginateOptions.sortBy
@@ -384,6 +550,13 @@ export class OrderService {
         ],
       },
     );
+    if (user && user.kitchenQueue) {
+      orders.docs.forEach((d) => {
+        d.items = d.items.filter(
+          (di) => di.kitchenQueueId.toString() == user.kitchenQueue.toString(),
+        );
+      });
+    }
     return orders;
   }
 
@@ -417,7 +590,7 @@ export class OrderService {
         ...pagination,
         populate: [
           { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
-          { path: 'customerId', select: { name: 1 } },
+          { path: 'customerId' },
           { path: 'waiterId', select: { name: 1 } },
           { path: 'tableId', select: { name: 1, nameAr: 1 } },
           { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
@@ -428,13 +601,15 @@ export class OrderService {
   }
 
   async findOne(orderId: string): Promise<OrderDocument> {
-    const exists = await this.orderModel.findById(orderId).populate([
-      { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
-      { path: 'customerId', select: { name: 1 } },
-      { path: 'waiterId', select: { name: 1 } },
-      { path: 'tableId', select: { name: 1, nameAr: 1 } },
-      { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
-    ]);
+    const exists = await this.orderModel
+      .findById(orderId)
+      .populate([
+        { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
+        { path: 'customerId' },
+        { path: 'waiterId', select: { name: 1 } },
+        { path: 'tableId', select: { name: 1, nameAr: 1 } },
+        { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
+      ]);
 
     if (!exists) {
       throw new NotFoundException();
@@ -525,6 +700,43 @@ export class OrderService {
     return modified;
   }
 
+  async deferOrder(req, orderId: string): Promise<OrderDocument> {
+    const order = await this.orderModel.findById(orderId);
+
+    if (!order) {
+      throw new NotFoundException();
+    }
+    if (order.summary.totalPaid > 0) {
+      throw new BadRequestException(
+        `This order can not be deferred as some amount is already paid`,
+      );
+    }
+    const cashierId = await this.cashierHelperService.resolveCashierId(
+      req,
+      null,
+      true,
+      order.restaurantId,
+    );
+    await this.deferredTransactionModel.create({
+      supplierId: req.user.supplierId,
+      restaurantId: order.restaurantId,
+      orderId: order._id,
+      cashierId,
+      amount: order.summary.remainingAmountToCollect,
+    });
+    const modified = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      {
+        paymentStatus: OrderPaymentStatus.Deferred,
+        status: OrderStatus.Closed,
+      },
+      {
+        new: true,
+      },
+    );
+    return modified;
+  }
+
   async groupOrders(req: any, dto: GroupOrderDto): Promise<OrderDocument> {
     const orders = await this.orderModel
       .find({
@@ -564,6 +776,7 @@ export class OrderService {
       supplier._id,
     );
 
+    console.log(groupOrder.items, groupOrder.summary);
     const groupOrderObj = await this.orderModel.create(groupOrder);
 
     await this.orderModel.updateMany(
@@ -572,6 +785,12 @@ export class OrderService {
       },
       { $set: { groupId: groupOrderObj._id, status: OrderStatus.Cancelled } },
     );
+    if (groupOrderObj.tableId) {
+      const tableLog =
+        await this.tableHelperService.addOrderToTableLogWithAutoStart(
+          groupOrderObj,
+        );
+    }
     return groupOrderObj;
   }
 
@@ -696,11 +915,24 @@ export class OrderService {
           { 'element._id': new mongoose.Types.ObjectId(dto.orderItemId) },
         ],
       };
+    } else {
+      const user = await this.userModel.findById(req.user.userId);
+      if (user && user.kitchenQueue) {
+        arrayFilter = {
+          arrayFilters: [
+            {
+              'element.kitchenQueueId': new mongoose.Types.ObjectId(
+                user.kitchenQueue.toString(),
+              ),
+            },
+          ],
+        };
+      }
     }
     await this.orderModel.updateMany({ _id: dto.orderId }, dataToSet, {
       ...arrayFilter,
     });
-    this.orderHelperService.postKitchenQueueProcessing(order, dto);
+    await this.orderHelperService.postKitchenQueueProcessing(order, dto);
     return true;
   }
 

@@ -184,6 +184,9 @@ export class Order {
       totalRefunded: 0,
       headerDiscount: 0,
       remainingAmountToCollect: 0,
+      taxableFee: 0,
+      taxOnFee: 0,
+      totalFee: 0,
     },
   })
   summary: {
@@ -196,10 +199,16 @@ export class Order {
     totalRefunded: number;
     headerDiscount: number;
     remainingAmountToCollect: number;
+    taxableFee: number;
+    taxOnFee: number;
+    totalFee: number;
   };
 
   @Prop()
   taxRate: number;
+
+  @Prop()
+  feeRate: number;
 
   @Prop({
     type: [MongooseSchema.Types.ObjectId],
@@ -230,6 +239,7 @@ export class Order {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     index: true,
+    default: null,
   })
   addedBy: UserDocument;
 

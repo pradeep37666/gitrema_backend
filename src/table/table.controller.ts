@@ -20,10 +20,15 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { AggregatePaginateResult, PaginateResult } from 'mongoose';
 import { TableDocument } from './schemas/table.schema';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { QueryTableDto } from './dto/query-table.dto';
+import {
+  QueryReadyToServeItemsDto,
+  QuerySingleTableDto,
+  QueryTableDto,
+} from './dto/query-table.dto';
 import { TableLogDto } from './dto/table-log.dto';
 import { TableLogService } from './table-log.service';
 import { TableLogDocument } from './schemas/table-log.schema';
+import { OrderPaymentStatus } from 'src/order/enum/en.enum';
 
 @Controller('table')
 @ApiTags('Tables')
@@ -53,8 +58,11 @@ export class TableController {
 
   @Get(':tableId')
   @PermissionGuard(PermissionSubject.Table, Permission.Common.FETCH)
-  async findOne(@Param('tableId') tableId: string) {
-    return await this.tableService.findOne(tableId);
+  async findOne(
+    @Param('tableId') tableId: string,
+    @Query() query: QuerySingleTableDto,
+  ) {
+    return await this.tableService.findOne(tableId, query);
   }
 
   @Patch(':tableId')
@@ -79,25 +87,31 @@ export class TableController {
   }
 
   @Patch(':tableId/update-log')
-  @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
+  @PermissionGuard(PermissionSubject.TableLog, Permission.Common.UPDATE)
   async updateLog(@Param('tableId') tableId: string, @Body() dto: TableLogDto) {
     return await this.tableLogService.updateLog(tableId, dto);
   }
 
   @Get(':tableId/current-log')
-  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  @PermissionGuard(PermissionSubject.TableLog, Permission.Common.FETCH)
   async currentLog(@Param('tableId') tableId: string) {
     return await this.tableLogService.current(tableId);
   }
 
   @Get(':tableId/logs')
-  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  @PermissionGuard(PermissionSubject.TableLog, Permission.Common.FETCH)
   async logs(
     @Req() req,
     @Param('tableId') tableId: string,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<TableLogDocument>> {
     return await this.tableLogService.logs(req, tableId, paginateOptions);
+  }
+
+  @Get('ready-to-serve')
+  @PermissionGuard(PermissionSubject.Table, Permission.Common.FETCH)
+  async readyToServe(@Req() req, @Query() query: QueryReadyToServeItemsDto) {
+    return await this.tableLogService.itemsReadyToServe(req, query);
   }
 
   @Delete(':tableId')

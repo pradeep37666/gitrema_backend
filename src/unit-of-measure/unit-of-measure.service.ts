@@ -60,7 +60,7 @@ export class UnitOfMeasureService {
     const records = await this.unitOfMeasureModelPag.paginate(
       {
         ...queryToApply,
-        supplierId: { $in: [req.user.supplierId, null] },
+        supplierId: { $in: [req.user?.supplierId ?? null, null] },
         deletedAt: null,
       },
       {

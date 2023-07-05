@@ -71,3 +71,12 @@ export const findDay = (dayNeeded, timezone) => {
     return moment().tz(timezone).add(1, 'weeks').isoWeekday(dayNeeded);
   }
 };
+
+export const getRandomTime = () => {
+  const hours = Math.floor(Math.random() * 24); // Random hours (0-23)
+  const minutes = Math.floor(Math.random() * 60); // Random minutes (0-59)
+  // Format hours and minutes as two-digit strings
+  const formattedHours = hours.toString().padStart(2, '0');
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+  return `${formattedHours}:${formattedMinutes}`;
+};

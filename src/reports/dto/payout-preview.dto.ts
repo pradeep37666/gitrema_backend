@@ -10,7 +10,7 @@ import { ShouldBeBeforeNow } from 'src/core/Validators/ShouldBeBeforeNow.validat
 export class PayoutPreviewDto {
   @ApiProperty({ required: false })
   @IsOptional()
-  @ShouldBeAfter('endDate')
+  @ShouldBeBefore('endDate')
   @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
   @IsDate()
   startDate: Date;
@@ -18,7 +18,7 @@ export class PayoutPreviewDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @ShouldBeBeforeNow()
-  @ShouldBeBefore('startDate')
+  @ShouldBeAfter('startDate')
   @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
   @IsDate()
   endDate: Date;

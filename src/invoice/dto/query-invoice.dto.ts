@@ -1,9 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { InvoiceType } from '../invoice.enum';
-import { IsEnum, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
 
 export class QueryInvoiceDto {
-  @ApiProperty({ type: String })
+  @ApiProperty({ required: false })
+  @ValidateIf((o) => !o.orderNumber)
   @IsMongoId()
   @IsNotEmpty()
   orderId: string;
@@ -17,4 +25,15 @@ export class QueryInvoiceDto {
   @IsEnum(InvoiceType)
   @IsOptional()
   type: InvoiceType;
+
+  @ApiProperty({ required: false })
+  @ValidateIf((o) => !o.orderId)
+  @IsString()
+  @IsNotEmpty()
+  orderNumber: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  invoiceNumber: string;
 }

@@ -12,6 +12,12 @@ import {
 import { ReportController } from './report.controller';
 import { ReportService } from './report.service';
 import { GlobalConfigModule } from 'src/global-config/global-config.module';
+import { SalesReportService } from './sales-report.service';
+import {
+  Supplier,
+  SupplierSchema,
+} from 'src/supplier/schemas/suppliers.schema';
+import { PaymentReportService } from './payment-report.service';
 
 @Module({
   imports: [
@@ -19,11 +25,12 @@ import { GlobalConfigModule } from 'src/global-config/global-config.module';
       { name: Order.name, schema: OrderSchema },
       { name: Reservation.name, schema: ReservationSchema },
       { name: Transaction.name, schema: TransactionSchema },
+      { name: Supplier.name, schema: SupplierSchema },
     ]),
     GlobalConfigModule,
   ],
   controllers: [ReportController],
-  providers: [ReportService],
+  providers: [ReportService, SalesReportService, PaymentReportService],
   exports: [ReportService],
 })
 export class ReportModule {}

@@ -96,5 +96,7 @@ export class LoggedInUserPayload {
   restaurantId?: any;
   roleId: any;
   isCustomer?: boolean;
+  isWaiter?: boolean;
   userObj?: any;
+  time?: any;
 }

@@ -39,6 +39,7 @@ export enum OrderPaymentStatus {
   OverPaid = 'Over Paid',
   Refunded = 'Refunded',
   PartiallyRefunded = 'Partially Refunded',
+  Deferred = 'Deferred',
 }
 
 export enum InvoiceStatus {

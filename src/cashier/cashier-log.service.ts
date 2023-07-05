@@ -46,18 +46,76 @@ export class CashierLogService {
     private socketGateway: SocketIoGateway,
   ) {}
 
-  async current(cashierId: string): Promise<CashierLogDocument> {
-    const exists = await this.cashierLogModel.findOne(
-      { cashierId },
-      {},
-      { sort: { _id: -1 } },
-    );
+  async current(cashierId: string): Promise<any> {
+    const exists = await this.cashierLogModel
+      .findOne({ cashierId }, {}, { sort: { _id: -1 } })
+      .populate([
+        {
+          path: 'transactions',
+          populate: [
+            {
+              path: 'orderId',
+              select: { items: 0 },
+            },
+          ],
+        },
+        {
+          path: 'userId',
+          select: {
+            name: 1,
+            _id: 1,
+            phoneNumber: 1,
+            email: 1,
+            whatsappNumber: 1,
+          },
+        },
+      ]);
 
     if (!exists) {
       throw new NotFoundException();
     }
 
-    return exists;
+    return {
+      ...exists.toObject(),
+      dashboard: await this.cashierHelperService.prepareDashboardData(exists),
+    };
+  }
+
+  async singleLog(cashierId: string, cashierLogId: string): Promise<any> {
+    const exists = await this.cashierLogModel
+      .findOne({ cashierId, _id: cashierLogId })
+      .populate([
+        {
+          path: 'transactions',
+          populate: [
+            {
+              path: 'orderId',
+              select: {
+                items: 0,
+              },
+            },
+          ],
+        },
+        {
+          path: 'userId',
+          select: {
+            name: 1,
+            _id: 1,
+            phoneNumber: 1,
+            email: 1,
+            whatsappNumber: 1,
+          },
+        },
+      ]);
+
+    if (!exists) {
+      throw new NotFoundException();
+    }
+
+    return {
+      ...exists.toObject(),
+      dashboard: await this.cashierHelperService.prepareDashboardData(exists),
+    };
   }
 
   async logs(
@@ -65,7 +123,7 @@ export class CashierLogService {
     cashierId: string,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<CashierLogDocument>> {
-    const cashierLogs = await this.cashierLogModelPag.paginate(
+    const cashierLogs: any = await this.cashierLogModelPag.paginate(
       {
         cashierId,
       },
@@ -74,8 +132,37 @@ export class CashierLogService {
         lean: true,
         ...paginateOptions,
         ...pagination,
+        populate: [
+          {
+            path: 'transactions',
+            populate: [
+              {
+                path: 'orderId',
+                select: { orderNumber: 1 },
+              },
+            ],
+          },
+          {
+            path: 'userId',
+            select: {
+              name: 1,
+              _id: 1,
+              phoneNumber: 1,
+              email: 1,
+              whatsappNumber: 1,
+            },
+          },
+        ],
+        allowDiskUse: true,
       },
     );
+    for (const i in cashierLogs.docs) {
+      cashierLogs.docs[i].dashboard =
+        await this.cashierHelperService.prepareDashboardData(
+          cashierLogs.docs[i],
+        );
+    }
+
     return cashierLogs;
   }
 

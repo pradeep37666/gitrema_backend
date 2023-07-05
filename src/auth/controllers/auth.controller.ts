@@ -7,6 +7,7 @@ import {
   Request,
   Query,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { SignupRequestDto } from '../dto/signup-request.dto';
@@ -96,6 +97,11 @@ export class AuthController {
     @Query('domain') domain: string,
   ): Promise<any> {
     return await this.authService.getTokenToAccessPublicApis(domain);
+  }
+
+  @Get('no-auth-token')
+  async getNoAuthToken(@Query('supplierId') supplierId: string): Promise<any> {
+    return await this.authService.getNoAuthToken(supplierId);
   }
 
   @Post('forgot-password')

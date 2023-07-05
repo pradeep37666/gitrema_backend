@@ -34,6 +34,7 @@ import { MenuItem, MenuItemDocument } from 'src/menu/schemas/menu-item.schema';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
+import { InvoiceService } from './invoice.service';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -60,7 +61,8 @@ export class InvoiceHelperService {
     @Inject(forwardRef(() => CalculationService))
     private readonly calculationService: CalculationService,
     private readonly httpService: HttpService,
-
+    @Inject(forwardRef(() => InvoiceService))
+    private readonly invoiceService: InvoiceService,
     private readonly socketGateway: SocketIoGateway,
     @InjectModel(Printer.name) private printerModel: Model<PrinterDocument>,
   ) {}
@@ -99,6 +101,43 @@ export class InvoiceHelperService {
       });
       oi.additionTextAr = message;
     });
+    let items = dto.items;
+    if (!items) {
+      items = [];
+      orderObj.items.forEach((oi) => {
+        let message = '';
+        oi.additions.forEach((oia) => {
+          const options = oia.options.map((o) => {
+            return o.nameAr;
+          });
+          message += `- with ${options.join(',')}`;
+          message += `\n`;
+        });
+
+        items.push({
+          name: oi.menuItem.name,
+          nameAr: oi.menuItem.nameAr,
+          quantity: oi.quantity,
+          additionTextAr: message,
+          totalWithTax: oi.amountAfterDiscount,
+          itemId: oi._id,
+          taxableAmount: oi.itemTaxableAmount,
+          tax: oi.tax,
+        });
+      });
+    }
+
+    const orderData = {
+      totalTaxableAmount: 0,
+      totalWithTax: 0,
+      totalTax: 0,
+    };
+
+    items.forEach((i) => {
+      orderData.totalTaxableAmount += i.taxableAmount;
+      orderData.totalWithTax += i.totalWithTax;
+      orderData.totalTax += i.tax;
+    });
 
     const templateHtml = fs.readFileSync(
       'src/invoice/templates/invoice.v1.html',
@@ -110,13 +149,11 @@ export class InvoiceHelperService {
       qrCode,
       invoiceNumber: dto.invoiceNumber,
       order: orderObj,
+      items,
+      orderData,
       multiplier,
     });
 
-    const items = [];
-    order.items.forEach((oi) => {
-      items.push({ itemId: oi._id, quantity: oi.quantity });
-    });
     const document = await this.uploadDocument(
       html,
       order.supplierId._id + '/' + order.restaurantId._id + '/invoice/',
@@ -448,5 +485,21 @@ export class InvoiceHelperService {
       .encode();
     console.log(commands);
     return commands;
+  }
+
+  async regenerateInvoice(order: OrderDocument) {
+    const invoice = await this.invoiceModel.findOne({
+      orderId: order._id,
+      type: InvoiceType.Invoice,
+      isReversedInvoice: false,
+      reversedInvoiceId: null,
+    });
+    if (invoice) {
+      await this.invoiceService.cancel(null, invoice._id.toString());
+      await this.invoiceService.create(null, {
+        orderId: order._id,
+        type: InvoiceType.Invoice,
+      });
+    }
   }
 }

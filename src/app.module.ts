@@ -86,8 +86,9 @@ import { VendorMaterialModule } from './vendor-material/vendor-material.module';
 import { PaymentGatewayModule } from './payment-gateway/payment-gateway.module';
 import { CustomerConditionModule } from './customer-condition/customer-condition.module';
 import { InventoryReportModule } from './inventory-report/inventory-report.module';
-//import { CostSimulatorModule } from './cost-simulator/cost-simulator.module';
+import { CostSimulatorModule } from './cost-simulator/cost-simulator.module';
 import { PrinterModule } from './printer/printer.module';
+import { PublishModule } from './publish/publish.module';
 
 @Module({
   imports: [
@@ -186,6 +187,8 @@ import { PrinterModule } from './printer/printer.module';
     PaymentGatewayModule,
     CustomerConditionModule,
     InventoryReportModule,
+    CostSimulatorModule,
+    PublishModule,
   ],
   controllers: [AppController],
   providers: [

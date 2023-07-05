@@ -87,7 +87,9 @@ export class PaymentService {
 
     let amountToCollect =
       paymentRequestDetails.amount ??
-      order.summary.totalWithTax + (order.tip ?? 0);
+      order.summary.totalWithTax +
+        (order.tip ?? 0) -
+        (order.summary.totalPaid ?? 0);
     if (paymentRequestDetails.transactionId) {
       transaction = await this.transactionModel.findById(
         paymentRequestDetails.transactionId,
@@ -113,6 +115,7 @@ export class PaymentService {
       req,
       paymentRequestDetails.cashierId,
       true,
+      order.restaurantId,
     );
     let paymentGateway = null;
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Online)
@@ -126,10 +129,11 @@ export class PaymentService {
         amount: amountToCollect,
         paymentGateway,
         paymentMethod: paymentRequestDetails.paymentMethod,
-        status:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Cash
-            ? PaymentStatus.Success
-            : PaymentStatus.Pending,
+        status: [PaymentMethod.Cash, PaymentMethod.Card].includes(
+          paymentRequestDetails.paymentMethod,
+        )
+          ? PaymentStatus.Success
+          : PaymentStatus.Pending,
         cashierId,
         uuId: uuidv4(),
       });
@@ -149,10 +153,11 @@ export class PaymentService {
       });
     } else {
       transaction.set({
-        status:
-          paymentRequestDetails.paymentMethod == PaymentMethod.Cash
-            ? PaymentStatus.Success
-            : PaymentStatus.Pending,
+        status: [PaymentMethod.Cash, PaymentMethod.Card].includes(
+          paymentRequestDetails.paymentMethod,
+        )
+          ? PaymentStatus.Success
+          : PaymentStatus.Pending,
         paymentGateway,
         paymentMethod: paymentRequestDetails.paymentMethod,
       });
@@ -236,6 +241,7 @@ export class PaymentService {
       req,
       dto.cashierId,
       true,
+      order.restaurantId,
     );
     const transaction = await this.transactionModel.create({
       supplierId: order.supplierId,

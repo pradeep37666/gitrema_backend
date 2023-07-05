@@ -46,6 +46,9 @@ export class CalculationService {
       totalRefunded: 0,
       headerDiscount: 0,
       remainingAmountToCollect: 0,
+      taxableFee: 0,
+      taxOnFee: 0,
+      totalFee: 0,
     };
 
     let offer = await this.offerModel.findOne(
@@ -137,6 +140,13 @@ export class CalculationService {
 
     summary.totalTax = (summary.totalTaxableAmount * orderData.taxRate) / 100;
 
+    if (orderData.feeRate > 0) {
+      summary.taxableFee =
+        summary.totalWithTax -
+        summary.totalWithTax / (1 + orderData.feeRate / 100);
+      summary.taxOnFee = (summary.taxableFee * orderData.taxRate) / 100;
+      summary.totalFee = summary.taxableFee + summary.taxOnFee;
+    }
     summary.totalBeforeDiscount = roundOffNumber(summary.totalBeforeDiscount);
     summary.discount = roundOffNumber(summary.discount);
     summary.totalWithTax = roundOffNumber(summary.totalWithTax);
@@ -152,7 +162,11 @@ export class CalculationService {
         orderData.summary?.totalPaid;
       if (summary.remainingAmountToCollect < 0)
         summary.remainingAmountToCollect = 0;
+    } else {
+      summary.remainingAmountToCollect =
+        summary.totalWithTax + (orderData.tip ?? 0);
     }
+
     return summary;
   }
 
@@ -420,11 +434,6 @@ export class CalculationService {
         preparationDetails.kitchenSortingNumber,
       );
     }
-    this.socketGateway.emit(
-      orderData.supplierId.toString(),
-      SocketEvents.KitchenQueue,
-      { KitchenQueueId: orderData.kitchenQueueId, orderListRefresh: true },
-    );
   }
 
   async identifyOrdersToRecalculateAfterCompleted(orderData) {

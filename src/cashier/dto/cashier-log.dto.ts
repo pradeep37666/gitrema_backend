@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsDate,
   IsMongoId,
   IsNotEmpty,
@@ -10,6 +11,7 @@ import {
   Min,
 } from 'class-validator';
 import * as moment from 'moment';
+import { ToBoolean } from 'src/core/Helpers/custom.validators';
 
 export class OpenCashierDto {
   @ApiProperty({ required: false })
@@ -59,4 +61,16 @@ export class QueryCashierLogDto {
   @Transform(({ value }) => new Date(moment.utc(value).format('YYYY-MM-DD')))
   @IsDate()
   createdAt: Date;
+}
+
+export class QueryCashierDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsMongoId()
+  restaurantId: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ToBoolean()
+  includeOrders?: boolean;
 }

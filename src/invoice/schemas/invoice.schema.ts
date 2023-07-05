@@ -37,6 +37,15 @@ class Item {
 
   @Prop({ default: null })
   description: string;
+
+  @Prop({ default: null })
+  name: string;
+
+  @Prop({ default: null })
+  nameAr: string;
+
+  @Prop({ default: null })
+  additionTextAr: string;
 }
 const ItemSchema = SchemaFactory.createForClass(Item);
 
@@ -60,6 +69,11 @@ export class Invoice {
     required: true,
   })
   invoiceNumber: string;
+
+  @Prop({
+    required: true,
+  })
+  orderNumber: string;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,

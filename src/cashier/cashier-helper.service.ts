@@ -13,6 +13,12 @@ import { Cashier, CashierDocument } from './schemas/cashier.schema';
 import { CashierLogService } from './cashier-log.service';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { PaymentMethod } from 'src/payment/enum/en.enum';
+import { CashierLogDocument } from './schemas/cashier-log.schema';
+import {
+  DeferredTransaction,
+  DeferredTransactionDocument,
+} from 'src/order/schemas/deferred-transaction.schema';
 
 @Injectable()
 export class CashierHelperService {
@@ -23,6 +29,8 @@ export class CashierHelperService {
     private readonly cashierLogService: CashierLogService,
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(DeferredTransaction.name)
+    private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
   ) {}
 
   async postCashierCreate(req, cashier: CashierDocument) {
@@ -37,7 +45,7 @@ export class CashierHelperService {
     if (cashier.default == true) {
       await this.cashierModel.updateMany(
         {
-          supplierId: cashier.supplierId,
+          restaurantId: cashier.restaurantId,
           _id: { $ne: cashier._id },
         },
         {
@@ -53,12 +61,51 @@ export class CashierHelperService {
     return records.reduce((prev, acc) => prev + acc.amount, 0);
   }
 
-  async resolveCashierId(req: any, cashierId, autoStart = false) {
+  async prepareDashboardData(cashierLog: CashierLogDocument) {
+    const deferredTransactions = await this.deferredTransactionModel.find({
+      cashierId: cashierLog.cashierId,
+      createdAt: {
+        $gte: cashierLog.startedAt,
+        $lte: cashierLog.closedAt ?? new Date(),
+      },
+    });
+    const transactions = cashierLog.transactions;
+    const refunds = transactions.filter((t) => t.isRefund);
+    const sales = transactions.filter((t) => !t.isRefund);
+    const cashSales = sales.filter(
+      (s) => s.paymentMethod === PaymentMethod.Cash,
+    );
+    const bankSales = sales.filter(
+      (s) =>
+        s.paymentMethod === PaymentMethod.Online ||
+        s.paymentMethod === PaymentMethod.Card,
+    );
+    const dashboard = {
+      openingBalance: cashierLog.openingBalance,
+      totalRefunds: this.foldAmount(refunds),
+      totalSales: this.foldAmount(sales),
+      salesPaidWithCash: this.foldAmount(cashSales),
+      salesPaidWithCard: cashierLog.openingBalance + this.foldAmount(bankSales),
+      expectedCashAtClose:
+        cashierLog.openingBalance +
+        this.foldAmount(cashSales) -
+        this.foldAmount(refunds),
+      deferredAmount: this.foldAmount(deferredTransactions),
+    };
+    return dashboard;
+  }
+
+  async resolveCashierId(
+    req: any,
+    cashierId,
+    autoStart = false,
+    restaurantId = null,
+  ) {
     let cashier = null;
     if (!cashierId) {
       if (req.user.isCustomer) {
         cashier = await this.cashierModel.findOne({
-          supplierId: req.user.supplierId,
+          restaurantId,
           default: true,
         });
         if (!cashier)
@@ -70,6 +117,18 @@ export class CashierHelperService {
       } else {
         const user = await this.userModel.findById(req.user.userId);
         if (user) cashierId = user.cashier;
+        if (!cashierId) {
+          cashier = await this.cashierModel.findOne({
+            restaurantId,
+            default: true,
+          });
+          if (!cashier)
+            throw new BadRequestException(
+              VALIDATION_MESSAGES.NoCashierAvailable.key,
+            );
+
+          cashierId = cashier._id;
+        }
       }
     }
 

@@ -24,6 +24,7 @@ import {
   CloseCashierDto,
   OpenCashierDto,
   OverrideCloseCashierDto,
+  QueryCashierDto,
 } from './dto/cashier-log.dto';
 import { CashierLogDocument } from './schemas/cashier-log.schema';
 import { CashierLogService } from './cashier-log.service';
@@ -49,9 +50,10 @@ export class CashierController {
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.LIST)
   async findAll(
     @Req() req,
+    @Query() query: QueryCashierDto,
     @Query() paginateOptions: PaginationDto,
   ): Promise<PaginateResult<CashierDocument>> {
-    return await this.cashierService.findAll(req, paginateOptions);
+    return await this.cashierService.findAll(req, query, paginateOptions);
   }
 
   @Get(':cashierId')
@@ -106,6 +108,15 @@ export class CashierController {
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
   async currentLog(@Param('cashierId') cashierId: string) {
     return await this.cashierLogService.current(cashierId);
+  }
+
+  @Get(':cashierId/:cashierLogId')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async logById(
+    @Param('cashierId') cashierId: string,
+    @Param('cashierLogId') cashierLogId: string,
+  ) {
+    return await this.cashierLogService.singleLog(cashierId, cashierLogId);
   }
 
   @Get(':cashierId/logs')

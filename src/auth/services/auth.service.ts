@@ -106,6 +106,7 @@ export class AuthService {
       userId: user._id,
       supplierId: user.supplierId?._id,
       roleId: user.role._id,
+      isWaiter: user.isWaiter ?? false,
     };
 
     return await this.generateAuthToken(payload);
@@ -137,6 +138,7 @@ export class AuthService {
           supplierId: user.supplierId,
           restaurantId: user.restaurantId,
           roleId: user.role._id,
+          isWaiter: user.isWaiter ?? false,
         };
 
         return { user, accessToken: await this.generateAuthToken(payload) };
@@ -368,6 +370,24 @@ export class AuthService {
       userId: '',
       supplierId: supplier._id,
       roleId: role._id,
+    };
+
+    return { accessToken: await this.generateAuthToken(payload), supplier };
+  }
+
+  async getNoAuthToken(supplierId: string): Promise<any> {
+    const supplier = await this.supplierService.getOne(supplierId);
+    if (!supplier) {
+      throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
+    }
+    const role = await this.roleModel.findOne({ slug: RoleSlug.NoAuth }).lean();
+    if (!role)
+      throw new BadRequestException(VALIDATION_MESSAGES.RecordNotFound.key);
+    const payload = {
+      userId: null,
+      supplierId: supplier._id,
+      roleId: role._id,
+      time: new Date(),
     };
 
     return { accessToken: await this.generateAuthToken(payload), supplier };

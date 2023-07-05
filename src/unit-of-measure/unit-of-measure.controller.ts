@@ -38,7 +38,7 @@ export class UnitOfMeasureController {
   }
 
   @Get()
-  @PermissionGuard(PermissionSubject.UnitOfMeasure, Permission.Common.LIST)
+  @Public()
   async findAll(
     @Req() req,
     @Query() query: QueryUnitOfMeasureDto,

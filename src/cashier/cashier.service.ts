@@ -7,7 +7,13 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model, PaginateModel, PaginateResult } from 'mongoose';
+import {
+  Model,
+  PaginateModel,
+  PaginateResult,
+  PopulateOption,
+  PopulateOptions,
+} from 'mongoose';
 
 import {
   DefaultSort,
@@ -22,6 +28,8 @@ import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { CashierLogService } from './cashier-log.service';
 import { CashierLogDocument } from './schemas/cashier-log.schema';
 import { PaymentStatus } from 'src/core/Constants/enum';
+import { QueryCashierDto } from './dto/cashier-log.dto';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class CashierService {
@@ -30,6 +38,8 @@ export class CashierService {
     private readonly cashierModel: Model<CashierDocument>,
     @InjectModel(Cashier.name)
     private readonly cashierModelPag: PaginateModel<CashierDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly cashierHelperService: CashierHelperService,
     @Inject(forwardRef(() => CashierLogService))
     private readonly cashierLogService: CashierLogService,
@@ -47,11 +57,20 @@ export class CashierService {
 
   async findAll(
     req: any,
+    query: QueryCashierDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<CashierDocument>> {
+    let userQuery = {};
+    const user = await this.userModel.findById(req.user.userId);
+    if (user && user.cashier) {
+      userQuery = { _id: user.cashier };
+    }
+
     const cashiers = await this.cashierModelPag.paginate(
       {
         supplierId: req.user.supplierId,
+        ...query,
+        ...userQuery,
       },
       {
         sort: DefaultSort,
@@ -61,6 +80,18 @@ export class CashierService {
         populate: [
           {
             path: 'currentLog',
+            populate: [
+              {
+                path: 'transactions',
+                populate: query.includeOrders
+                  ? [
+                      {
+                        path: 'orderId',
+                      },
+                    ]
+                  : [],
+              },
+            ],
           },
         ],
       },
@@ -113,38 +144,8 @@ export class CashierService {
   }
 
   async findDashboard(cashierId: string): Promise<any> {
-    const activeShift = await this.cashierLogService.current(cashierId);
+    const cashierData = await this.cashierLogService.current(cashierId);
 
-    await activeShift.populate({
-      path: 'transactions',
-      model: 'Transaction',
-      select: {
-        amount: 1,
-        isRefund: 1,
-        paymentMethod: 1,
-      },
-      match: {
-        status: PaymentStatus.Success,
-      },
-    });
-    const transactions = activeShift.transactions;
-    const refunds = transactions.filter((t) => t.isRefund);
-    const sales = transactions.filter((t) => !t.isRefund);
-    const cashSales = sales.filter(
-      (s) => s.paymentMethod === PaymentMethod.Cash,
-    );
-    const bankSales = sales.filter(
-      (s) => s.paymentMethod === PaymentMethod.Online,
-    );
-    const dashboard = {
-      openingBalance: activeShift.openingBalance,
-      totalRefunds: this.cashierHelperService.foldAmount(refunds),
-      totalSales: this.cashierHelperService.foldAmount(sales),
-      totalInCash:
-        activeShift.openingBalance +
-        this.cashierHelperService.foldAmount(cashSales),
-      totalInBank: this.cashierHelperService.foldAmount(bankSales),
-    };
-    return dashboard;
+    return cashierData?.dashboard ?? {};
   }
 }

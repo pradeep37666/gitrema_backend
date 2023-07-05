@@ -10,6 +10,7 @@ export enum PermissionSubject {
   CustomFields = 'Custom Fields',
   Restaurant = 'Restaurant',
   Table = 'Table',
+  TableLog = 'Table Log',
   MenuCategory = 'Menu Category',
   MenuAddition = 'Menu Addition',
   MenuItem = 'Menu Item',
@@ -53,6 +54,8 @@ export enum PermissionSubject {
   PaymentGateway = 'PaymentGateway',
   CustomerCondition = 'CustomerCondition',
   Printer = 'Printer',
+  Restricted = 'Restricted',
+  Payment = 'Payment',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
@@ -62,6 +65,7 @@ export enum SubjectsRestrictedForSupplier {
   Package = 'Package',
   UnitOfMeasure = 'Units Of Measure',
   PaymentGateway = 'PaymentGateway',
+  Restricted = 'Restricted',
 }
 export enum CommonPermissions {
   LIST = 'LIST',
@@ -97,6 +101,8 @@ export enum OrderPermissions {
   OnTable = 'On Table',
   Change = 'Change',
   KitchenDisplay = 'Kitchen Display',
+  ChefInquiry = 'ChefInquiry',
+  KitchenQueueProcess = 'Kitchen Queue Process',
 }
 
 export enum UserPermission {
@@ -110,4 +116,14 @@ export enum ReportPermission {
 
 export enum SupplierPermission {
   ListVendors = 'List Vendors',
+}
+
+export enum RestrictedPermission {
+  Publish = 'Publish',
+}
+
+export enum PaymentPermission {
+  CollectPayment = 'Collect Payment',
+  Refund = 'Refund',
+  Split = 'Split',
 }

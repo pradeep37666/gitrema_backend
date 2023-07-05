@@ -144,6 +144,12 @@ export class Supplier {
   @Prop({ default: true })
   customerAuthForTableActivities: boolean;
 
+  @Prop({ default: true })
+  acceptTip: boolean;
+
+  @Prop({ default: 0 })
+  feeRate: number;
+
   @Prop({ default: { start: '08:00', end: '22:00' }, type: Object })
   defaultWorkingHours: {
     start: string;

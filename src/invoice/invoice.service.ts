@@ -91,9 +91,11 @@ export class InvoiceService {
     ) {
       throw new BadRequestException(VALIDATION_MESSAGES.InvoiceExists.key);
     }
-    dto.invoiceNumber = await this.invoiceHelperService.generateInvoiceNumber(
-      order.supplierId._id,
-    );
+    dto.invoiceNumber = cancelledInvoice
+      ? cancelledInvoice.invoiceNumber
+      : await this.invoiceHelperService.generateInvoiceNumber(
+          order.supplierId._id,
+        );
     let invoiceData = { url: '', items: null, html: '', imageUrl: '' },
       refInvoice = null;
     // generate invoice
@@ -124,6 +126,7 @@ export class InvoiceService {
     // create invoice record
     const invoice = await this.invoiceModel.create({
       ...dto,
+      orderNumber: order.orderNumber,
       addedBy: req?.user?.userId ?? null,
       supplierId: order.supplierId._id,
       restaurantId: order.restaurantId._id,
@@ -131,6 +134,8 @@ export class InvoiceService {
       imageUrl: invoiceData.imageUrl,
       items: invoiceData.items,
       refInvoiceId: refInvoice ? refInvoice._id : null,
+      isReversedInvoice: cancelledInvoice ? true : false,
+      refOriginalInvoiceId: cancelledInvoice ? cancelledInvoice._id : null,
     });
 
     this.invoiceHelperService.postInvoiceCreate(invoice, order);
@@ -143,10 +148,12 @@ export class InvoiceService {
       _id: invoiceId,
       reversedInvoiceId: null,
     });
+
     // check if already cancelled
     if (!invoice) {
       throw new BadRequestException(VALIDATION_MESSAGES.AlreadyCancelled.key);
     }
+    const invoiceData = invoice.toObject();
     // check if its main invoice and any credit / debit memo is already created
     if (invoice.type == InvoiceType.Invoice) {
       const relatedInvoice = await this.invoiceModel.count({
@@ -162,7 +169,7 @@ export class InvoiceService {
       {
         orderId: invoice.orderId.toString(),
         type: invoice.type,
-        items: invoice.items,
+        items: invoiceData.items,
       },
       invoice,
     );

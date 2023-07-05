@@ -251,6 +251,16 @@ export class AddSupplierDto {
   @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()
+  acceptTip?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  feeRate?: number;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
   createTestData?: boolean;
 }
 

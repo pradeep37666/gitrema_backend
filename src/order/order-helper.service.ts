@@ -260,8 +260,6 @@ export class OrderHelperService {
         ),
         itemTaxableAmount: roundOffNumber(itemTaxableAmount),
         tax: roundOffNumber(tax),
-        kitchenQueueId:
-          menuItem.categoryId.kitchenQueueId ?? dto.kitchenQueueId,
       };
 
       //prepare additions
@@ -270,7 +268,7 @@ export class OrderHelperService {
       // copy menu addition attributes needed in order schema
       for (const j in additions) {
         const menuAddition = menuAdditions.find((ma) => {
-          return ma._id.toString() == additions[j].menuAdditionId;
+          return ma._id.toString() == additions[j].menuAdditionId.toString();
         });
         preparedAdditions[j] = {
           ...additions[j],
@@ -278,8 +276,8 @@ export class OrderHelperService {
         };
         if (additions[j].options) {
           // only set the selected options
-          const additionOptionIds = additions[j].options.map(
-            (ao) => ao.optionId,
+          const additionOptionIds = additions[j].options.map((ao) =>
+            ao.optionId.toString(),
           );
           preparedAdditions[j].options = menuAddition.options.filter((mao) => {
             return additionOptionIds.includes(mao._id.toString());
@@ -354,6 +352,8 @@ export class OrderHelperService {
       preparedItems[i].preparationTime = roundOffNumber(
         preparedItems[i].menuItem.preparationTime * preparedItems[i].quantity,
       );
+      preparedItems[i].kitchenQueueId =
+        menuItem.categoryId.kitchenQueueId ?? dto.kitchenQueueId ?? null;
     }
 
     return preparedItems;
@@ -384,6 +384,11 @@ export class OrderHelperService {
         order.contactNumber = customer.phoneNumber;
         order.name = customer.name;
         order.save();
+
+        if (order.orderType == OrderType.Delivery) {
+          customer.deliveryAddress = order.deliveryAddress;
+          customer.save();
+        }
       }
     }
 
@@ -473,6 +478,7 @@ export class OrderHelperService {
           order.save();
           //console.log(order);
         }
+        this.notifyKitchenQueue(order);
       } else if (dto.status == OrderStatus.OnTable) {
         this.storeOrderStateActivity(
           order,
@@ -511,6 +517,10 @@ export class OrderHelperService {
 
     if (!order.customerId && order.contactNumber) {
       this.setCustomer(order);
+    }
+
+    if (dto.items) {
+      await this.invoiceHelperService.regenerateInvoice(order);
     }
   }
 
@@ -659,11 +669,24 @@ export class OrderHelperService {
         OrderEvents.DonePreparing,
         order,
       );
+      //console.log(`Socket Event ${}`);
       this.socketGateway.emit(
         order.supplierId.toString(),
         SocketEvents.OrderPrepared,
         dataToNotify,
       );
+    }
+  }
+  async notifyKitchenQueue(order: OrderDocument) {
+    let kitchenQueues = order.items.map((oi) => oi.kitchenQueueId);
+    for (const i in kitchenQueues) {
+      if (kitchenQueues[i]) {
+        this.socketGateway.emit(
+          order.supplierId.toString(),
+          SocketEvents.KitchenQueue,
+          { KitchenQueueId: kitchenQueues[i], orderListRefresh: true },
+        );
+      }
     }
   }
 }
