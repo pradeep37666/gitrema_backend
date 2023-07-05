@@ -144,21 +144,8 @@ export class CashierService {
   }
 
   async findDashboard(cashierId: string): Promise<any> {
-    const activeShift = await this.cashierLogService.current(cashierId);
+    const cashierData = await this.cashierLogService.current(cashierId);
 
-    await activeShift.populate({
-      path: 'transactions',
-      model: 'Transaction',
-      select: {
-        amount: 1,
-        isRefund: 1,
-        paymentMethod: 1,
-      },
-      match: {
-        status: PaymentStatus.Success,
-      },
-    });
-
-    return this.cashierHelperService.prepareDashboardData(activeShift);
+    return cashierData?.dashboard ?? {};
   }
 }

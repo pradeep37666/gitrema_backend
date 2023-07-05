@@ -59,6 +59,16 @@ export class CashierLogService {
             },
           ],
         },
+        {
+          path: 'userId',
+          select: {
+            name: 1,
+            _id: 1,
+            phoneNumber: 1,
+            email: 1,
+            whatsappNumber: 1,
+          },
+        },
       ]);
 
     if (!exists) {
@@ -85,6 +95,16 @@ export class CashierLogService {
               },
             },
           ],
+        },
+        {
+          path: 'userId',
+          select: {
+            name: 1,
+            _id: 1,
+            phoneNumber: 1,
+            email: 1,
+            whatsappNumber: 1,
+          },
         },
       ]);
 
@@ -115,6 +135,16 @@ export class CashierLogService {
         populate: [
           {
             path: 'transactions',
+          },
+          {
+            path: 'userId',
+            select: {
+              name: 1,
+              _id: 1,
+              phoneNumber: 1,
+              email: 1,
+              whatsappNumber: 1,
+            },
           },
         ],
         allowDiskUse: true,
