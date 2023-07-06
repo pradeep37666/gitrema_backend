@@ -859,6 +859,7 @@ export class OrderService {
       targetOrderDto.orderNumber =
         await this.orderHelperService.generateOrderNumber(supplier._id);
       targetOrder = await this.orderModel.create(targetOrderDto);
+      this.orderHelperService.postOrderCreate(req, targetOrder);
     } else {
       targetOrder = await this.orderModel.findById(dto.targetOrderId);
       targetOrder.items = targetOrder.items.concat(items);

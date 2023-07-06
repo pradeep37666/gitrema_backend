@@ -25,6 +25,9 @@ export class Printer {
   @Prop({ default: null })
   nameAr: string;
 
+  @Prop({ default: null })
+  printerLabel: string;
+
   @Prop({ type: String, enum: PrinterType })
   type: PrinterType;
 
