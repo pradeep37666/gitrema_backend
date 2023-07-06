@@ -85,7 +85,7 @@ export class CashierHelperService {
       totalRefunds: this.foldAmount(refunds),
       totalSales: this.foldAmount(sales),
       salesPaidWithCash: this.foldAmount(cashSales),
-      salesPaidWithCard: cashierLog.openingBalance + this.foldAmount(bankSales),
+      salesPaidWithCard: this.foldAmount(bankSales),
       expectedCashAtClose:
         cashierLog.openingBalance +
         this.foldAmount(cashSales) -
