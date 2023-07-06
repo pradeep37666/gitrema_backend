@@ -49,6 +49,9 @@ Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
     '%': lvalue % rvalue,
   }[operator];
 });
+Handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
+  return arg1 == arg2 ? options.fn(this) : options.inverse(this);
+});
 
 @Injectable()
 export class InvoiceHelperService {
@@ -151,6 +154,7 @@ export class InvoiceHelperService {
       order: orderObj,
       items,
       orderData,
+      isFeeApplied: order.feeRate ? 'TRUE' : 'FALSE',
       multiplier,
     });
 
