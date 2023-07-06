@@ -29,6 +29,13 @@ export class CreatePrinterDto {
   @ApiProperty({ required: false })
   nameAr: string;
 
+  @IsOptional()
+  @IsString({
+    message: i18nValidationMessage('validation.MUST_BE_STRING'),
+  })
+  @ApiProperty({ required: false })
+  printerLabel: string;
+
   @ApiProperty({ type: String, enum: PrinterType, enumName: 'PrinterType' })
   @IsEnum(PrinterType, {
     message: i18nValidationMessage('validation.MUST_BE_ENUM'),
