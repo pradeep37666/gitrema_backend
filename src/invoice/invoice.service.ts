@@ -233,13 +233,13 @@ export class InvoiceService {
         type: PrinterType.Cashier,
         supplierId: req.user.supplierId,
       });
-      if (!printer) {
+      if (!printer && query.type) {
         throw new BadRequestException(`No Cashier Printer Found`);
       }
       const invoice = await this.invoiceModel.findOne({
         orderId: query.orderId,
       });
-      if (!invoice) {
+      if (!invoice && query.type) {
         throw new BadRequestException(VALIDATION_MESSAGES.InvoiceNotFound.key);
       }
       // let commands =
