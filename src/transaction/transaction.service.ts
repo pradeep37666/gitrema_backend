@@ -40,6 +40,9 @@ import { OrderEvents } from 'src/notification/enum/en.enum';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { ProfitDetailService } from 'src/profit-detail/profit-detail.service';
 
+import { PaymentMethod } from 'src/payment/enum/en.enum';
+import { ChangeTransactionPaymentMethodDto } from './dto/change-payment-method.dto';
+
 @Injectable()
 export class TransactionService {
   constructor(
@@ -116,6 +119,19 @@ export class TransactionService {
           },
         ],
       },
+    );
+  }
+
+  async changePaymentMethod(
+    req: any,
+    dto: ChangeTransactionPaymentMethodDto,
+  ): Promise<any> {
+    return await this.transactionModel.update(
+      {
+        _id: { $in: dto.transactionIds },
+        paymentMethod: { $ne: PaymentMethod.Online },
+      },
+      { paymentMethod: dto.paymentMethod },
     );
   }
 
