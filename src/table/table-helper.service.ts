@@ -142,6 +142,9 @@ export class TableHelperService {
         $push: { orders: order._id },
         supplierId: order.supplierId,
         restaurantId: order.restaurantId,
+        $setOnInsert: {
+          waiterId: order.waiterId,
+        },
       },
       {
         upsert: true,
