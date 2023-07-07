@@ -502,6 +502,9 @@ export class OrderHelperService {
         this.calculationService.identifyOrdersToRecalculateAfterCompleted(
           order,
         );
+        if (order.paymentStatus == OrderPaymentStatus.Paid) {
+          await this.invoiceHelperService.regenerateInvoice(order, true);
+        }
       } else {
         // check if needs to recalculate the order timing
         if ([OrderStatus.New, OrderStatus.SentToKitchen].includes(order.status))
