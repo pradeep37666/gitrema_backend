@@ -150,6 +150,24 @@ export class OrderController {
     });
   }
 
+  @Patch(':orderId/restricted-cancel')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.LimitedOrderCancel)
+  async conditionalCancel(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.restrictedUpdate(req, orderId, {
+      status: OrderStatus.Cancelled,
+    });
+  }
+
+  @Patch(':orderId/restricted-update')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.LimitedOrderUpdate)
+  async restricted(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: UpdateOrderDto,
+  ) {
+    return await this.orderService.restrictedUpdate(req, orderId, dto);
+  }
+
   @Patch(':orderId/sent-to-kitchen')
   @PermissionGuard(PermissionSubject.Order, Permission.Order.SentToKitchen)
   async sentToKitchen(@Req() req, @Param('orderId') orderId: string) {

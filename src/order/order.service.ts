@@ -700,6 +700,23 @@ export class OrderService {
     return modified;
   }
 
+  async restrictedUpdate(
+    req: any,
+    orderId: string,
+    dto: UpdateOrderDto,
+  ): Promise<OrderDocument> {
+    const order = await this.orderModel.findOne({
+      _id: orderId,
+      status: OrderStatus.New,
+      paymentStatus: OrderPaymentStatus.NotPaid,
+    });
+
+    if (!order) {
+      throw new BadRequestException(`Changes are not allowed`);
+    }
+    return await this.update(req, orderId, dto);
+  }
+
   async deferOrder(req, orderId: string): Promise<OrderDocument> {
     const order = await this.orderModel.findById(orderId);
 
