@@ -226,6 +226,7 @@ export class InvoiceService {
     return commands;
   }
   async printInvoice(req, query: PrintInvoiceDto) {
+    let response = [];
     if (!query.type || query.type == PrinterType.Cashier) {
       const printer = await this.printerModel.findOne({
         isDefault: true,
@@ -241,39 +242,38 @@ export class InvoiceService {
       if (!invoice) {
         throw new BadRequestException(VALIDATION_MESSAGES.InvoiceNotFound.key);
       }
-      let commands =
-        await this.invoiceHelperService.generateEscCommandsForInvoice(
-          invoice.imageUrl,
-        );
-      commands = Object.values(commands);
-      await this.socketGateway.emit(
-        invoice.supplierId.toString(),
-        SocketEvents.print,
-        {
-          place: printer._id.toString(),
-          commands,
-        },
-        `${invoice.supplierId.toString()}_PRINT`,
-      );
+      // let commands =
+      //   await this.invoiceHelperService.generateEscCommandsForInvoice(
+      //     invoice.imageUrl,
+      //   );
+      // commands = Object.values(commands);
+      // await this.socketGateway.emit(
+      //   invoice.supplierId.toString(),
+      //   SocketEvents.print,
+      //   {
+      //     place: printer._id.toString(),
+      //     commands,
+      //   },
+      //   `${invoice.supplierId.toString()}_PRINT`,
+      // );
+      response.push({
+        printer,
+        url: invoice.imageUrl,
+      });
     }
     if (!query.type || query.type == PrinterType.Kitchen) {
-      const order = await this.orderModel.findById(query.orderId);
+      const order = await this.orderModel.findById(query.orderId).populate([
+        {
+          path: 'kitchenReceipts.printerId',
+        },
+      ]);
       for (const i in order.kitchenReceipts) {
-        const commands =
-          await this.invoiceHelperService.generateEscCommandsForInvoice(
-            order.kitchenReceipts[i].url,
-          );
-        this.socketGateway.emit(
-          order.supplierId.toString(),
-          SocketEvents.print,
-          {
-            place: order.kitchenReceipts[i].printerId.toString(),
-            commands,
-          },
-          `${order.supplierId.toString()}_PRINT`,
-        );
+        response.push({
+          printer: order.kitchenReceipts[i].printerId,
+          url: order.kitchenReceipts[i].url,
+        });
       }
     }
-    return true;
+    return response;
   }
 }
