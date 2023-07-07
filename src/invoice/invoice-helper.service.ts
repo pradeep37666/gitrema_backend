@@ -101,7 +101,7 @@ export class InvoiceHelperService {
         const options = oia.options.map((o) => {
           return o.nameAr;
         });
-        message += `- with ${options.join(',')}`;
+        message += `- ${options.join(',')}`;
         message += `\n`;
       });
       oi.additionTextAr = message;
@@ -115,7 +115,7 @@ export class InvoiceHelperService {
           const options = oia.options.map((o) => {
             return o.nameAr;
           });
-          message += `- with ${options.join(',')}`;
+          message += `- ${options.join(',')}`;
           message += `\n`;
         });
 
