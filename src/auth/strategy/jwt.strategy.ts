@@ -20,12 +20,15 @@ import {
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import * as moment from 'moment';
 import { NO_AUTH_EXPIRE_MIN } from 'src/core/Constants/system.constant';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @InjectModel(Supplier.name)
     private supplierModel: Model<SupplierDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
     @InjectModel(SupplierPackage.name)
     private supplierPackageModel: Model<SupplierPackageDocument>,
   ) {
@@ -37,6 +40,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: LoggedInUserPayload) {
+    if (payload.userId) {
+      const user = await this.userModel.findOne({
+        _id: payload.userId,
+        isBlocked: false,
+      });
+      if (!user) {
+        throw new UnauthorizedException(`Token is expired`);
+      }
+    }
+
     if (payload.supplierId) {
       const supplier = await this.supplierModel.findOne({
         _id: payload.supplierId,
@@ -51,6 +64,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           'minutes',
         );
         const currentDate = moment();
+        console.log(tokenStartDate, currentDate);
         if (currentDate.isAfter(tokenStartDate)) {
           throw new UnauthorizedException(`Token is expired`);
         }
