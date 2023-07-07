@@ -85,7 +85,11 @@ export class TableLogService {
     return cashierLogs;
   }
 
-  async logTable(tableId: string, start = true): Promise<TableLogDocument> {
+  async logTable(
+    req,
+    tableId: string,
+    start = true,
+  ): Promise<TableLogDocument> {
     const table = await this.tableModel.findById(tableId);
     if (!table) {
       throw new NotFoundException();
@@ -102,17 +106,12 @@ export class TableLogService {
         throw new BadRequestException(VALIDATION_MESSAGES.TableStarted.key);
       }
 
-      const user = await this.userModel.findOne({
-        isDefaultWaiter: true,
-        supplierId: table.supplierId,
-        isBlocked: false,
-      });
       tableLog = new this.tableLogModel({
         supplierId: table.supplierId,
         restaurantId: table.restaurantId,
         tableId,
         startingTime: new Date(),
-        waiterId: user ? user._id : null,
+        waiterId: req.user.userId ?? null,
       });
       this.tableService.update(tableId, {
         status: TableStatus.InUse,

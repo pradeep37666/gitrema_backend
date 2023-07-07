@@ -247,10 +247,10 @@ export class TableService {
   ): Promise<TableDocument> {
     let orderQuery: any = {};
     if (query.paymentStatus) {
-      orderQuery.paymentStatus = query.paymentStatus;
+      orderQuery.paymentStatus = { $in: query.paymentStatus };
     }
     if (query.status) {
-      orderQuery.status = query.status;
+      orderQuery.status = { $in: query.status };
     }
     const exists = await this.tableModel.findById(tableId).populate([
       { path: 'restaurantId', select: { name: 1, nameAr: 1 } },

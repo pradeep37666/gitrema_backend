@@ -76,14 +76,14 @@ export class TableController {
 
   @Patch(':tableId/start-table')
   @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
-  async startTable(@Param('tableId') tableId: string) {
-    return await this.tableLogService.logTable(tableId);
+  async startTable(@Req() req, @Param('tableId') tableId: string) {
+    return await this.tableLogService.logTable(req, tableId);
   }
 
   @Patch(':tableId/close-table')
   @PermissionGuard(PermissionSubject.Table, Permission.Common.UPDATE)
-  async closeTable(@Param('tableId') tableId: string) {
-    return await this.tableLogService.logTable(tableId, false);
+  async closeTable(@Req() req, @Param('tableId') tableId: string) {
+    return await this.tableLogService.logTable(req, tableId, false);
   }
 
   @Patch(':tableId/update-log')

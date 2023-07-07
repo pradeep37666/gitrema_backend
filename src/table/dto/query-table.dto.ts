@@ -48,20 +48,26 @@ export class QueryReadyToServeItemsDto {
 
 export class QuerySingleTableDto {
   @ApiProperty({
-    type: OrderPaymentStatus,
     required: false,
-    enum: OrderPaymentStatus,
+    type: String,
+    example: 'New,Sent To Kitchen',
   })
-  @IsEnum(OrderPaymentStatus)
   @IsOptional()
-  paymentStatus: OrderPaymentStatus;
+  @IsArray()
+  @IsString({ each: true })
+  @Type(() => String)
+  @Transform(({ value }) => value.toString().split(','))
+  status: OrderStatus[];
 
   @ApiProperty({
-    type: OrderStatus,
     required: false,
-    enum: OrderStatus,
+    type: String,
+    example: 'Pending,Not Paid',
   })
-  @IsEnum(OrderStatus)
   @IsOptional()
-  status: OrderStatus;
+  @IsArray()
+  @IsString({ each: true })
+  @Type(() => String)
+  @Transform(({ value }) => value.toString().split(','))
+  paymentStatus: OrderPaymentStatus[];
 }
