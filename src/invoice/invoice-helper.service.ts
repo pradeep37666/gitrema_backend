@@ -239,7 +239,7 @@ export class InvoiceHelperService {
         url: imageUrl,
       });
       this.printKitchenReceipts(order.supplierId.toString(), {
-        printerId: printerDetails.printers[i],
+        printer: printer,
         url: imageUrl,
       });
     }
@@ -431,18 +431,10 @@ export class InvoiceHelperService {
   }
 
   async printKitchenReceipts(supplierId: string, kitchenReceipt: any) {
-    const commands = await this.generateEscCommandsForInvoice(
-      kitchenReceipt.url,
-    );
-    await this.socketGateway.emit(
-      supplierId,
-      SocketEvents.print,
-      {
-        place: kitchenReceipt.printerId,
-        commands: Object.values(commands),
-      },
-      `${supplierId}_PRINT`,
-    );
+    await this.socketGateway.emit(supplierId, SocketEvents.print, {
+      printer: kitchenReceipt.printer,
+      url: kitchenReceipt.url,
+    });
   }
 
   async generateEscCommandsForInvoice(imageUrl: string) {
