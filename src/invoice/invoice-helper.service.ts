@@ -449,13 +449,12 @@ export class InvoiceHelperService {
           url: invoice.imageUrl,
         },
       );
-    } else {
-      await this.socketGateway.emit(
-        invoice.supplierId.toString(),
-        SocketEvents.Invoice,
-        invoice.toObject(),
-      );
     }
+    await this.socketGateway.emit(
+      invoice.supplierId.toString(),
+      SocketEvents.Invoice,
+      invoice.toObject(),
+    );
   }
 
   async printKitchenReceipts(supplierId: string, kitchenReceipt: any) {
