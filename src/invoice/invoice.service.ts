@@ -260,8 +260,12 @@ export class InvoiceService {
       //   },
       //   `${invoice.supplierId.toString()}_PRINT`,
       // );
-      response.push({
-        printer,
+      // response.push({
+      //   printer,
+      //   url: invoice.imageUrl,
+      // });
+      await this.socketGateway.emit(req.user.supplierId, SocketEvents.print, {
+        printer: printer.toObject(),
         url: invoice.imageUrl,
       });
     }
@@ -272,12 +276,16 @@ export class InvoiceService {
         },
       ]);
       for (const i in order.kitchenReceipts) {
-        response.push({
-          printer: order.kitchenReceipts[i].printerId,
+        await this.socketGateway.emit(req.user.supplierId, SocketEvents.print, {
+          printer: order.kitchenReceipts[i].printerId.toObject(),
           url: order.kitchenReceipts[i].url,
         });
+        // response.push({
+        //   printer: order.kitchenReceipts[i].printerId,
+        //   url: order.kitchenReceipts[i].url,
+        // });
       }
     }
-    return response;
+    return [];
   }
 }
