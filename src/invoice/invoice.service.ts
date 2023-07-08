@@ -226,54 +226,66 @@ export class InvoiceService {
     return commands;
   }
   async printInvoice(req, query: PrintInvoiceDto) {
+    let response = [];
     if (!query.type || query.type == PrinterType.Cashier) {
       const printer = await this.printerModel.findOne({
         isDefault: true,
         type: PrinterType.Cashier,
         supplierId: req.user.supplierId,
       });
-      if (!printer) {
+      if (!printer && query.type) {
         throw new BadRequestException(`No Cashier Printer Found`);
       }
-      const invoice = await this.invoiceModel.findOne({
-        orderId: query.orderId,
-      });
-      if (!invoice) {
+      const invoice = await this.invoiceModel.findOne(
+        {
+          orderId: query.orderId,
+        },
+        {},
+        { sort: { _id: -1 } },
+      );
+      if (!invoice && query.type) {
         throw new BadRequestException(VALIDATION_MESSAGES.InvoiceNotFound.key);
       }
-      let commands =
-        await this.invoiceHelperService.generateEscCommandsForInvoice(
-          invoice.imageUrl,
-        );
-      commands = Object.values(commands);
-      await this.socketGateway.emit(
-        invoice.supplierId.toString(),
-        SocketEvents.print,
-        {
-          place: printer._id.toString(),
-          commands,
-        },
-        `${invoice.supplierId.toString()}_PRINT`,
-      );
+      // let commands =
+      //   await this.invoiceHelperService.generateEscCommandsForInvoice(
+      //     invoice.imageUrl,
+      //   );
+      // commands = Object.values(commands);
+      // await this.socketGateway.emit(
+      //   invoice.supplierId.toString(),
+      //   SocketEvents.print,
+      //   {
+      //     place: printer._id.toString(),
+      //     commands,
+      //   },
+      //   `${invoice.supplierId.toString()}_PRINT`,
+      // );
+      // response.push({
+      //   printer,
+      //   url: invoice.imageUrl,
+      // });
+      await this.socketGateway.emit(req.user.supplierId, SocketEvents.print, {
+        printer: printer.toObject(),
+        url: invoice.imageUrl,
+      });
     }
     if (!query.type || query.type == PrinterType.Kitchen) {
-      const order = await this.orderModel.findById(query.orderId);
+      const order = await this.orderModel.findById(query.orderId).populate([
+        {
+          path: 'kitchenReceipts.printerId',
+        },
+      ]);
       for (const i in order.kitchenReceipts) {
-        const commands =
-          await this.invoiceHelperService.generateEscCommandsForInvoice(
-            order.kitchenReceipts[i].url,
-          );
-        this.socketGateway.emit(
-          order.supplierId.toString(),
-          SocketEvents.print,
-          {
-            place: order.kitchenReceipts[i].printerId.toString(),
-            commands,
-          },
-          `${order.supplierId.toString()}_PRINT`,
-        );
+        await this.socketGateway.emit(req.user.supplierId, SocketEvents.print, {
+          printer: order.kitchenReceipts[i].printerId.toObject(),
+          url: order.kitchenReceipts[i].url,
+        });
+        // response.push({
+        //   printer: order.kitchenReceipts[i].printerId,
+        //   url: order.kitchenReceipts[i].url,
+        // });
       }
     }
-    return true;
+    return [];
   }
 }

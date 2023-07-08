@@ -103,6 +103,8 @@ export enum OrderPermissions {
   KitchenDisplay = 'Kitchen Display',
   ChefInquiry = 'ChefInquiry',
   KitchenQueueProcess = 'Kitchen Queue Process',
+  LimitedOrderCancel = 'Limited Order Cancel',
+  LimitedOrderUpdate = 'Limited Order Update',
 }
 
 export enum UserPermission {

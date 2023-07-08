@@ -12,4 +12,5 @@ export enum SocketEvents {
   PosTransaction = 'Pos:Transaction',
   PosLaunched = 'Pos:Launched',
   print = 'print',
+  Invoice = 'Invoice',
 }

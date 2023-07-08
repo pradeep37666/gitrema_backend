@@ -26,6 +26,7 @@ import { TransactionQueryDto } from './transaction.dto';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { TransactionDocument } from './schemas/transactions.schema';
 import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
+import { ChangeTransactionPaymentMethodDto } from './dto/change-payment-method.dto';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
@@ -48,6 +49,15 @@ export class TransactionController {
   @PermissionGuard(PermissionSubject.Transaction, Permission.Common.FETCH)
   async findOne(@Param('transactionId') transactionId: string) {
     return await this.transactionService.get(transactionId);
+  }
+
+  @Post('change-payment-method')
+  @PermissionGuard(PermissionSubject.Transaction, Permission.Common.UPDATE)
+  async changePaymentMethod(
+    @Req() req,
+    @Body() dto: ChangeTransactionPaymentMethodDto,
+  ) {
+    return await this.transactionService.changePaymentMethod(req, dto);
   }
 
   // @Get('export')

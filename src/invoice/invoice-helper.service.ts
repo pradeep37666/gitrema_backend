@@ -19,7 +19,7 @@ import { InvoiceDocument } from './schemas/invoice.schema';
 import { InvoiceType } from './invoice.enum';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { Order, OrderDocument, Receipts } from 'src/order/schemas/order.schema';
-import { InvoiceStatus } from 'src/order/enum/en.enum';
+import { InvoiceStatus, OrderPaymentStatus } from 'src/order/enum/en.enum';
 import * as fs from 'fs';
 import * as puppeteer from 'puppeteer';
 import * as uniqid from 'uniqid';
@@ -35,6 +35,8 @@ import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
 import { InvoiceService } from './invoice.service';
+import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import { PrinterType } from 'src/printer/enum/en';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -99,7 +101,7 @@ export class InvoiceHelperService {
         const options = oia.options.map((o) => {
           return o.nameAr;
         });
-        message += `- with ${options.join(',')}`;
+        message += `- ${options.join(',')}`;
         message += `\n`;
       });
       oi.additionTextAr = message;
@@ -113,7 +115,7 @@ export class InvoiceHelperService {
           const options = oia.options.map((o) => {
             return o.nameAr;
           });
-          message += `- with ${options.join(',')}`;
+          message += `- ${options.join(',')}`;
           message += `\n`;
         });
 
@@ -122,10 +124,10 @@ export class InvoiceHelperService {
           nameAr: oi.menuItem.nameAr,
           quantity: oi.quantity,
           additionTextAr: message,
-          totalWithTax: oi.amountAfterDiscount,
+          totalWithTax: roundOffNumber(oi.amountAfterDiscount, 2),
           itemId: oi._id,
-          taxableAmount: oi.itemTaxableAmount,
-          tax: oi.tax,
+          taxableAmount: roundOffNumber(oi.itemTaxableAmount, 2),
+          tax: roundOffNumber(oi.tax, 2),
         });
       });
     }
@@ -141,7 +143,12 @@ export class InvoiceHelperService {
       orderData.totalWithTax += i.totalWithTax;
       orderData.totalTax += i.tax;
     });
-
+    orderData.totalTax = roundOffNumber(orderData.totalTax, 2);
+    orderData.totalWithTax = roundOffNumber(orderData.totalWithTax, 2);
+    orderData.totalTaxableAmount = roundOffNumber(
+      orderData.totalTaxableAmount,
+      2,
+    );
     const templateHtml = fs.readFileSync(
       'src/invoice/templates/invoice.v1.html',
       'utf8',
@@ -239,7 +246,7 @@ export class InvoiceHelperService {
         url: imageUrl,
       });
       this.printKitchenReceipts(order.supplierId.toString(), {
-        printerId: printerDetails.printers[i],
+        printer: printer,
         url: imageUrl,
       });
     }
@@ -428,21 +435,33 @@ export class InvoiceHelperService {
         invoiceStatus: InvoiceStatus.Invoiced,
       });
     }
+
+    const printer = await this.printerModel.findOne({
+      isDefault: true,
+      type: PrinterType.Cashier,
+      supplierId: invoice.supplierId,
+    });
+    await this.socketGateway.emit(
+      invoice.supplierId.toString(),
+      SocketEvents.print,
+      {
+        printer: printer.toObject(),
+        url: invoice.imageUrl,
+      },
+    );
+
+    await this.socketGateway.emit(
+      invoice.supplierId.toString(),
+      SocketEvents.Invoice,
+      invoice.toObject(),
+    );
   }
 
   async printKitchenReceipts(supplierId: string, kitchenReceipt: any) {
-    const commands = await this.generateEscCommandsForInvoice(
-      kitchenReceipt.url,
-    );
-    await this.socketGateway.emit(
-      supplierId,
-      SocketEvents.print,
-      {
-        place: kitchenReceipt.printerId,
-        commands: Object.values(commands),
-      },
-      `${supplierId}_PRINT`,
-    );
+    await this.socketGateway.emit(supplierId, SocketEvents.print, {
+      printer: kitchenReceipt.printer,
+      url: kitchenReceipt.url,
+    });
   }
 
   async generateEscCommandsForInvoice(imageUrl: string) {
@@ -491,7 +510,7 @@ export class InvoiceHelperService {
     return commands;
   }
 
-  async regenerateInvoice(order: OrderDocument) {
+  async regenerateInvoice(order: OrderDocument, onlyCancel = false) {
     const invoice = await this.invoiceModel.findOne({
       orderId: order._id,
       type: InvoiceType.Invoice,
@@ -500,10 +519,12 @@ export class InvoiceHelperService {
     });
     if (invoice) {
       await this.invoiceService.cancel(null, invoice._id.toString());
-      await this.invoiceService.create(null, {
-        orderId: order._id,
-        type: InvoiceType.Invoice,
-      });
+      if (onlyCancel == false) {
+        await this.invoiceService.create(null, {
+          orderId: order._id,
+          type: InvoiceType.Invoice,
+        });
+      }
     }
   }
 }

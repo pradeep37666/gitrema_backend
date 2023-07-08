@@ -49,10 +49,7 @@ export class InvoiceController {
   }
 
   @Get('print')
-  async print(
-    @Request() req,
-    @Query() query: PrintInvoiceDto,
-  ): Promise<boolean> {
+  async print(@Request() req, @Query() query: PrintInvoiceDto): Promise<any> {
     return await this.invoiceService.printInvoice(req, query);
   }
 
