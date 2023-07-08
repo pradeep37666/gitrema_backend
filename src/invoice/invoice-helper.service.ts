@@ -435,21 +435,21 @@ export class InvoiceHelperService {
         invoiceStatus: InvoiceStatus.Invoiced,
       });
     }
-    if (order.paymentStatus == OrderPaymentStatus.Paid) {
-      const printer = await this.printerModel.findOne({
-        isDefault: true,
-        type: PrinterType.Cashier,
-        supplierId: invoice.supplierId,
-      });
-      await this.socketGateway.emit(
-        invoice.supplierId.toString(),
-        SocketEvents.print,
-        {
-          printer: printer.toObject(),
-          url: invoice.imageUrl,
-        },
-      );
-    }
+
+    const printer = await this.printerModel.findOne({
+      isDefault: true,
+      type: PrinterType.Cashier,
+      supplierId: invoice.supplierId,
+    });
+    await this.socketGateway.emit(
+      invoice.supplierId.toString(),
+      SocketEvents.print,
+      {
+        printer: printer.toObject(),
+        url: invoice.imageUrl,
+      },
+    );
+
     await this.socketGateway.emit(
       invoice.supplierId.toString(),
       SocketEvents.Invoice,
