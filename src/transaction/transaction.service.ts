@@ -192,15 +192,17 @@ export class TransactionService {
             'summary.remainingAmountToCollect': remainingAmount,
           };
           if (total > order.summary.totalWithTax + (order.tip ?? 0)) {
-            dataToUpdate.status = OrderStatus.New
-              ? OrderStatus.SentToKitchen
-              : OrderStatus.Closed;
+            dataToUpdate.status =
+              order.status == OrderStatus.New
+                ? OrderStatus.SentToKitchen
+                : OrderStatus.Closed;
             dataToUpdate.paymentStatus = OrderPaymentStatus.OverPaid;
             dataToUpdate.paymentTime = new Date();
           } else if (total == order.summary.totalWithTax + (order.tip ?? 0)) {
-            dataToUpdate.status = OrderStatus.New
-              ? OrderStatus.SentToKitchen
-              : OrderStatus.Closed;
+            dataToUpdate.status =
+              order.status == OrderStatus.New
+                ? OrderStatus.SentToKitchen
+                : OrderStatus.Closed;
             dataToUpdate.paymentStatus = OrderPaymentStatus.Paid;
             dataToUpdate.paymentTime = new Date();
           } else {
