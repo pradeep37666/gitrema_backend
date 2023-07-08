@@ -40,17 +40,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: LoggedInUserPayload) {
-    if (payload.userId) {
-      const user = await this.userModel.findOne({
-        _id: payload.userId,
-        isBlocked: false,
-      });
-      if (!user) {
-        throw new UnauthorizedException(`Token is expired`);
-      }
-    }
-
     if (payload.supplierId) {
+      if (payload.userId) {
+        const user = await this.userModel.findOne({
+          _id: payload.userId,
+          isBlocked: false,
+        });
+        if (!user) {
+          throw new UnauthorizedException(`Token is expired`);
+        }
+      }
       const supplier = await this.supplierModel.findOne({
         _id: payload.supplierId,
         active: true,
