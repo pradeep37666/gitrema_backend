@@ -115,7 +115,8 @@ export class PermissionService {
     for (const i in permissionObjs) {
       if (
         permissionObjs[i].permissions.includes(permission) ||
-        permissionObjs[i].permissions.includes(CommonPermissions.MANAGE)
+        (!skipManage &&
+          permissionObjs[i].permissions.includes(CommonPermissions.MANAGE))
       )
         return true;
     }
