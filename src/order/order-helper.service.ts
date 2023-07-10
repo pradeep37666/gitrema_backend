@@ -208,7 +208,10 @@ export class OrderHelperService {
               $gte: new Date(moment.utc().format('YYYY-MM-DD')),
             },
             code: dto.couponCode,
-            applicationType: ApplicationType.LineItem,
+            applicationType: [
+              ApplicationType.LineItem,
+              ApplicationType.ManagerLineItem,
+            ],
           },
           {},
           { sort: { priority: 1 } },
@@ -231,7 +234,11 @@ export class OrderHelperService {
             ? offer.maxDiscount
             : discount
           : discount;
-        unitPriceDiscount = discount;
+        unitPriceDiscount =
+          discount /
+          (offer.applicationType == ApplicationType.ManagerLineItem
+            ? items[i].quantity
+            : 1);
       }
       unitPriceAfterDiscount = unitPriceBeforeDiscount - unitPriceDiscount;
 

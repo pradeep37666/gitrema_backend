@@ -336,19 +336,21 @@ export class OrderNotificationService {
     order: OrderDocument,
   ) {
     const wordsToReplace = {
-      '{{CustomerName}}': order.customerId ? order.customerId.name : order.name,
+      '{{CustomerName}}': order.customerId
+        ? order.customerId?.name
+        : order.name,
       '{{OrderNumber}}': order.orderNumber,
       '{{customerPhone}}': order.customerId
-        ? order.customerId.phoneNumber
+        ? order.customerId?.phoneNumber
         : order.contactNumber,
       '{{OrderPaymentStatus}}': order.paymentStatus,
       '{{OrderType}}': order.orderType,
-      '{{PreparationTime}}': `${order.preparationDetails.preparationTime} mins`,
-      '{{RestaurantName}}': order.supplierId.nameAr,
-      '{{RestaurantPhoneNumber}}': order.supplierId.phoneNumber,
-      '{{RestaurantWhatsappNumber}}': order.supplierId.whatsapp,
-      '{{RestaurantEmail}}': order.supplierId.email,
-      '{{TableName}}': order.tableId.nameAr,
+      '{{PreparationTime}}': `${order.preparationDetails?.preparationTime} mins`,
+      '{{RestaurantName}}': order.supplierId?.nameAr,
+      '{{RestaurantPhoneNumber}}': order.supplierId?.phoneNumber,
+      '{{RestaurantWhatsappNumber}}': order.supplierId?.whatsapp,
+      '{{RestaurantEmail}}': order.supplierId?.email,
+      '{{TableName}}': order.tableId?.nameAr,
       '{{OrderSummary}}': this.prepareOrderSummary(order),
       '{{PreparedItems}}': this.prepareItemReadyMessage(order),
     };

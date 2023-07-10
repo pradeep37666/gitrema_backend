@@ -6,4 +6,5 @@ export enum OfferType {
 export enum ApplicationType {
   LineItem = 'على الصنف',
   Header = 'على الفاتورة',
+  ManagerLineItem = 'Manager Line Item',
 }

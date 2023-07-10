@@ -212,7 +212,10 @@ export class TransactionService {
           order.set(dataToUpdate);
           if (!order.cashierId) order.cashierId = transaction.cashierId;
           await order.save();
-          if (order.paymentStatus == OrderPaymentStatus.Paid) {
+          if (
+            order.paymentStatus == OrderPaymentStatus.Paid ||
+            order.paymentStatus == OrderPaymentStatus.OverPaid
+          ) {
             try {
               await this.invoiceService.create(req, {
                 orderId: order._id,
