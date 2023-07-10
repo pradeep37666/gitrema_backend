@@ -14,7 +14,10 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { ChangeOrderDto, TipDto, UpdateOrderDto } from './dto/update-order.dto';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
-import { Permission } from 'src/core/Constants/permission.type';
+import {
+  Permission,
+  PermissionActions,
+} from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { OrderDocument } from './schemas/order.schema';
 import { PaginateResult } from 'mongoose';
@@ -34,13 +37,17 @@ import {
 import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 import { Public } from 'src/core/decorators/public.decorator';
+import { PermissionService } from '../permission/permission.service';
 
 @Controller('order')
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
 @ApiHeader({ name: 'lang' })
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly permissionService: PermissionService,
+  ) {}
 
   @Post()
   @PermissionGuard(PermissionSubject.Order, Permission.Common.CREATE)
@@ -117,6 +124,14 @@ export class OrderController {
     @Param('orderId') orderId: string,
     @Body() dto: UpdateOrderDto,
   ) {
+    const checkPermission = await this.permissionService.userHasPermission(
+      req.user,
+      PermissionSubject.Order,
+      Permission.Order.LimitedOrderUpdate,
+    );
+    if (checkPermission) {
+      return await this.orderService.restrictedUpdate(req, orderId, dto);
+    }
     return await this.orderService.update(req, orderId, dto);
   }
 
@@ -145,27 +160,19 @@ export class OrderController {
   @Patch(':orderId/cancel')
   @PermissionGuard(PermissionSubject.Order, Permission.Order.CancelOrder)
   async cancel(@Req() req, @Param('orderId') orderId: string) {
+    const checkPermission = await this.permissionService.userHasPermission(
+      req.user,
+      PermissionSubject.Order,
+      Permission.Order.LimitedOrderUpdate,
+    );
+    if (checkPermission) {
+      return await this.orderService.restrictedUpdate(req, orderId, {
+        status: OrderStatus.Cancelled,
+      });
+    }
     return await this.orderService.update(req, orderId, {
       status: OrderStatus.Cancelled,
     });
-  }
-
-  @Patch(':orderId/restricted-cancel')
-  @PermissionGuard(PermissionSubject.Order, Permission.Order.LimitedOrderCancel)
-  async conditionalCancel(@Req() req, @Param('orderId') orderId: string) {
-    return await this.orderService.restrictedUpdate(req, orderId, {
-      status: OrderStatus.Cancelled,
-    });
-  }
-
-  @Patch(':orderId/restricted-update')
-  @PermissionGuard(PermissionSubject.Order, Permission.Order.LimitedOrderUpdate)
-  async restricted(
-    @Req() req,
-    @Param('orderId') orderId: string,
-    @Body() dto: UpdateOrderDto,
-  ) {
-    return await this.orderService.restrictedUpdate(req, orderId, dto);
   }
 
   @Patch(':orderId/sent-to-kitchen')
