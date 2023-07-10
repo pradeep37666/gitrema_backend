@@ -74,29 +74,38 @@ export class PermissionService {
     user: any, // set the type of logged in user dto
     subject: PermissionSubject,
     permission: PermissionActions,
+    skipManage = false,
   ) {
     const role = await this.roleModel.findById(user.roleId).lean();
     console.log(role, subject, permission);
     if (!role) return false;
 
-    return this.checkPermission(role.permissions, subject, permission);
+    return this.checkPermission(
+      role.permissions,
+      subject,
+      permission,
+      skipManage,
+    );
   }
 
   checkPermission(
     permissions,
     subject: PermissionSubject,
     permission: PermissionActions,
+    skipManage = false,
   ) {
-    const wildcardPermissions = permissions.filter((p) => {
-      return p.subject == PermissionSubject.ALL;
-    });
+    if (!skipManage) {
+      const wildcardPermissions = permissions.filter((p) => {
+        return p.subject == PermissionSubject.ALL;
+      });
 
-    for (const i in wildcardPermissions) {
-      if (
-        wildcardPermissions[i].permissions.includes(permission) ||
-        wildcardPermissions[i].permissions.includes(CommonPermissions.MANAGE)
-      )
-        return true;
+      for (const i in wildcardPermissions) {
+        if (
+          wildcardPermissions[i].permissions.includes(permission) ||
+          wildcardPermissions[i].permissions.includes(CommonPermissions.MANAGE)
+        )
+          return true;
+      }
     }
 
     const permissionObjs = permissions.filter((p) => {
