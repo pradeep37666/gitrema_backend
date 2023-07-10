@@ -83,6 +83,14 @@ export class TableService {
             },
           },
           {
+            $lookup: {
+              from: 'users',
+              localField: 'currentTableLog.waiterId',
+              foreignField: '_id',
+              as: 'waiter',
+            },
+          },
+          {
             $addFields: {
               currentTableLog: {
                 $cond: {
@@ -91,6 +99,18 @@ export class TableService {
                   else: null,
                 },
               },
+              waiter: {
+                $cond: {
+                  if: { $eq: [{ $size: '$waiter' }, 1] },
+                  then: { $arrayElemAt: ['$waiter', 0] },
+                  else: null,
+                },
+              },
+            },
+          },
+          {
+            $addFields: {
+              'currentTableLog.waiterName': '$waiter.name',
             },
           },
           {
@@ -225,12 +245,6 @@ export class TableService {
                   },
                 },
               },
-
-              totalPaid: { $sum: '$orders.summary.totalPaid' },
-              total: { $sum: '$orders.summary.totalWithTax' },
-              remianingAmount: {
-                $sum: '$orders.summary.remainingAmountToCollect',
-              },
             },
           },
           {
@@ -251,6 +265,7 @@ export class TableService {
               orderItems: 0,
               servedOrderItems: 0,
               pendingOrderItems: 0,
+              waiter: 0,
             },
           },
         ],
