@@ -167,6 +167,7 @@ export class OrderController {
       Permission.Order.LimitedOrderUpdate,
       true,
     );
+
     if (checkPermission) {
       return await this.orderService.restrictedUpdate(req, orderId, {
         status: OrderStatus.Cancelled,
