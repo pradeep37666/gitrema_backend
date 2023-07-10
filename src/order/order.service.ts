@@ -986,14 +986,14 @@ export class OrderService {
     let printers = [],
       printerItems = [],
       itemsWithoutPrinter = [];
-    if (!query.printerType || query.printerType == PrinterType.Cashier) {
-      if (order.cashierId) {
-        const cashier = await this.cashierModel.findById(order.cashierId);
-        if (cashier && cashier.printerId) {
-          printers.push(cashier.printerId.toString());
-        }
-      }
-    }
+    // if (!query.printerType || query.printerType == PrinterType.Cashier) {
+    //   if (order.cashierId) {
+    //     const cashier = await this.cashierModel.findById(order.cashierId);
+    //     if (cashier && cashier.printerId) {
+    //       printers.push(cashier.printerId.toString());
+    //     }
+    //   }
+    //}
     if (!query.printerType || query.printerType == PrinterType.Kitchen) {
       const menuItemIds = order.items.map((oi) => oi.menuItem.menuItemId);
       const menuItems = await this.menuItemModel
@@ -1020,20 +1020,17 @@ export class OrderService {
         }
       }
     }
-    if (printers.length == 0) {
-      const records = await this.printerModel.find({
+    if (itemsWithoutPrinter.length > 0) {
+      const defaultKitchenPrinter = await this.printerModel.findOne({
         isDefault: true,
         supplierId: req.user.supplierId,
-        type: query.printerType ?? {
-          $in: [PrinterType.Cashier, PrinterType.Kitchen],
-        },
+        type: PrinterType.Kitchen,
       });
-      records.forEach((p) => {
-        printers.push(p._id.toString());
-        if ((p.type = PrinterType.Kitchen)) {
-          printerItems[p._id.toString()] = itemsWithoutPrinter;
-        }
-      });
+      if (defaultKitchenPrinter) {
+        printers.push(defaultKitchenPrinter._id.toString());
+        printerItems[defaultKitchenPrinter._id.toString()] =
+          itemsWithoutPrinter;
+      }
     }
     printers = [...new Set(printers)];
     if (returnPrinterItems) {
