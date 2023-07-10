@@ -37,6 +37,7 @@ import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
 import { InvoiceService } from './invoice.service';
 import { roundOffNumber } from 'src/core/Helpers/universal.helper';
 import { PrinterType } from 'src/printer/enum/en';
+import { OrderType } from 'src/order/enum/ar.enum';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -231,6 +232,7 @@ export class InvoiceHelperService {
       const html = template({
         order: tempOrderObj,
         printer,
+        orderType: OrderType[order.orderType],
       });
 
       const imageUrl = await this.uploadDocument(
