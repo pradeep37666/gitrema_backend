@@ -93,9 +93,9 @@ class MenuItem {
     type: MongooseSchema.Types.ObjectId,
     ref: 'MenuCategory',
     index: true,
-    required: true,
+    default: null,
   })
-  categoryId: MenuCategoryDocument;
+  categoryId?: MenuCategoryDocument;
 
   @Prop({ required: true })
   name: string;
