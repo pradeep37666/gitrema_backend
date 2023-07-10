@@ -218,6 +218,25 @@ export class TableService {
                 },
               },
 
+              activeOrders: {
+                $filter: {
+                  input: '$orders',
+                  cond: {
+                    $in: [
+                      '$$this.status',
+                      [
+                        OrderStatus.New,
+                        OrderStatus.SentToKitchen,
+                        OrderStatus.StartedPreparing,
+                        OrderStatus.DonePreparing,
+                        OrderStatus.OnTable,
+                        OrderStatus.Closed,
+                      ],
+                    ],
+                  },
+                },
+              },
+
               onTableOrders: {
                 $size: {
                   $filter: {
@@ -226,16 +245,15 @@ export class TableService {
                   },
                 },
               },
-
-              totalPaid: { $sum: '$orders.summary.totalPaid' },
-              total: { $sum: '$orders.summary.totalWithTax' },
-              remianingAmount: {
-                $sum: '$orders.summary.remainingAmountToCollect',
-              },
             },
           },
           {
             $addFields: {
+              totalPaid: { $sum: '$activeOrders.summary.totalPaid' },
+              total: { $sum: '$activeOrders.summary.totalWithTax' },
+              remianingAmount: {
+                $sum: '$activeOrders.summary.remainingAmountToCollect',
+              },
               itemsReadyToPickup: { $sum: '$orderItems.items' },
               itemsServed: { $sum: '$servedOrderItems.items' },
               itemsPending: { $sum: '$pendingOrderItems.items' },
