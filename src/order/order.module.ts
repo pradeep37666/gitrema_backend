@@ -54,6 +54,7 @@ import {
   DeferredTransactionSchema,
 } from './schemas/deferred-transaction.schema';
 import { CashierModule } from 'src/cashier/cashier.module';
+import { PermissionModule } from 'src/permission/permission.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { CashierModule } from 'src/cashier/cashier.module';
     InventoryModule,
     NotificationModule,
     CashierModule,
+    PermissionModule,
   ],
   controllers: [OrderController],
   providers: [
