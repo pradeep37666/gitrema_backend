@@ -128,6 +128,7 @@ export class OrderController {
       req.user,
       PermissionSubject.Order,
       Permission.Order.LimitedOrderUpdate,
+      true,
     );
     if (checkPermission) {
       return await this.orderService.restrictedUpdate(req, orderId, dto);
@@ -164,7 +165,9 @@ export class OrderController {
       req.user,
       PermissionSubject.Order,
       Permission.Order.LimitedOrderUpdate,
+      true,
     );
+
     if (checkPermission) {
       return await this.orderService.restrictedUpdate(req, orderId, {
         status: OrderStatus.Cancelled,

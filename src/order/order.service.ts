@@ -712,7 +712,7 @@ export class OrderService {
     });
 
     if (!order) {
-      throw new BadRequestException(`Changes are not allowed`);
+      throw new BadRequestException(`لايوجد لك الصلاحيات الازمة`);
     }
     return await this.update(req, orderId, dto);
   }
