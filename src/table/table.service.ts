@@ -83,14 +83,6 @@ export class TableService {
             },
           },
           {
-            $lookup: {
-              from: 'users',
-              localField: 'currentTableLog.waiterId',
-              foreignField: '_id',
-              as: 'waiter',
-            },
-          },
-          {
             $addFields: {
               currentTableLog: {
                 $cond: {
@@ -99,18 +91,6 @@ export class TableService {
                   else: null,
                 },
               },
-              waiter: {
-                $cond: {
-                  if: { $eq: [{ $size: '$waiter' }, 1] },
-                  then: { $arrayElemAt: ['$waiter', 0] },
-                  else: null,
-                },
-              },
-            },
-          },
-          {
-            $addFields: {
-              'currentTableLog.waiterName': '$waiter.name',
             },
           },
           {
@@ -218,6 +198,25 @@ export class TableService {
                 },
               },
 
+              activeOrders: {
+                $filter: {
+                  input: '$orders',
+                  cond: {
+                    $in: [
+                      '$$this.status',
+                      [
+                        OrderStatus.New,
+                        OrderStatus.SentToKitchen,
+                        OrderStatus.StartedPreparing,
+                        OrderStatus.DonePreparing,
+                        OrderStatus.OnTable,
+                        OrderStatus.Closed,
+                      ],
+                    ],
+                  },
+                },
+              },
+
               onTableOrders: {
                 $size: {
                   $filter: {
@@ -236,6 +235,11 @@ export class TableService {
           },
           {
             $addFields: {
+              totalPaid: { $sum: '$activeOrders.summary.totalPaid' },
+              total: { $sum: '$activeOrders.summary.totalWithTax' },
+              remianingAmount: {
+                $sum: '$activeOrders.summary.remainingAmountToCollect',
+              },
               itemsReadyToPickup: { $sum: '$orderItems.items' },
               itemsServed: { $sum: '$servedOrderItems.items' },
               itemsPending: { $sum: '$pendingOrderItems.items' },
@@ -247,7 +251,6 @@ export class TableService {
               orderItems: 0,
               servedOrderItems: 0,
               pendingOrderItems: 0,
-              waiter: 0,
             },
           },
         ],
