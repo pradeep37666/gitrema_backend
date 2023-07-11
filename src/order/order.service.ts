@@ -850,7 +850,7 @@ export class OrderService {
 
     this.orderHelperService.postOrderCreate(req, groupOrderObj);
 
-    this.orderHelperService.generateKitchenReceipts(groupOrderObj);
+    this.orderHelperService.generateKitchenReceipts(groupOrderObj, false);
 
     for (const i in dto.orderIds) {
       this.update(req, dto.orderIds[i], {
