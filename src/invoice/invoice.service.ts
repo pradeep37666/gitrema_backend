@@ -80,6 +80,9 @@ export class InvoiceService {
         {
           path: 'restaurantId',
         },
+        {
+          path: 'tableId',
+        },
       ])
       .lean();
 

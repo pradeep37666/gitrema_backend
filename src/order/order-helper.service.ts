@@ -21,6 +21,7 @@ import {
   MenuAdditionDocument,
 } from 'src/menu/schemas/menu-addition.schema';
 import {
+  InvoiceStatus,
   OrderActivityType,
   OrderPaymentStatus,
   OrderStatus,
@@ -466,25 +467,7 @@ export class OrderHelperService {
           // );
         }
         // generate kitchen receipt
-        const printersDetails: any = await this.orderService.identifyPrinters(
-          { user: { supplierId: order.supplierId } },
-          {
-            orderId: order._id.toString(),
-            printerType: PrinterType.Kitchen,
-          },
-          order,
-          true,
-        );
-        console.log(printersDetails);
-        if (printersDetails.printers.length > 0) {
-          order.kitchenReceipts =
-            await this.invoiceHelperService.generateKitchenReceipt(
-              order,
-              printersDetails,
-            );
-          order.save();
-          //console.log(order);
-        }
+        this.generateKitchenReceipts(order);
         this.notifyKitchenQueue(order);
       } else if (dto.status == OrderStatus.OnTable) {
         this.storeOrderStateActivity(
@@ -497,7 +480,8 @@ export class OrderHelperService {
         }
       } else if (
         dto.status == OrderStatus.Cancelled ||
-        dto.status == OrderStatus.CancelledWihPaymentFailed
+        dto.status == OrderStatus.CancelledWihPaymentFailed ||
+        dto.status == OrderStatus.CancelledByMerge
       ) {
         // this.storeOrderStateActivity(
         //   order,
@@ -509,7 +493,7 @@ export class OrderHelperService {
         this.calculationService.identifyOrdersToRecalculateAfterCompleted(
           order,
         );
-        if (order.paymentStatus == OrderPaymentStatus.Paid) {
+        if (order.invoiceStatus == InvoiceStatus.Invoiced) {
           await this.invoiceHelperService.regenerateInvoice(order, true);
         }
       } else {
@@ -685,6 +669,28 @@ export class OrderHelperService {
         SocketEvents.OrderPrepared,
         dataToNotify,
       );
+    }
+  }
+  async generateKitchenReceipts(order: OrderDocument, print = true) {
+    const printersDetails: any = await this.orderService.identifyPrinters(
+      { user: { supplierId: order.supplierId } },
+      {
+        orderId: order._id.toString(),
+        printerType: PrinterType.Kitchen,
+      },
+      order,
+      true,
+    );
+    console.log(printersDetails);
+    if (printersDetails.printers.length > 0) {
+      order.kitchenReceipts =
+        await this.invoiceHelperService.generateKitchenReceipt(
+          order,
+          printersDetails,
+          print,
+        );
+      order.save();
+      //console.log(order);
     }
   }
   async notifyKitchenQueue(order: OrderDocument) {

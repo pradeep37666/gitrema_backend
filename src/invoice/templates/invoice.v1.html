@@ -146,6 +146,21 @@
                   >&nbsp;#{{ order.orderNumber }}</span
                 >
               </div>
+              {{#ifEquals isTableExist "TRUE"}}
+              <div
+                style="
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+                "
+              >
+                <span style="direction: ltr">Table |&nbsp;</span>
+                <span style="direction: rtl">رقم الطلب</span>
+                <span style="direction: ltr"
+                  >&nbsp;#{{ order.tableId.nameAr }}</span
+                >
+              </div>
+              {{/ifEquals}}
               <div>
                 <span>VAT |&nbsp;</span>
                 <span>الرقم الضريبي</span>
@@ -183,12 +198,38 @@
             </div>
           </div>
           <br />
+          {{/each}} {{#each discounts}}
+          <div style="display: flex; justify-content: space-between; gap: 10px">
+            <div style="flex: 1"></div>
+            <div style="flex: 3">
+              <div style="display: flex; flex-direction: column">
+                <div style="direction: ltr">Discount</div>
+                <!-- <div style="direction: rtl">{{this.nameAr}}</div>
+                <div>{{ this.additionTextAr }}</div> -->
+              </div>
+            </div>
+            <div style="flex: 1"></div>
+            <div style="flex: 1">{{ this.amount }}</div>
+          </div>
+          <br />
           {{/each}}
           <div></div>
         </div>
       </div>
 
       <div class="text-24" style="position: relative; color: #0e110e">
+        {{#each discounts}}
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0px;
+          "
+        >
+          <div>Discount | قيمة المنتج</div>
+          <div>{{ this.amount }}</div>
+        </div>
+        {{/each}}
         <div
           style="
             display: flex;

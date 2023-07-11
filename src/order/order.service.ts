@@ -66,6 +66,10 @@ import {
   DeferredTransactionDocument,
 } from './schemas/deferred-transaction.schema';
 import { DiscountOrderDto } from './dto/discount-order.dto';
+import {
+  Transaction,
+  TransactionDocument,
+} from 'src/transaction/schemas/transactions.schema';
 
 @Injectable()
 export class OrderService {
@@ -96,6 +100,8 @@ export class OrderService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(DeferredTransaction.name)
     private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
+    @InjectModel(Transaction.name)
+    private readonly transactionModel: Model<TransactionDocument>,
     private readonly tableHelperService: TableHelperService,
     private readonly cashierHelperService: CashierHelperService,
   ) {}
@@ -778,12 +784,31 @@ export class OrderService {
     delete groupOrder._id;
     delete groupOrder.createdAt;
     delete groupOrder.updatedAt;
+    delete groupOrder.invoiceStatus;
     groupOrder.isGrouped = true;
-    groupOrder.taxRate = orders[0].taxRate;
+
     groupOrder.transactions = [];
+
+    const orderInKitchen = orders.find(
+      (o) => o.status == OrderStatus.SentToKitchen,
+    );
+
+    if (orderInKitchen) {
+      groupOrder.status = OrderStatus.SentToKitchen;
+    }
 
     groupOrder.items = await this.orderHelperService.prepareOrderItems(
       groupOrder,
+    );
+
+    groupOrder.summary.totalPaid = orders.reduce(
+      (n, { summary }) => n + summary.totalPaid,
+      0,
+    );
+
+    groupOrder.summary.totalRefunded = orders.reduce(
+      (n, { summary }) => n + summary.totalRefunded,
+      0,
     );
 
     groupOrder.summary = await this.calculationService.calculateSummery(
@@ -794,21 +819,36 @@ export class OrderService {
       supplier._id,
     );
 
+    const transactions = await this.transactionModel.find({
+      orderId: { $in: dto.orderIds },
+      status: PaymentStatus.Success,
+    });
+
+    const transactionIds = transactions.map((t) => t._id);
+    groupOrder.transactions = transactionIds;
     console.log(groupOrder.items, groupOrder.summary);
     const groupOrderObj = await this.orderModel.create(groupOrder);
 
-    await this.orderModel.updateMany(
-      {
-        _id: { $in: dto.orderIds },
-      },
-      { $set: { groupId: groupOrderObj._id, status: OrderStatus.Cancelled } },
-    );
-    if (groupOrderObj.tableId) {
-      const tableLog =
-        await this.tableHelperService.addOrderToTableLogWithAutoStart(
-          groupOrderObj,
-        );
+    this.orderHelperService.postOrderCreate(req, groupOrderObj);
+
+    this.orderHelperService.generateKitchenReceipts(groupOrderObj);
+
+    for (const i in dto.orderIds) {
+      this.update(req, dto.orderIds[i], {
+        status: OrderStatus.Cancelled,
+        groupId: groupOrderObj._id,
+      });
     }
+
+    await this.transactionModel.updateMany(
+      { _id: { $in: transactionIds } },
+      {
+        $set: {
+          orderId: groupOrder._id,
+        },
+      },
+    );
+
     return groupOrderObj;
   }
 

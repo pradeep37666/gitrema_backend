@@ -50,6 +50,8 @@ export class UpdateOrderDto extends PartialType(
   chefRequestedClarification?: boolean;
 
   tip?: number;
+
+  groupId?: string;
 }
 
 export class ChangeOrderDto {
