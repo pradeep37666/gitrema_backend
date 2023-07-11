@@ -55,6 +55,10 @@ import {
 } from './schemas/deferred-transaction.schema';
 import { CashierModule } from 'src/cashier/cashier.module';
 import { PermissionModule } from 'src/permission/permission.module';
+import {
+  Transaction,
+  TransactionSchema,
+} from 'src/transaction/schemas/transactions.schema';
 
 @Module({
   imports: [
@@ -78,6 +82,7 @@ import { PermissionModule } from 'src/permission/permission.module';
       { name: Printer.name, schema: PrinterSchema },
       { name: Cashier.name, schema: CashierSchema },
       { name: DeferredTransaction.name, schema: DeferredTransactionSchema },
+      { name: Transaction.name, schema: TransactionSchema },
     ]),
     SocketIoModule,
     TableModule,

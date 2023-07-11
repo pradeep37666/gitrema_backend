@@ -80,3 +80,11 @@ export const getRandomTime = () => {
   const formattedMinutes = minutes.toString().padStart(2, '0');
   return `${formattedHours}:${formattedMinutes}`;
 };
+
+export const convertUtcToSupplierTimezone: any = (date, timezone: string) => {
+  return new Date(
+    new Date(date).toLocaleString('en-US', {
+      timeZone: timezone,
+    }),
+  );
+};

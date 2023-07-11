@@ -19,7 +19,8 @@ export enum OrderStatus {
   OnTable = 'On Table',
   Closed = 'Closed',
   Cancelled = 'Cancelled',
-  CancelledWihPaymentFailed = 'CancelledWihPaymentFailed',
+  CancelledByMerge = 'Cancelled By Merge',
+  CancelledWihPaymentFailed = 'Cancelled Wih Payment Failed',
 }
 
 export enum OrderActivityType {

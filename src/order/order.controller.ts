@@ -38,6 +38,7 @@ import { ChefInquiryDto } from './dto/chef-inquiry.dto';
 import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 import { Public } from 'src/core/decorators/public.decorator';
 import { PermissionService } from '../permission/permission.service';
+import { DiscountOrderDto } from './dto/discount-order.dto';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -156,6 +157,16 @@ export class OrderController {
   ) {
     const updateDto: UpdateOrderDto = { ...dto };
     return await this.orderService.update(req, orderId, updateDto);
+  }
+
+  @Post('apply-discount')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.ApplyDiscount)
+  async applyDiscount(
+    @Req() req,
+
+    @Body() dto: DiscountOrderDto,
+  ) {
+    return await this.orderService.update(req, dto.orderId, dto);
   }
 
   @Patch(':orderId/cancel')

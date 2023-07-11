@@ -80,6 +80,9 @@ export class InvoiceService {
         {
           path: 'restaurantId',
         },
+        {
+          path: 'tableId',
+        },
       ])
       .lean();
 
@@ -136,6 +139,15 @@ export class InvoiceService {
       refInvoiceId: refInvoice ? refInvoice._id : null,
       isReversedInvoice: cancelledInvoice ? true : false,
       refOriginalInvoiceId: cancelledInvoice ? cancelledInvoice._id : null,
+      totalWithTax: cancelledInvoice
+        ? cancelledInvoice.totalWithTax
+        : order.summary.totalWithTax,
+      totalTaxable: cancelledInvoice
+        ? cancelledInvoice.totalTaxable
+        : order.summary.totalTaxableAmount,
+      totalTax: cancelledInvoice
+        ? cancelledInvoice.totalTax
+        : order.summary.totalTax,
     });
 
     this.invoiceHelperService.postInvoiceCreate(invoice, order);

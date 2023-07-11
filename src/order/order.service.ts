@@ -28,6 +28,7 @@ import {
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
 import {
+  InvoiceStatus,
   OrderPaymentStatus,
   OrderStatus,
   OrderType,
@@ -65,6 +66,11 @@ import {
   DeferredTransaction,
   DeferredTransactionDocument,
 } from './schemas/deferred-transaction.schema';
+import { DiscountOrderDto } from './dto/discount-order.dto';
+import {
+  Transaction,
+  TransactionDocument,
+} from 'src/transaction/schemas/transactions.schema';
 
 @Injectable()
 export class OrderService {
@@ -95,6 +101,8 @@ export class OrderService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(DeferredTransaction.name)
     private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
+    @InjectModel(Transaction.name)
+    private readonly transactionModel: Model<TransactionDocument>,
     private readonly tableHelperService: TableHelperService,
     private readonly cashierHelperService: CashierHelperService,
   ) {}
@@ -385,7 +393,7 @@ export class OrderService {
     const orders = await this.orderModelPag.paginate(
       {
         supplierId: req.user.supplierId,
-        groupId: null,
+        //groupId: null,
         ...queryToApply,
       },
       {
@@ -658,8 +666,9 @@ export class OrderService {
     }
 
     // prepare the order items
-    if (dto.items) {
-      orderData.couponCode = order.couponCode;
+    if (dto.items || dto.couponCode) {
+      if (!dto.couponCode) orderData.couponCode = order.couponCode;
+
       orderData._id = order._id;
 
       orderData.items = await this.orderHelperService.prepareOrderItems(
@@ -777,37 +786,88 @@ export class OrderService {
     delete groupOrder._id;
     delete groupOrder.createdAt;
     delete groupOrder.updatedAt;
+    delete groupOrder.invoiceStatus;
+    delete groupOrder.paymentStatus;
     groupOrder.isGrouped = true;
-    groupOrder.taxRate = orders[0].taxRate;
+
     groupOrder.transactions = [];
+
+    const orderInKitchen = orders.find(
+      (o) => o.status == OrderStatus.SentToKitchen,
+    );
+
+    if (orderInKitchen) {
+      groupOrder.status = OrderStatus.SentToKitchen;
+    }
 
     groupOrder.items = await this.orderHelperService.prepareOrderItems(
       groupOrder,
+    );
+
+    groupOrder.summary.totalPaid = orders.reduce(
+      (n, { summary }) => n + summary.totalPaid,
+      0,
+    );
+
+    groupOrder.summary.totalRefunded = orders.reduce(
+      (n, { summary }) => n + summary.totalRefunded,
+      0,
     );
 
     groupOrder.summary = await this.calculationService.calculateSummery(
       groupOrder,
     );
 
+    if (groupOrder.summary.totalPaid > 0) {
+      if (
+        groupOrder.summary.totalPaid >
+        groupOrder.summary.totalWithTax + (groupOrder.tip ?? 0)
+      ) {
+        groupOrder.paymentStatus = OrderPaymentStatus.OverPaid;
+      } else if (
+        groupOrder.summary.totalPaid ==
+        groupOrder.summary.totalWithTax + (groupOrder.tip ?? 0)
+      ) {
+        groupOrder.paymentStatus = OrderPaymentStatus.Paid;
+      } else {
+        groupOrder.paymentStatus = OrderPaymentStatus.NotPaid;
+      }
+    }
+
     groupOrder.orderNumber = await this.orderHelperService.generateOrderNumber(
       supplier._id,
     );
 
+    const transactions = await this.transactionModel.find({
+      orderId: { $in: dto.orderIds },
+      status: PaymentStatus.Success,
+    });
+
+    const transactionIds = transactions.map((t) => t._id);
+    groupOrder.transactions = transactionIds;
     console.log(groupOrder.items, groupOrder.summary);
     const groupOrderObj = await this.orderModel.create(groupOrder);
 
-    await this.orderModel.updateMany(
-      {
-        _id: { $in: dto.orderIds },
-      },
-      { $set: { groupId: groupOrderObj._id, status: OrderStatus.Cancelled } },
-    );
-    if (groupOrderObj.tableId) {
-      const tableLog =
-        await this.tableHelperService.addOrderToTableLogWithAutoStart(
-          groupOrderObj,
-        );
+    this.orderHelperService.postOrderCreate(req, groupOrderObj);
+
+    this.orderHelperService.generateKitchenReceipts(groupOrderObj, false);
+
+    for (const i in dto.orderIds) {
+      this.update(req, dto.orderIds[i], {
+        status: OrderStatus.CancelledByMerge,
+        groupId: groupOrderObj._id,
+      });
     }
+
+    await this.transactionModel.updateMany(
+      { _id: { $in: transactionIds } },
+      {
+        $set: {
+          orderId: groupOrder._id,
+        },
+      },
+    );
+
     return groupOrderObj;
   }
 

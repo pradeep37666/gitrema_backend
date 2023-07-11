@@ -35,11 +35,15 @@ import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { Printer, PrinterDocument } from 'src/printer/schema/printer.schema';
 import { InvoiceService } from './invoice.service';
-import { roundOffNumber } from 'src/core/Helpers/universal.helper';
+import {
+  convertUtcToSupplierTimezone,
+  roundOffNumber,
+} from 'src/core/Helpers/universal.helper';
 import { PrinterType } from 'src/printer/enum/en';
 import { OrderType } from 'src/order/enum/en.enum';
 
 import { OrderType as ArOrderType } from 'src/order/enum/ar.enum';
+import { TIMEZONE } from 'src/core/Constants/system.constant';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -136,21 +140,35 @@ export class InvoiceHelperService {
     }
 
     const orderData = {
-      totalTaxableAmount: 0,
-      totalWithTax: 0,
-      totalTax: 0,
+      totalTaxableAmount: cancelledInvoice
+        ? cancelledInvoice.totalTaxable
+        : order.summary.totalTaxableAmount,
+      totalWithTax: cancelledInvoice
+        ? cancelledInvoice.totalWithTax
+        : order.summary.totalWithTax,
+      totalTax: cancelledInvoice
+        ? cancelledInvoice.totalTax
+        : order.summary.totalTax,
     };
 
-    items.forEach((i) => {
-      orderData.totalTaxableAmount += i.taxableAmount;
-      orderData.totalWithTax += i.totalWithTax;
-      orderData.totalTax += i.tax;
-    });
-    orderData.totalTax = roundOffNumber(orderData.totalTax, 2);
-    orderData.totalWithTax = roundOffNumber(orderData.totalWithTax, 2);
-    orderData.totalTaxableAmount = roundOffNumber(
-      orderData.totalTaxableAmount,
-      2,
+    // items.forEach((i) => {
+    //   orderData.totalTaxableAmount += i.taxableAmount;
+    //   orderData.totalWithTax += i.totalWithTax;
+    //   orderData.totalTax += i.tax;
+    // });
+    // orderData.totalTax = roundOffNumber(orderData.totalTax, 2);
+    // orderData.totalWithTax = roundOffNumber(orderData.totalWithTax, 2);
+    // orderData.totalTaxableAmount = roundOffNumber(
+    //   orderData.totalTaxableAmount,
+    //   2,
+    // );
+    const discounts = [];
+    if (order.summary.headerDiscount) {
+      discounts.push({ amount: order.summary.headerDiscount * -1 });
+    }
+    order.createdAt = convertUtcToSupplierTimezone(
+      order.createdAt,
+      order.supplierId?.timezone ?? TIMEZONE,
     );
     const templateHtml = fs.readFileSync(
       'src/invoice/templates/invoice.v1.html',
@@ -165,6 +183,8 @@ export class InvoiceHelperService {
       items,
       orderData,
       isFeeApplied: order.feeRate ? 'TRUE' : 'FALSE',
+      isTableExist: order.tableId ? 'TRUE' : 'FALSE',
+      discounts,
       multiplier,
     });
 
@@ -186,6 +206,7 @@ export class InvoiceHelperService {
   async generateKitchenReceipt(
     order: OrderDocument,
     printerDetails: { printers: string[]; printerItems: string[] },
+    print = true,
   ): Promise<Receipts[]> {
     await order.populate([
       { path: 'restaurantId' },
@@ -229,6 +250,12 @@ export class InvoiceHelperService {
       const printer = await this.printerModel
         .findById(printerDetails.printers[i])
         .lean();
+
+      tempOrderObj.createdAt = convertUtcToSupplierTimezone(
+        tempOrderObj.createdAt,
+        tempOrderObj.supplierId?.timezone ?? TIMEZONE,
+      );
+
       const template = Handlebars.compile(templateHtml);
 
       const html = template({
@@ -254,10 +281,11 @@ export class InvoiceHelperService {
         printerId: printerDetails.printers[i],
         url: imageUrl,
       });
-      this.printKitchenReceipts(order.supplierId.toString(), {
-        printer: printer,
-        url: imageUrl,
-      });
+      if (print)
+        this.printKitchenReceipts(order.supplierId.toString(), {
+          printer: printer,
+          url: imageUrl,
+        });
     }
 
     return response;
