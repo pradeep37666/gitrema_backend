@@ -28,6 +28,7 @@ import {
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
 import {
+  InvoiceStatus,
   OrderPaymentStatus,
   OrderStatus,
   OrderType,
@@ -667,6 +668,7 @@ export class OrderService {
     // prepare the order items
     if (dto.items || dto.couponCode) {
       if (!dto.couponCode) orderData.couponCode = order.couponCode;
+      else delete orderData.invoiceStatus;
       orderData._id = order._id;
 
       orderData.items = await this.orderHelperService.prepareOrderItems(
