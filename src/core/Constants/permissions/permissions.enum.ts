@@ -105,6 +105,7 @@ export enum OrderPermissions {
   KitchenQueueProcess = 'Kitchen Queue Process',
   LimitedOrderCancel = 'Limited Order Cancel',
   LimitedOrderUpdate = 'Limited Order Update',
+  ApplyDiscount = 'Apply Discount',
 }
 
 export enum UserPermission {

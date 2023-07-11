@@ -65,6 +65,7 @@ import {
   DeferredTransaction,
   DeferredTransactionDocument,
 } from './schemas/deferred-transaction.schema';
+import { DiscountOrderDto } from './dto/discount-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -658,8 +659,8 @@ export class OrderService {
     }
 
     // prepare the order items
-    if (dto.items) {
-      orderData.couponCode = order.couponCode;
+    if (dto.items || dto.couponCode) {
+      if (!dto.couponCode) orderData.couponCode = order.couponCode;
       orderData._id = order._id;
 
       orderData.items = await this.orderHelperService.prepareOrderItems(
