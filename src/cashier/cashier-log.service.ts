@@ -18,6 +18,7 @@ import {
 import { CashierLog, CashierLogDocument } from './schemas/cashier-log.schema';
 import {
   CloseCashierDto,
+  ExpenseDto,
   OpenCashierDto,
   OverrideCloseCashierDto,
 } from './dto/cashier-log.dto';
@@ -46,34 +47,40 @@ export class CashierLogService {
     private socketGateway: SocketIoGateway,
   ) {}
 
+  async findCurrentLog(cashierId: string): Promise<CashierLogDocument> {
+    const exists = await this.cashierLogModel.findOne(
+      { cashierId },
+      {},
+      { sort: { _id: -1 } },
+    );
+    return exists;
+  }
   async current(cashierId: string): Promise<any> {
-    const exists = await this.cashierLogModel
-      .findOne({ cashierId }, {}, { sort: { _id: -1 } })
-      .populate([
-        {
-          path: 'transactions',
-          populate: [
-            {
-              path: 'orderId',
-              select: { items: 0 },
-            },
-          ],
-        },
-        {
-          path: 'userId',
-          select: {
-            name: 1,
-            _id: 1,
-            phoneNumber: 1,
-            email: 1,
-            whatsappNumber: 1,
-          },
-        },
-      ]);
-
+    const exists = await this.findCurrentLog(cashierId);
     if (!exists) {
       throw new NotFoundException();
     }
+    exists.populate([
+      {
+        path: 'transactions',
+        populate: [
+          {
+            path: 'orderId',
+            select: { items: 0 },
+          },
+        ],
+      },
+      {
+        path: 'userId',
+        select: {
+          name: 1,
+          _id: 1,
+          phoneNumber: 1,
+          email: 1,
+          whatsappNumber: 1,
+        },
+      },
+    ]);
 
     return {
       ...exists.toObject(),
@@ -328,6 +335,22 @@ export class CashierLogService {
       SocketEvents.Cashier,
       { cashierId: transaction.cashierId, refresh: true },
     );
+  }
+
+  async storeExpense(req, cashierId: string, dto: ExpenseDto) {
+    const log = await this.findCurrentLog(cashierId);
+    log.expenses.push(dto);
+    await log.save();
+    return log;
+  }
+
+  async removeExpense(req, cashierId: string, expenseId: string) {
+    const log = await this.findCurrentLog(cashierId);
+    log.expenses = log.expenses.filter(
+      (e: any) => e._id.toString() != expenseId,
+    );
+    await log.save();
+    return log;
   }
 
   async autoStartCashier(req, cashier: CashierDocument) {

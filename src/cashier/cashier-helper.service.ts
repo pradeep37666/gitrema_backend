@@ -80,6 +80,10 @@ export class CashierHelperService {
         s.paymentMethod === PaymentMethod.Online ||
         s.paymentMethod === PaymentMethod.Card,
     );
+    const expense = cashierLog.expenses.reduce(
+      (prev, acc) => prev + acc.expense,
+      0,
+    );
     const dashboard = {
       openingBalance: cashierLog.openingBalance,
       totalRefunds: this.foldAmount(refunds),
@@ -89,7 +93,8 @@ export class CashierHelperService {
       expectedCashAtClose:
         cashierLog.openingBalance +
         this.foldAmount(cashSales) -
-        this.foldAmount(refunds),
+        this.foldAmount(refunds) -
+        expense,
       deferredAmount: this.foldAmount(deferredTransactions),
     };
     return dashboard;
