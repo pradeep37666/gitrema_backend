@@ -438,7 +438,7 @@ export class OrderService {
     const totalOrders = await this.orderModel.count({
       restaurantId: query.restaurantId,
       supplierId: req.user.supplierId,
-      groupId: null,
+      //groupId: null,
       ...queryToApply,
       status: {
         $in: [OrderStatus.SentToKitchen, OrderStatus.StartedPreparing],
