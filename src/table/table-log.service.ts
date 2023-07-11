@@ -124,7 +124,14 @@ export class TableLogService {
       if (
         (await this.orderModel.count({
           paymentStatus: OrderPaymentStatus.NotPaid,
-          status: { $nin: [OrderStatus.Cancelled, OrderStatus.Closed] },
+          status: {
+            $nin: [
+              OrderStatus.Cancelled,
+              OrderStatus.Closed,
+              OrderStatus.CancelledByMerge,
+              OrderStatus.CancelledWihPaymentFailed,
+            ],
+          },
           tableId: tableLog.tableId,
         })) > 0
       ) {
