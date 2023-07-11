@@ -787,6 +787,7 @@ export class OrderService {
     delete groupOrder.createdAt;
     delete groupOrder.updatedAt;
     delete groupOrder.invoiceStatus;
+    delete groupOrder.paymentStatus;
     groupOrder.isGrouped = true;
 
     groupOrder.transactions = [];
@@ -816,6 +817,22 @@ export class OrderService {
     groupOrder.summary = await this.calculationService.calculateSummery(
       groupOrder,
     );
+
+    if (groupOrder.summary.totalPaid > 0) {
+      if (
+        groupOrder.summary.totalPaid >
+        groupOrder.summary.totalWithTax + (groupOrder.tip ?? 0)
+      ) {
+        groupOrder.paymentStatus = OrderPaymentStatus.OverPaid;
+      } else if (
+        groupOrder.summary.totalPaid ==
+        groupOrder.summary.totalWithTax + (groupOrder.tip ?? 0)
+      ) {
+        groupOrder.paymentStatus = OrderPaymentStatus.Paid;
+      } else {
+        groupOrder.paymentStatus = OrderPaymentStatus.NotPaid;
+      }
+    }
 
     groupOrder.orderNumber = await this.orderHelperService.generateOrderNumber(
       supplier._id,
