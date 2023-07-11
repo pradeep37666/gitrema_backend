@@ -438,7 +438,7 @@ export class OrderService {
     const totalOrders = await this.orderModel.count({
       restaurantId: query.restaurantId,
       supplierId: req.user.supplierId,
-      groupId: null,
+      //groupId: null,
       ...queryToApply,
       status: {
         $in: [OrderStatus.SentToKitchen, OrderStatus.StartedPreparing],
@@ -854,7 +854,7 @@ export class OrderService {
 
     for (const i in dto.orderIds) {
       this.update(req, dto.orderIds[i], {
-        status: OrderStatus.Cancelled,
+        status: OrderStatus.CancelledByMerge,
         groupId: groupOrderObj._id,
       });
     }
