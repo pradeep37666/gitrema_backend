@@ -513,8 +513,12 @@ export class OrderHelperService {
       this.setCustomer(order);
     }
 
+    if (dto.items || dto.couponCode) {
+      this.invoiceHelperService.regenerateInvoice(order);
+    }
+
     if (dto.items) {
-      await this.invoiceHelperService.regenerateInvoice(order);
+      this.generateKitchenReceipts(order);
     }
   }
 
