@@ -122,6 +122,15 @@ export class Invoice {
   })
   refOriginalInvoiceId: InvoiceDocument;
 
+  @Prop({ default: null })
+  totalWithTax: number;
+
+  @Prop({ default: null })
+  totalTaxable: number;
+
+  @Prop({ default: null })
+  totalTax: number;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',

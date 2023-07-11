@@ -140,22 +140,28 @@ export class InvoiceHelperService {
     }
 
     const orderData = {
-      totalTaxableAmount: 0,
-      totalWithTax: 0,
-      totalTax: 0,
+      totalTaxableAmount: cancelledInvoice
+        ? cancelledInvoice.totalTaxable
+        : order.summary.totalTaxableAmount,
+      totalWithTax: cancelledInvoice
+        ? cancelledInvoice.totalWithTax
+        : order.summary.totalWithTax,
+      totalTax: cancelledInvoice
+        ? cancelledInvoice.totalTax
+        : order.summary.totalTax,
     };
 
-    items.forEach((i) => {
-      orderData.totalTaxableAmount += i.taxableAmount;
-      orderData.totalWithTax += i.totalWithTax;
-      orderData.totalTax += i.tax;
-    });
-    orderData.totalTax = roundOffNumber(orderData.totalTax, 2);
-    orderData.totalWithTax = roundOffNumber(orderData.totalWithTax, 2);
-    orderData.totalTaxableAmount = roundOffNumber(
-      orderData.totalTaxableAmount,
-      2,
-    );
+    // items.forEach((i) => {
+    //   orderData.totalTaxableAmount += i.taxableAmount;
+    //   orderData.totalWithTax += i.totalWithTax;
+    //   orderData.totalTax += i.tax;
+    // });
+    // orderData.totalTax = roundOffNumber(orderData.totalTax, 2);
+    // orderData.totalWithTax = roundOffNumber(orderData.totalWithTax, 2);
+    // orderData.totalTaxableAmount = roundOffNumber(
+    //   orderData.totalTaxableAmount,
+    //   2,
+    // );
     const discounts = [];
     if (order.summary.headerDiscount) {
       discounts.push({ amount: order.summary.headerDiscount * -1 });
