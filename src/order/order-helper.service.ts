@@ -382,8 +382,9 @@ export class OrderHelperService {
       );
     }
 
-    // manage inventory
-    this.manageInventory(order);
+    if (!order.isGrouped)
+      // manage inventory
+      this.manageInventory(order);
 
     if (req.user.isCustomer) {
       const customer = await this.customerModel.findById(req.user.userId);
@@ -552,14 +553,14 @@ export class OrderHelperService {
         if (menuItem.quantities[index].quantity == 0) menuItem.soldOut = true;
         menuItem.save();
       }
-      this.inventoryHelperService.handlePostSale({
-        restaurantId: order.restaurantId.toString(),
-        menuItemId: menuItem._id.toString(),
-        quantitiesSold: items[i].quantity,
-        entity: order,
-        price: items[i].unitPriceAfterDiscount,
-        paymentStatus: order.paymentStatus,
-      });
+      // this.inventoryHelperService.handlePostSale({
+      //   restaurantId: order.restaurantId.toString(),
+      //   menuItemId: menuItem._id.toString(),
+      //   quantitiesSold: items[i].quantity,
+      //   entity: order,
+      //   price: items[i].unitPriceAfterDiscount,
+      //   paymentStatus: order.paymentStatus,
+      // });
     }
   }
 
