@@ -19,6 +19,7 @@ export enum OrderStatus {
   OnTable = 'On Table',
   Closed = 'Closed',
   Cancelled = 'Cancelled',
+  CancelledByMerge = 'CancelledByMerge',
   CancelledWihPaymentFailed = 'CancelledWihPaymentFailed',
 }
 
