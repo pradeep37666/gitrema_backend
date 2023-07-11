@@ -22,6 +22,7 @@ import { UpdateCashierDto } from './dto/update-cashier.dto';
 import { CashierDocument } from './schemas/cashier.schema';
 import {
   CloseCashierDto,
+  ExpenseDto,
   OpenCashierDto,
   OverrideCloseCashierDto,
   QueryCashierDto,
@@ -133,6 +134,30 @@ export class CashierController {
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.DELETE)
   async remove(@Param('cashierId') cashierId: string) {
     return await this.cashierService.remove(cashierId);
+  }
+
+  @Post(':cashierId/add-expense')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.CREATE)
+  async addExpense(
+    @Req() req,
+    @Param('cashierId') cashierId: string,
+    @Body() dto: ExpenseDto,
+  ) {
+    return await this.cashierLogService.storeExpense(req, cashierId, dto);
+  }
+
+  @Delete(':cashierId/remove-expense/:expenseId')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.CREATE)
+  async removeExpense(
+    @Req() req,
+    @Param('cashierId') cashierId: string,
+    @Param('expenseId') expenseId: string,
+  ) {
+    return await this.cashierLogService.removeExpense(
+      req,
+      cashierId,
+      expenseId,
+    );
   }
 
   @Get(':cashierId/dashboard')

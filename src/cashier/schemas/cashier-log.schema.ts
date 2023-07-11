@@ -10,6 +10,16 @@ import { OrderDocument } from 'src/order/schemas/order.schema';
 
 export type CashierLogDocument = CashierLog & Document;
 
+@Schema({})
+class Expense {
+  @Prop({ required: true })
+  description: string;
+
+  @Prop({ required: true })
+  expense: number;
+}
+const ExpenseSchema = SchemaFactory.createForClass(Expense);
+
 @Schema({ timestamps: true })
 export class CashierLog {
   @Prop({
@@ -81,6 +91,9 @@ export class CashierLog {
 
   @Prop({ type: [PausedLogSchema] })
   pausedLogs: PausedLog[];
+
+  @Prop({ type: [ExpenseSchema] })
+  expenses: Expense[];
 }
 
 export const CashierLogSchema = SchemaFactory.createForClass(CashierLog);

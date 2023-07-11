@@ -74,3 +74,15 @@ export class QueryCashierDto {
   @ToBoolean()
   includeOrders?: boolean;
 }
+
+export class ExpenseDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  expense: number;
+}
