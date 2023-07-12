@@ -9,6 +9,7 @@ import {
   Request,
   Query,
   Req,
+  Header,
 } from '@nestjs/common';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
@@ -30,6 +31,8 @@ import {
 import { CashierLogDocument } from './schemas/cashier-log.schema';
 import { CashierLogService } from './cashier-log.service';
 import { PauseDto } from './dto/pause.dto';
+import { CashierReportDto } from './dto/cashier-report.dto';
+import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
 
 @Controller('cashier')
 @ApiTags('Cashiers')
@@ -164,5 +167,20 @@ export class CashierController {
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
   async findDashboard(@Param('cashierId') cashierId: string) {
     return await this.cashierService.findDashboard(cashierId);
+  }
+
+  @Get('order-report')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async orderReport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.orderReport(req, query);
+  }
+
+  @Get('order-report/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="cashier.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async orderReportExport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.orderReport(req, query, true);
   }
 }

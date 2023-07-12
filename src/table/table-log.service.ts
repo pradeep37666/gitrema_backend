@@ -133,6 +133,7 @@ export class TableLogService {
             ],
           },
           tableId: tableLog.tableId,
+          _id: { $in: tableLog.orders },
         })) > 0
       ) {
         throw new BadRequestException(
