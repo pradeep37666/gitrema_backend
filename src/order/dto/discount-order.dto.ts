@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
@@ -10,6 +11,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { CalculationType } from 'src/core/Constants/enum';
 
 export class DiscountOrderDto {
   @ApiProperty()
@@ -21,4 +23,24 @@ export class DiscountOrderDto {
   @IsString()
   @IsNotEmpty()
   couponCode: string;
+}
+export class AdhocDiscountDto {
+  @ApiProperty()
+  @IsMongoId()
+  @IsNotEmpty()
+  orderId: string;
+
+  @ApiProperty({
+    type: String,
+    enum: CalculationType,
+    enumName: 'CalculationType',
+  })
+  @IsNotEmpty()
+  @IsEnum(CalculationType)
+  discountType: CalculationType;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  discount: number;
 }
