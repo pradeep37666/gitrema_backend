@@ -66,7 +66,7 @@ import {
   DeferredTransaction,
   DeferredTransactionDocument,
 } from './schemas/deferred-transaction.schema';
-import { DiscountOrderDto } from './dto/discount-order.dto';
+import { AdhocDiscountDto, DiscountOrderDto } from './dto/discount-order.dto';
 import {
   Transaction,
   TransactionDocument,
@@ -709,6 +709,10 @@ export class OrderService {
     return modified;
   }
 
+  // async adhocDiscount(req, dto: AdhocDiscountDto) {
+
+  // }
+
   async restrictedUpdate(
     req: any,
     orderId: string,
@@ -767,7 +771,14 @@ export class OrderService {
     const orders = await this.orderModel
       .find({
         _id: { $in: dto.orderIds },
-        status: { $nin: [OrderStatus.Closed, OrderStatus.Cancelled] },
+        status: {
+          $nin: [
+            OrderStatus.Closed,
+            OrderStatus.Cancelled,
+            OrderStatus.CancelledByMerge,
+            OrderStatus.CancelledWihPaymentFailed,
+          ],
+        },
       })
       .lean();
     if (orders.length == 0)
@@ -863,7 +874,7 @@ export class OrderService {
       { _id: { $in: transactionIds } },
       {
         $set: {
-          orderId: groupOrder._id,
+          orderId: groupOrderObj._id,
         },
       },
     );
