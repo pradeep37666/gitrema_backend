@@ -60,7 +60,7 @@ export class CashierLogService {
     if (!exists) {
       throw new NotFoundException();
     }
-    exists.populate([
+    await exists.populate([
       {
         path: 'transactions',
         populate: [
