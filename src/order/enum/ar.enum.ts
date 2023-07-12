@@ -19,6 +19,8 @@ export enum OrderStatus {
   OnTable = 'على الطاولة',
   Closed = 'مقفل',
   Cancelled = 'ملغي',
+  CancelledByMerge = 'مدمج',
+  CancelledWihPaymentFailed = 'ملغي لفشل عملية الدفع',
 }
 
 export enum OrderPaymentStatus {

@@ -79,7 +79,14 @@ export class PaymentService {
     if (!order)
       throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
 
-    if ([OrderStatus.Closed, OrderStatus.Cancelled].includes(order.status))
+    if (
+      [
+        OrderStatus.Closed,
+        OrderStatus.Cancelled,
+        OrderStatus.CancelledByMerge,
+        OrderStatus.CancelledWihPaymentFailed,
+      ].includes(order.status)
+    )
       throw new NotFoundException(
         `Payment are not allowed on cancelled or closed orders`,
       );

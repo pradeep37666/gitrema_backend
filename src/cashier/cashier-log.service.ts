@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  StreamableFile,
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -30,6 +31,21 @@ import { TransactionDocument } from 'src/transaction/schemas/transactions.schema
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { CashierHelperService } from './cashier-helper.service';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { CashierReportDto } from './dto/cashier-report.dto';
+import { TIMEZONE } from 'src/core/Constants/system.constant';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/schemas/suppliers.schema';
+import { Invoice, InvoiceDocument } from 'src/invoice/schemas/invoice.schema';
+import { convertUtcToSupplierTimezone } from 'src/core/Helpers/universal.helper';
+import * as moment from 'moment';
+import { OrderStatus } from 'src/order/enum/en.enum';
+import { PaymentStatus } from 'src/core/Constants/enum';
+import { roundOffNumber } from '../core/Helpers/universal.helper';
+import { Workbook } from 'exceljs';
+import * as tmp from 'tmp';
+import * as fs from 'fs';
 
 @Injectable()
 export class CashierLogService {
@@ -39,6 +55,11 @@ export class CashierLogService {
 
     @InjectModel(CashierLog.name)
     private readonly cashierLogModelPag: PaginateModel<CashierLogDocument>,
+    @InjectModel(Supplier.name)
+    private readonly supplierModel: Model<SupplierDocument>,
+
+    @InjectModel(Invoice.name)
+    private readonly invoiceModel: Model<InvoiceDocument>,
 
     @Inject(forwardRef(() => CashierService))
     private readonly cashierService: CashierService,
@@ -363,5 +384,147 @@ export class CashierLogService {
       userId: req ? req.user.userId : null,
     });
     this.cashierService.update(cashier._id, { currentLog: cashierLog._id });
+  }
+
+  async orderReport(req, query: CashierReportDto, isFile = false) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
+    let queryToApply: any = {};
+    if (query.startDate && query.endDate) {
+      query.startDate.setUTCHours(query.startDate.getHours());
+      query.startDate.setUTCMinutes(query.startDate.getMinutes());
+      query.startDate = new Date(
+        query.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      query.endDate.setUTCHours(query.endDate.getHours());
+      query.endDate.setUTCMinutes(query.endDate.getMinutes());
+      query.endDate = new Date(
+        query.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+    }
+    if (query.restaurantId) {
+      queryToApply.restaurantId = query.restaurantId;
+    }
+    console.log({
+      createdAt: {
+        $gte: query.startDate,
+        $lte: query.endDate,
+      },
+    });
+    const cashierLogs: any = await this.cashierLogModel
+      .find({
+        supplierId: req.user.supplierId,
+        ...queryToApply,
+      })
+      .populate([
+        {
+          path: 'transactions',
+          match: {
+            createdAt: {
+              $gte: query.startDate,
+              $lte: query.endDate,
+            },
+          },
+          populate: [
+            {
+              path: 'orderId',
+            },
+          ],
+        },
+        {
+          path: 'userId',
+        },
+      ]);
+
+    const response = [],
+      records = [
+        [
+          'Order Number',
+          'Invoice Number',
+          'Date',
+          'Time',
+          'Paid Amount',
+          'Payment Method',
+          'Invoice Links',
+          'User Names',
+          'Cashier Log (Shift)',
+        ],
+        [
+          'رقم الطلب',
+          'رقم الفاتورة',
+          'التاريخ',
+          'الوقت',
+          'المبلغ المدفوع',
+          'طريقة الدفع',
+          'الفاتورة',
+          'اسم الموظف',
+          'الشفت',
+        ],
+      ];
+    const book = new Workbook();
+    const sheet = book.addWorksheet('Transactions');
+    for (const i in cashierLogs) {
+      for (const j in cashierLogs[i].transactions) {
+        const order = response.find(
+          (o) => o.orderNumber == cashierLogs[i].transactions[j].orderNumber,
+        );
+        if (
+          !order &&
+          cashierLogs[i].transactions[j].status == PaymentStatus.Success
+        ) {
+          const invoices = await this.invoiceModel.find(
+            {
+              orderId: cashierLogs[i].transactions[j].orderId._id,
+            },
+            {},
+            { sort: { _id: -1 } },
+          );
+          const date = convertUtcToSupplierTimezone(
+            cashierLogs[i].transactions[j].createdAt,
+            timezone,
+          );
+          const row = {
+            orderNumber: cashierLogs[i].transactions[j].orderId.orderNumber,
+            invoiceNumber: invoices.length > 0 ? invoices[0].invoiceNumber : '',
+            date: moment(date).format('DD/MM/YYYY'),
+            time: moment(date).format('hh:mm A'),
+            totalPaid: roundOffNumber(
+              cashierLogs[i].transactions[j].orderId.summary.totalPaid,
+            ),
+            paymentMethod: cashierLogs[i].transactions[j].paymentMethod,
+            invoiceLinks: invoices.map((i) => i.imageUrl).join(','),
+            user: cashierLogs[i].userId.name,
+            shift:
+              moment(
+                convertUtcToSupplierTimezone(
+                  cashierLogs[i].startedAt,
+                  timezone,
+                ),
+              ).format('DD/MM/YYYY hh:mm A') +
+              ' - ' +
+              cashierLogs[i].closedAt
+                ? moment(
+                    convertUtcToSupplierTimezone(
+                      cashierLogs[i].closedAt,
+                      timezone,
+                    ),
+                  ).format('DD/MM/YYYY hh:mm A')
+                : '',
+          };
+          response.push(row);
+          if (isFile) {
+            records.push(Object.values(row));
+          }
+        }
+      }
+    }
+    if (!isFile) return response;
+    sheet.addRows(records);
+    const tmpFile = tmp.fileSync({
+      mode: 0o644,
+    });
+    await book.xlsx.writeFile(tmpFile.name);
+    const file = fs.createReadStream(tmpFile.name);
+    return new StreamableFile(file);
   }
 }

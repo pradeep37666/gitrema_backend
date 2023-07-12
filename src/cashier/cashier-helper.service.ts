@@ -15,6 +15,7 @@ import { User, UserDocument } from 'src/users/schemas/users.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { CashierLogDocument } from './schemas/cashier-log.schema';
+import { roundOffNumber } from '../core/Helpers/universal.helper';
 import {
   DeferredTransaction,
   DeferredTransactionDocument,
@@ -85,17 +86,18 @@ export class CashierHelperService {
       0,
     );
     const dashboard = {
-      openingBalance: cashierLog.openingBalance,
-      totalRefunds: this.foldAmount(refunds),
-      totalSales: this.foldAmount(sales),
-      salesPaidWithCash: this.foldAmount(cashSales),
-      salesPaidWithCard: this.foldAmount(bankSales),
-      expectedCashAtClose:
+      openingBalance: roundOffNumber(cashierLog.openingBalance),
+      totalRefunds: roundOffNumber(this.foldAmount(refunds)),
+      totalSales: roundOffNumber(this.foldAmount(sales)),
+      salesPaidWithCash: roundOffNumber(this.foldAmount(cashSales)),
+      salesPaidWithCard: roundOffNumber(this.foldAmount(bankSales)),
+      expectedCashAtClose: roundOffNumber(
         cashierLog.openingBalance +
-        this.foldAmount(cashSales) -
-        this.foldAmount(refunds) -
-        expense,
-      deferredAmount: this.foldAmount(deferredTransactions),
+          this.foldAmount(cashSales) -
+          this.foldAmount(refunds) -
+          expense,
+      ),
+      deferredAmount: roundOffNumber(this.foldAmount(deferredTransactions)),
     };
     return dashboard;
   }
