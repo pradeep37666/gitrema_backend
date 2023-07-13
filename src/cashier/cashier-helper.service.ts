@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import { Cashier, CashierDocument } from './schemas/cashier.schema';
 import { CashierLogService } from './cashier-log.service';
@@ -20,6 +20,8 @@ import {
   DeferredTransaction,
   DeferredTransactionDocument,
 } from 'src/order/schemas/deferred-transaction.schema';
+import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
+import { Table, TableDocument } from 'src/table/schemas/table.schema';
 
 @Injectable()
 export class CashierHelperService {
@@ -32,6 +34,8 @@ export class CashierHelperService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(DeferredTransaction.name)
     private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
+    @InjectModel(Table.name)
+    private readonly tableModel: Model<TableDocument>,
   ) {}
 
   async postCashierCreate(req, cashier: CashierDocument) {
@@ -70,6 +74,44 @@ export class CashierHelperService {
         $lte: cashierLog.closedAt ?? new Date(),
       },
     });
+    const openTableLogs = await this.tableModel.aggregate(
+      [
+        {
+          $match: {
+            restaurantId: new mongoose.Types.ObjectId(
+              cashierLog.supplierId.toString(),
+            ),
+            closingTime: null,
+          },
+        },
+        {
+          $lookup: {
+            from: 'tablelogs',
+            localField: 'currentTableLog',
+            foreignField: '_id',
+            as: 'currentTableLog',
+          },
+        },
+
+        {
+          $lookup: {
+            from: 'orders',
+            localField: 'currentTableLog.orders',
+            foreignField: '_id',
+            as: 'orders',
+          },
+        },
+
+        {
+          $project: {
+            amount: {
+              $sum: '$orders.summary.remainingAmountToCollect',
+            },
+          },
+        },
+      ],
+      { allowDiskUse: true },
+    );
     const transactions = cashierLog.transactions;
     const refunds = transactions.filter((t) => t.isRefund);
     const sales = transactions.filter((t) => !t.isRefund);
@@ -98,6 +140,9 @@ export class CashierHelperService {
           expense,
       ),
       deferredAmount: roundOffNumber(this.foldAmount(deferredTransactions)),
+      totalRemianingAmountToCollect: roundOffNumber(
+        this.foldAmount(openTableLogs),
+      ),
     };
     return dashboard;
   }

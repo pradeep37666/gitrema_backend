@@ -519,7 +519,7 @@ export class OrderHelperService {
     }
 
     if (dto.items) {
-      this.generateKitchenReceipts(order);
+      this.generateKitchenReceipts(order, false);
     }
   }
 

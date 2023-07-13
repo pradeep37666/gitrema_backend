@@ -17,6 +17,8 @@ import {
   SupplierSchema,
 } from 'src/supplier/schemas/suppliers.schema';
 import { Invoice, InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
+import { TableLog, TableLogSchema } from 'src/table/schemas/table-log.schema';
+import { Table, TableSchema } from 'src/table/schemas/table.schema';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { Invoice, InvoiceSchema } from 'src/invoice/schemas/invoice.schema';
       { name: DeferredTransaction.name, schema: DeferredTransactionSchema },
       { name: Supplier.name, schema: SupplierSchema },
       { name: Invoice.name, schema: InvoiceSchema },
+      { name: Table.name, schema: TableSchema },
     ]),
     SocketIoModule,
   ],

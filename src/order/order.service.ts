@@ -642,7 +642,7 @@ export class OrderService {
       throw new BadRequestException(VALIDATION_MESSAGES.OrderClosed.key);
     } else if (
       dto.status == OrderStatus.Reset &&
-      order.status != OrderStatus.Cancelled
+      order.status != OrderStatus.Closed
     ) {
       throw new BadRequestException(`Not Allowed`);
     }
