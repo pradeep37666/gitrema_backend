@@ -786,7 +786,7 @@ export class OrderService {
         },
       })
       .lean();
-    if (orders.length > 1)
+    if (orders.length < 2)
       throw new BadRequestException(VALIDATION_MESSAGES.AllOrderClosed.key);
     let items = [];
     orders.forEach((o) => {
