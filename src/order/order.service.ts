@@ -638,8 +638,13 @@ export class OrderService {
     }
     const orderData: any = { ...order.toObject(), ...dto };
 
-    if (order.status == OrderStatus.Closed) {
+    if (order.status == OrderStatus.Closed && dto.status != OrderStatus.Reset) {
       throw new BadRequestException(VALIDATION_MESSAGES.OrderClosed.key);
+    } else if (
+      dto.status == OrderStatus.Reset &&
+      order.status != OrderStatus.Cancelled
+    ) {
+      throw new BadRequestException(`Not Allowed`);
     }
 
     if (dto.status && dto.status == order.status) {
@@ -781,12 +786,14 @@ export class OrderService {
         },
       })
       .lean();
-    if (orders.length == 0)
+    if (orders.length > 1)
       throw new BadRequestException(VALIDATION_MESSAGES.AllOrderClosed.key);
     let items = [];
     orders.forEach((o) => {
       items = items.concat(o.items);
     });
+
+    const orderIds = orders.map((o) => o._id);
 
     const supplier = await this.supplierModel
       .findById(orders[0].supplierId)
@@ -850,7 +857,7 @@ export class OrderService {
     );
 
     const transactions = await this.transactionModel.find({
-      orderId: { $in: dto.orderIds },
+      orderId: { $in: orderIds },
       status: PaymentStatus.Success,
     });
 
@@ -863,7 +870,7 @@ export class OrderService {
 
     this.orderHelperService.generateKitchenReceipts(groupOrderObj, false);
 
-    for (const i in dto.orderIds) {
+    for (const i in orderIds) {
       this.update(req, dto.orderIds[i], {
         status: OrderStatus.CancelledByMerge,
         groupId: groupOrderObj._id,
