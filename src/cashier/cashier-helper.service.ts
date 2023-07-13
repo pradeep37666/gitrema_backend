@@ -98,6 +98,7 @@ export class CashierHelperService {
           expense,
       ),
       deferredAmount: roundOffNumber(this.foldAmount(deferredTransactions)),
+      expenseAmount: roundOffNumber(expense)
     };
     return dashboard;
   }
