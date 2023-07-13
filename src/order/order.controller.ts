@@ -197,6 +197,14 @@ export class OrderController {
     });
   }
 
+  @Patch(':orderId/reset')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.Reset)
+  async reset(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.update(req, orderId, {
+      status: OrderStatus.Reset,
+    });
+  }
+
   @Patch(':orderId/on-table')
   @PermissionGuard(PermissionSubject.Order, Permission.Order.OnTable)
   async onTable(
