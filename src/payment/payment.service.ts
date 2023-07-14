@@ -280,17 +280,23 @@ export class PaymentService {
     if (transactions.length > 0) {
       return transactions;
     }
-    const splittedAmount: number =
-      (order.summary.totalWithTax - order.summary.totalPaid) / dto.split;
+    let amountToCollect =
+      order.summary.totalWithTax - order.summary.totalPaid + (order.tip ?? 0);
+    let splittedAmount: number = roundOffNumber(amountToCollect / dto.split);
 
     if (splittedAmount <= 0)
       throw new NotFoundException('Order is already paid');
     const transactionsToSave = [];
     for (let i = 0; i < dto.split; i++) {
+      amountToCollect -= splittedAmount;
+      if (i == dto.split - 1 && amountToCollect > 0) {
+        splittedAmount += amountToCollect;
+        splittedAmount = roundOffNumber(splittedAmount);
+      }
       transactionsToSave.push({
         supplierId: order.supplierId,
         orderId: order._id,
-        amount: roundOffNumber(splittedAmount),
+        amount: splittedAmount,
         paymentGateway: null,
       });
     }

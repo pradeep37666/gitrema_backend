@@ -21,6 +21,7 @@ export enum OrderStatus {
   Cancelled = 'ملغي',
   CancelledByMerge = 'مدمج',
   CancelledWihPaymentFailed = 'ملغي لفشل عملية الدفع',
+  Reset = 'اعادة فتح',
 }
 
 export enum OrderPaymentStatus {

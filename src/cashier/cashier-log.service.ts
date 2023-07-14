@@ -89,6 +89,12 @@ export class CashierLogService {
             path: 'orderId',
             select: { items: 0 },
           },
+          {
+            path: 'cashierId',
+            select: {
+              restaurantId: 1,
+            },
+          },
         ],
       },
       {

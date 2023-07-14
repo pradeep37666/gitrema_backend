@@ -129,6 +129,11 @@ export class CashierHelperService {
       (prev, acc) => prev + acc.expense,
       0,
     );
+    const tip = cashierLog.transactions.reduce(
+      (prev, t) => prev + (t.orderId.tip ?? 0),
+      0,
+    );
+    const deferredAmount = this.foldAmount(deferredTransactions);
     const dashboard = {
       openingBalance: roundOffNumber(cashierLog.openingBalance),
       totalRefunds: roundOffNumber(this.foldAmount(refunds)),
@@ -137,15 +142,17 @@ export class CashierHelperService {
       salesPaidWithCard: roundOffNumber(this.foldAmount(bankSales)),
       expectedCashAtClose: roundOffNumber(
         cashierLog.openingBalance +
-          this.foldAmount(cashSales) -
+          this.foldAmount(cashSales) +
+          deferredAmount -
           this.foldAmount(refunds) -
           expense,
       ),
-      deferredAmount: roundOffNumber(this.foldAmount(deferredTransactions)),
+      deferredAmount: roundOffNumber(deferredAmount),
       totalRemianingAmountToCollect: roundOffNumber(
         this.foldAmount(openTableLogs),
       ),
       expenseAmount: roundOffNumber(expense),
+      tip: roundOffNumber(tip),
     };
     return dashboard;
   }
