@@ -67,6 +67,10 @@ export class CustomerService {
     query: QueryCustomerDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<CustomerDocument>> {
+    const queryObj: any = { ...query };
+    if (query.search) {
+      queryObj.$or = [{ name: { $regex: query.search, $options: 'i' } }];
+    }
     const customers = await this.customerModelPag.paginate(
       {
         ...query,
