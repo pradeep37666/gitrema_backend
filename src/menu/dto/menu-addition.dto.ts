@@ -37,6 +37,11 @@ class AdditionOptionDto {
   @IsNumber()
   @IsNotEmpty()
   calory: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  default: boolean;
 }
 
 export class CreateMenuAdditionDTO {

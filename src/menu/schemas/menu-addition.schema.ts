@@ -27,6 +27,9 @@ class AdditionOption {
 
   @Prop({ default: true })
   active: boolean;
+
+  @Prop({ default: false })
+  default: boolean;
 }
 const AdditionOptionSchema = SchemaFactory.createForClass(AdditionOption);
 
