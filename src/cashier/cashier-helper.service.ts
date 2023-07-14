@@ -78,10 +78,12 @@ export class CashierHelperService {
       [
         {
           $match: {
-            restaurantId: new mongoose.Types.ObjectId(
+            // restaurantId: new mongoose.Types.ObjectId(
+            //   cashierLog.cashierId?.restaurantId?.toString(),
+            // ),
+            supplierId: new mongoose.Types.ObjectId(
               cashierLog.supplierId.toString(),
             ),
-            closingTime: null,
           },
         },
         {
