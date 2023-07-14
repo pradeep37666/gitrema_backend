@@ -73,7 +73,7 @@ export class CustomerService {
     }
     const customers = await this.customerModelPag.paginate(
       {
-        ...query,
+        ...queryObj,
         isBlocked: false,
       },
       {
