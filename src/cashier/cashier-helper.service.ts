@@ -145,6 +145,7 @@ export class CashierHelperService {
       totalRemianingAmountToCollect: roundOffNumber(
         this.foldAmount(openTableLogs),
       ),
+      expenseAmount: roundOffNumber(expense),
     };
     return dashboard;
   }
