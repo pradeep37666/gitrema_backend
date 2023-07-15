@@ -22,6 +22,7 @@ import {
 } from 'src/order/schemas/deferred-transaction.schema';
 import { TableLog, TableLogDocument } from 'src/table/schemas/table-log.schema';
 import { Table, TableDocument } from 'src/table/schemas/table.schema';
+import { OrderStatus } from 'src/order/enum/en.enum';
 
 @Injectable()
 export class CashierHelperService {
@@ -74,6 +75,7 @@ export class CashierHelperService {
         $lte: cashierLog.closedAt ?? new Date(),
       },
     });
+
     const openTableLogs = await this.tableModel.aggregate(
       [
         {
@@ -84,6 +86,7 @@ export class CashierHelperService {
             supplierId: new mongoose.Types.ObjectId(
               cashierLog.supplierId.toString(),
             ),
+            deletedAt: null,
           },
         },
         {
@@ -92,6 +95,23 @@ export class CashierHelperService {
             localField: 'currentTableLog',
             foreignField: '_id',
             as: 'currentTableLog',
+          },
+        },
+        {
+          $match: {
+            currentTableLog: { $ne: [] },
+          },
+        },
+
+        {
+          $addFields: {
+            currentTableLog: {
+              $cond: {
+                if: { $eq: [{ $size: '$currentTableLog' }, 1] },
+                then: { $arrayElemAt: ['$currentTableLog', 0] },
+                else: null,
+              },
+            },
           },
         },
 
@@ -103,17 +123,44 @@ export class CashierHelperService {
             as: 'orders',
           },
         },
-
+        {
+          $addFields: {
+            activeOrders: {
+              $filter: {
+                input: '$orders',
+                cond: {
+                  $in: [
+                    '$$this.status',
+                    [
+                      OrderStatus.New,
+                      OrderStatus.SentToKitchen,
+                      OrderStatus.StartedPreparing,
+                      OrderStatus.DonePreparing,
+                      OrderStatus.OnTable,
+                      OrderStatus.Closed,
+                    ],
+                  ],
+                },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            amount: {
+              $sum: '$activeOrders.summary.remainingAmountToCollect',
+            },
+          },
+        },
         {
           $project: {
-            amount: {
-              $sum: '$orders.summary.remainingAmountToCollect',
-            },
+            amount: 1,
           },
         },
       ],
       { allowDiskUse: true },
     );
+
     const transactions = cashierLog.transactions;
     const refunds = transactions.filter((t) => t.isRefund);
     const sales = transactions.filter((t) => !t.isRefund);
@@ -137,13 +184,12 @@ export class CashierHelperService {
     const dashboard = {
       openingBalance: roundOffNumber(cashierLog.openingBalance),
       totalRefunds: roundOffNumber(this.foldAmount(refunds)),
-      totalSales: roundOffNumber(this.foldAmount(sales)),
+      totalSales: roundOffNumber(this.foldAmount(sales) + deferredAmount),
       salesPaidWithCash: roundOffNumber(this.foldAmount(cashSales)),
       salesPaidWithCard: roundOffNumber(this.foldAmount(bankSales)),
       expectedCashAtClose: roundOffNumber(
         cashierLog.openingBalance +
-          this.foldAmount(cashSales) +
-          deferredAmount -
+          this.foldAmount(cashSales) -
           this.foldAmount(refunds) -
           expense,
       ),
