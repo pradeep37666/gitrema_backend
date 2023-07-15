@@ -8,7 +8,12 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { LeanDocument, Model, PaginateModel, PaginateResult } from 'mongoose';
+import mongoose, {
+  LeanDocument,
+  Model,
+  PaginateModel,
+  PaginateResult,
+} from 'mongoose';
 
 import {
   DefaultSort,
@@ -46,6 +51,10 @@ import { roundOffNumber } from '../core/Helpers/universal.helper';
 import { Workbook } from 'exceljs';
 import * as tmp from 'tmp';
 import * as fs from 'fs';
+import { Type } from 'class-transformer';
+import ObjectId from 'mongoose';
+import { PaymentMethod } from 'src/payment/enum/en.enum';
+import { User, UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class CashierLogService {
@@ -60,6 +69,8 @@ export class CashierLogService {
 
     @InjectModel(Invoice.name)
     private readonly invoiceModel: Model<InvoiceDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
 
     @Inject(forwardRef(() => CashierService))
     private readonly cashierService: CashierService,
@@ -494,22 +505,11 @@ export class CashierLogService {
             paymentMethod: cashierLogs[i].transactions[j].paymentMethod,
             invoiceLinks: invoices.map((i) => i.imageUrl).join(','),
             user: cashierLogs[i].userId.name,
-            shift:
-              moment(
-                convertUtcToSupplierTimezone(
-                  cashierLogs[i].startedAt,
-                  timezone,
-                ),
-              ).format('DD/MM/YYYY hh:mm A') +
-              ' - ' +
-              cashierLogs[i].closedAt
-                ? moment(
-                    convertUtcToSupplierTimezone(
-                      cashierLogs[i].closedAt,
-                      timezone,
-                    ),
-                  ).format('DD/MM/YYYY hh:mm A')
-                : '',
+
+            shift: moment
+              .utc(cashierLogs[i].startedAt)
+              .tz(timezone)
+              .format('DD/MM/yyyy hh:mm a'),
           };
           response.push(row);
           if (isFile) {
@@ -518,6 +518,181 @@ export class CashierLogService {
         }
       }
     }
+    if (!isFile) return response;
+    sheet.addRows(records);
+    const tmpFile = tmp.fileSync({
+      mode: 0o644,
+    });
+    await book.xlsx.writeFile(tmpFile.name);
+    const file = fs.createReadStream(tmpFile.name);
+    return new StreamableFile(file);
+  }
+
+  async cashierReport(req, query: CashierReportDto, isFile = false) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
+    let queryToApply: any = {};
+    let createdAtQuery: any = {};
+    if (query.startDate && query.endDate) {
+      query.startDate.setUTCHours(query.startDate.getHours());
+      query.startDate.setUTCMinutes(query.startDate.getMinutes());
+      query.startDate = new Date(
+        query.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      query.endDate.setUTCHours(query.endDate.getHours());
+      query.endDate.setUTCMinutes(query.endDate.getMinutes());
+      query.endDate = new Date(
+        query.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      createdAtQuery = {
+        createdAt: {
+          $gte: query.startDate,
+          $lte: query.endDate,
+        },
+      };
+    }
+    if (query.restaurantId) {
+      queryToApply.restaurantId = new mongoose.Types.ObjectId(
+        query.restaurantId,
+      );
+    }
+
+    const cashierLogs: any = await this.cashierLogModel.aggregate([
+      {
+        $match: {
+          supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          ...queryToApply,
+        },
+      },
+      {
+        $lookup: {
+          from: 'transactions',
+          let: { transactions: '$transactions' },
+          pipeline: [
+            {
+              $match: {
+                $and: [
+                  {
+                    $expr: {
+                      $in: ['$_id', '$$transactions'],
+                    },
+                    status: PaymentStatus.Success,
+                    ...createdAtQuery,
+                  },
+                ],
+              },
+            },
+          ],
+
+          as: 'transactions',
+        },
+      },
+      {
+        $match: {
+          transactions: { $ne: [] },
+        },
+      },
+      {
+        $addFields: {
+          total: '$transactions',
+          cashTransactions: {
+            $filter: {
+              input: '$transactions',
+              cond: {
+                $in: ['$$this.paymentMethod', [PaymentMethod.Cash]],
+              },
+            },
+          },
+          cardTransactions: {
+            $filter: {
+              input: '$transactions',
+              cond: {
+                $in: [
+                  '$$this.paymentMethod',
+                  [PaymentMethod.Card, PaymentMethod.Online],
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          totalExpenses: { $sum: '$expenses.amount' },
+          cashSales: { $sum: '$cashTransactions.amount' },
+          cardSales: { $sum: '$cardTransactions.amount' },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            userId: '$userId',
+            startedAt: '$startedAt',
+            closedAt: '$closedAt',
+          },
+          totalExpenses: { $sum: '$totalExpenses' },
+          cashSales: {
+            $sum: '$cashSales',
+          },
+          cardSales: {
+            $sum: '$cardSales',
+          },
+        },
+      },
+    ]);
+    const book = new Workbook();
+    const sheet = book.addWorksheet('Transactions');
+    const response = [],
+      records = [
+        [
+          'User Names',
+          'Cash Sales',
+          'Card Sales',
+          'Total Expenses',
+          'Net Cash',
+          'Shift',
+        ],
+        [
+          'اسم الموظف',
+          'مبيعات كاش',
+          'مبيعات شبكة',
+          'مصروفات',
+          'صافي الكاش',
+          'الشفت',
+        ],
+      ];
+    let users = await this.userModel.find(
+      {
+        _id: { $in: cashierLogs.map((c) => c._id?.userId) },
+      },
+      { name: 1, _id: 1 },
+    );
+    users = users.reduce((acc, d) => {
+      acc[d._id.toString()] = d;
+      return acc;
+    }, []);
+    for (const i in cashierLogs) {
+      const row: any = {
+        username: users[cashierLogs[i]._id.userId.toString()]?.name,
+        cashSales: roundOffNumber(cashierLogs[i].cashSales),
+        cardSales: roundOffNumber(cashierLogs[i].cardSales),
+        totalExpenses: roundOffNumber(cashierLogs[i].totalExpenses),
+        netCash: roundOffNumber(
+          cashierLogs[i].cashSales - cashierLogs[i].totalExpenses,
+        ),
+        shift: moment
+          .utc(cashierLogs[i]._id.startedAt)
+          .tz(timezone)
+          .format('DD/MM/yyyy hh:mm a'),
+      };
+
+      if (isFile) {
+        records.push(Object.values(row));
+      } else {
+        response.push(row);
+      }
+    }
+
     if (!isFile) return response;
     sheet.addRows(records);
     const tmpFile = tmp.fileSync({

@@ -10,10 +10,16 @@ import { OrderDocument } from 'src/order/schemas/order.schema';
 
 export type CashierLogDocument = CashierLog & Document;
 
-@Schema({})
+@Schema({ timestamps: true })
 class Expense {
   @Prop({ required: true })
   description: string;
+
+  @Prop({ default: null })
+  expenseNumber: string;
+
+  @Prop({ default: null })
+  attachment: string;
 
   @Prop({ required: true })
   expense: number;
