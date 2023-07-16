@@ -98,6 +98,7 @@ export enum ClientFeedbackPermission {
 export enum OrderPermissions {
   CancelOrder = 'Cancel Order',
   SentToKitchen = 'Sent To Kitchen',
+  Reset = 'Reset',
   OnTable = 'On Table',
   Change = 'Change',
   KitchenDisplay = 'Kitchen Display',

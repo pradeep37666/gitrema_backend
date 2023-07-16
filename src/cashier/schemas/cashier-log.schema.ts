@@ -11,6 +11,22 @@ import { OrderDocument } from 'src/order/schemas/order.schema';
 export type CashierLogDocument = CashierLog & Document;
 
 @Schema({ timestamps: true })
+class Expense {
+  @Prop({ required: true })
+  description: string;
+
+  @Prop({ default: null })
+  expenseNumber: string;
+
+  @Prop({ default: null })
+  attachment: string;
+
+  @Prop({ required: true })
+  expense: number;
+}
+const ExpenseSchema = SchemaFactory.createForClass(Expense);
+
+@Schema({ timestamps: true })
 export class CashierLog {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -81,6 +97,9 @@ export class CashierLog {
 
   @Prop({ type: [PausedLogSchema] })
   pausedLogs: PausedLog[];
+
+  @Prop({ type: [ExpenseSchema] })
+  expenses: Expense[];
 }
 
 export const CashierLogSchema = SchemaFactory.createForClass(CashierLog);

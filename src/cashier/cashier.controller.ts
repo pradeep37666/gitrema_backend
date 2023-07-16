@@ -9,6 +9,7 @@ import {
   Request,
   Query,
   Req,
+  Header,
 } from '@nestjs/common';
 import { PermissionGuard } from 'src/core/decorators/permission.decorator';
 import { PermissionSubject } from 'src/core/Constants/permissions/permissions.enum';
@@ -22,6 +23,7 @@ import { UpdateCashierDto } from './dto/update-cashier.dto';
 import { CashierDocument } from './schemas/cashier.schema';
 import {
   CloseCashierDto,
+  ExpenseDto,
   OpenCashierDto,
   OverrideCloseCashierDto,
   QueryCashierDto,
@@ -29,6 +31,8 @@ import {
 import { CashierLogDocument } from './schemas/cashier-log.schema';
 import { CashierLogService } from './cashier-log.service';
 import { PauseDto } from './dto/pause.dto';
+import { CashierReportDto } from './dto/cashier-report.dto';
+import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
 
 @Controller('cashier')
 @ApiTags('Cashiers')
@@ -135,9 +139,63 @@ export class CashierController {
     return await this.cashierService.remove(cashierId);
   }
 
+  @Post(':cashierId/add-expense')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.CREATE)
+  async addExpense(
+    @Req() req,
+    @Param('cashierId') cashierId: string,
+    @Body() dto: ExpenseDto,
+  ) {
+    return await this.cashierLogService.storeExpense(req, cashierId, dto);
+  }
+
+  @Delete(':cashierId/remove-expense/:expenseId')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.CREATE)
+  async removeExpense(
+    @Req() req,
+    @Param('cashierId') cashierId: string,
+    @Param('expenseId') expenseId: string,
+  ) {
+    return await this.cashierLogService.removeExpense(
+      req,
+      cashierId,
+      expenseId,
+    );
+  }
+
   @Get(':cashierId/dashboard')
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
   async findDashboard(@Param('cashierId') cashierId: string) {
     return await this.cashierService.findDashboard(cashierId);
+  }
+
+  @Get('order-report')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async orderReport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.orderReport(req, query);
+  }
+
+  @Get('cashier-report')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async cashierReport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.cashierReport(req, query);
+  }
+
+  @Get('order-report/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="cashier.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async orderReportExport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.orderReport(req, query, true);
+  }
+
+  @Get('cashier-report/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="cashier.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async cashierReportExport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.cashierReport(req, query, true);
   }
 }

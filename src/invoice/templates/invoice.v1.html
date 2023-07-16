@@ -198,20 +198,6 @@
             </div>
           </div>
           <br />
-          {{/each}} {{#each discounts}}
-          <div style="display: flex; justify-content: space-between; gap: 10px">
-            <div style="flex: 1"></div>
-            <div style="flex: 3">
-              <div style="display: flex; flex-direction: column">
-                <div style="direction: ltr">Discount</div>
-                <!-- <div style="direction: rtl">{{this.nameAr}}</div>
-                <div>{{ this.additionTextAr }}</div> -->
-              </div>
-            </div>
-            <div style="flex: 1"></div>
-            <div style="flex: 1">{{ this.amount }}</div>
-          </div>
-          <br />
           {{/each}}
           <div></div>
         </div>
@@ -226,7 +212,7 @@
             margin: 15px 0px;
           "
         >
-          <div>Discount | قيمة المنتج</div>
+          <div>Discount | التخفيض</div>
           <div>{{ this.amount }}</div>
         </div>
         {{/each}}
@@ -272,7 +258,7 @@
           "
         >
           <div id="fee-text" style="direction: rtl">
-            الاسعار تشمل: رسوم الضريبة الانتقائية (رسوم التبغ 100%) والضريبة\
+            الاسعار تشمل: رسوم الضريبة الانتقائية (رسوم التبغ 100%) والضريبة
           </div>
         </div>
 

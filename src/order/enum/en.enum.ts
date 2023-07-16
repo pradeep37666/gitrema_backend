@@ -21,6 +21,7 @@ export enum OrderStatus {
   Cancelled = 'Cancelled',
   CancelledByMerge = 'Cancelled By Merge',
   CancelledWihPaymentFailed = 'Cancelled Wih Payment Failed',
+  Reset = 'Reset',
 }
 
 export enum OrderActivityType {

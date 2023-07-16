@@ -133,6 +133,7 @@ export class TableLogService {
             ],
           },
           tableId: tableLog.tableId,
+          _id: { $in: tableLog.orders },
         })) > 0
       ) {
         throw new BadRequestException(
@@ -148,6 +149,12 @@ export class TableLogService {
     }
 
     await tableLog.save();
+
+    this.socketGateway.emit(
+      tableLog.supplierId.toString(),
+      SocketEvents.TableDashboard,
+      tableLog.toObject(),
+    );
 
     return tableLog;
   }

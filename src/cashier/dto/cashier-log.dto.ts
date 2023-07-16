@@ -74,3 +74,25 @@ export class QueryCashierDto {
   @ToBoolean()
   includeOrders?: boolean;
 }
+
+export class ExpenseDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  expenseNumber: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  attachment: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  expense: number;
+}
