@@ -41,7 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: LoggedInUserPayload) {
     if (payload.supplierId) {
-      if (payload.userId) {
+      if (payload.userId && !payload.isCustomer) {
         const user = await this.userModel.findOne({
           _id: payload.userId,
           isBlocked: false,
