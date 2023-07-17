@@ -172,11 +172,11 @@ export class CashierHelperService {
         s.paymentMethod === PaymentMethod.Online ||
         s.paymentMethod === PaymentMethod.Card,
     );
-    const expense = cashierLog.expenses.reduce(
+    const expense = cashierLog?.expenses?.reduce(
       (prev, acc) => prev + acc.expense,
       0,
     );
-    const tip = cashierLog.transactions.reduce(
+    const tip = cashierLog?.transactions?.reduce(
       (prev, t) => prev + (t.orderId.tip ?? 0),
       0,
     );
