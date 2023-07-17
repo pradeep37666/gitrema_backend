@@ -172,15 +172,15 @@ export class CashierLogService {
         ...paginateOptions,
         ...pagination,
         populate: [
-          {
-            path: 'transactions',
-            populate: [
-              {
-                path: 'orderId',
-                select: { orderNumber: 1 },
-              },
-            ],
-          },
+          // {
+          //   path: 'transactions',
+          //   populate: [
+          //     {
+          //       path: 'orderId',
+          //       select: { orderNumber: 1 },
+          //     },
+          //   ],
+          // },
           {
             path: 'userId',
             select: {
@@ -195,12 +195,12 @@ export class CashierLogService {
         allowDiskUse: true,
       },
     );
-    for (const i in cashierLogs.docs) {
-      cashierLogs.docs[i].dashboard =
-        await this.cashierHelperService.prepareDashboardData(
-          cashierLogs.docs[i],
-        );
-    }
+    // for (const i in cashierLogs.docs) {
+    //   cashierLogs.docs[i].dashboard =
+    //     await this.cashierHelperService.prepareDashboardData(
+    //       cashierLogs.docs[i],
+    //     );
+    // }
 
     return cashierLogs;
   }
