@@ -262,8 +262,14 @@ export class OrderController {
   }
 
   @Post(':orderId/defer')
-  @PermissionGuard(PermissionSubject.Order, Permission.Common.UPDATE)
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.Defer)
   async defer(@Req() req, @Param('orderId') orderId: string) {
     return await this.orderService.deferOrder(req, orderId);
+  }
+
+  @Delete('delete-all')
+  @PermissionGuard(PermissionSubject.Order, Permission.Common.DELETE)
+  async deleteAll(@Req() req) {
+    return await this.orderService.deleteAll(req);
   }
 }
