@@ -504,7 +504,7 @@ export class CashierLogService {
             ),
             paymentMethod: cashierLogs[i].transactions[j].paymentMethod,
             invoiceLinks: invoices.map((i) => i.imageUrl).join(','),
-            user: cashierLogs[i].userId.name,
+            user: cashierLogs[i]?.userId?.name ?? 'N/A',
 
             shift: moment
               .utc(cashierLogs[i].startedAt)
@@ -673,7 +673,7 @@ export class CashierLogService {
     }, []);
     for (const i in cashierLogs) {
       const row: any = {
-        username: users[cashierLogs[i]._id.userId.toString()]?.name,
+        username: users[cashierLogs[i]?._id?.userId?.toString()]?.name ?? 'N/A',
         cashSales: roundOffNumber(cashierLogs[i].cashSales),
         cardSales: roundOffNumber(cashierLogs[i].cardSales),
         totalExpenses: roundOffNumber(cashierLogs[i].totalExpenses),
