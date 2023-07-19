@@ -153,7 +153,10 @@ export class CashierService {
   async findDashboards(req, query: CashierDashboardDto) {
     const resQuery: any = {};
     if (query.restaurantId) {
-      resQuery.restaurantId = query.restaurantId;
+      resQuery.restaurantId = { $in: query.restaurantId };
+    }
+    if (query.cashierId) {
+      resQuery._id = { $in: query.cashierId };
     }
     const cashiers = await this.cashierModel.find({
       supplierId: req.user.supplierId,
