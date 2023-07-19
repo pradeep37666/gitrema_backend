@@ -882,7 +882,7 @@ export class OrderService {
     console.log(groupOrder.items, groupOrder.summary);
     const groupOrderObj = await this.orderModel.create(groupOrder);
 
-    this.orderHelperService.postOrderCreate(req, groupOrderObj);
+    await this.orderHelperService.postOrderCreate(req, groupOrderObj);
 
     this.orderHelperService.generateKitchenReceipts(groupOrderObj, false);
 
