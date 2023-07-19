@@ -71,6 +71,7 @@ import {
   Transaction,
   TransactionDocument,
 } from 'src/transaction/schemas/transactions.schema';
+import { Invoice, InvoiceDocument } from 'src/invoice/schemas/invoice.schema';
 
 @Injectable()
 export class OrderService {
@@ -103,6 +104,8 @@ export class OrderService {
     private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
+    @InjectModel(Invoice.name)
+    private readonly invoiceModel: Model<InvoiceDocument>,
     private readonly tableHelperService: TableHelperService,
     private readonly cashierHelperService: CashierHelperService,
   ) {}
@@ -642,7 +645,7 @@ export class OrderService {
       throw new BadRequestException(VALIDATION_MESSAGES.OrderClosed.key);
     } else if (
       dto.status == OrderStatus.Reset &&
-      order.status != OrderStatus.Cancelled
+      order.status != OrderStatus.Closed
     ) {
       throw new BadRequestException(`Not Allowed`);
     }
@@ -741,11 +744,19 @@ export class OrderService {
     if (!order) {
       throw new NotFoundException();
     }
-    if (order.summary.totalPaid > 0) {
-      throw new BadRequestException(
-        `This order can not be deferred as some amount is already paid`,
-      );
-    }
+    // if (order.summary.totalPaid > 0) {
+    //   throw new BadRequestException(
+    //     `This order can not be deferred as some amount is already paid`,
+    //   );
+    // }
+    await this.transactionModel.updateMany(
+      { orderId: order._id },
+      {
+        $set: {
+          status: PaymentStatus.Failed,
+        },
+      },
+    );
     const cashierId = await this.cashierHelperService.resolveCashierId(
       req,
       null,
@@ -764,6 +775,11 @@ export class OrderService {
       {
         paymentStatus: OrderPaymentStatus.Deferred,
         status: OrderStatus.Closed,
+        summary: {
+          ...order.summary,
+          totalPaid: 0,
+          remainingAmountToCollect: order.summary.totalWithTax,
+        },
       },
       {
         new: true,
@@ -1115,5 +1131,10 @@ export class OrderService {
       return { printers, printerItems };
     }
     return printers;
+  }
+  async deleteAll(req) {
+    await this.transactionModel.deleteMany({ supplierId: req.user.supplierId });
+    await this.invoiceModel.deleteMany({ supplierId: req.user.supplierId });
+    await this.orderModel.deleteMany({ supplierId: req.user.supplierId });
   }
 }

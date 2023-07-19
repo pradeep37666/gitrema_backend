@@ -150,6 +150,12 @@ export class TableLogService {
 
     await tableLog.save();
 
+    this.socketGateway.emit(
+      tableLog.supplierId.toString(),
+      SocketEvents.TableDashboard,
+      tableLog.toObject(),
+    );
+
     return tableLog;
   }
 

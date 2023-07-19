@@ -175,6 +175,12 @@ export class CashierController {
     return await this.cashierLogService.orderReport(req, query);
   }
 
+  @Get('cashier-report')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async cashierReport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.cashierReport(req, query);
+  }
+
   @Get('order-report/export')
   @Header('Content-Type', 'application/xlsx')
   @Header('Content-Disposition', 'attachment; filename="cashier.xlsx"')
@@ -182,5 +188,14 @@ export class CashierController {
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
   async orderReportExport(@Req() req, @Query() query: CashierReportDto) {
     return await this.cashierLogService.orderReport(req, query, true);
+  }
+
+  @Get('cashier-report/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="cashier.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async cashierReportExport(@Req() req, @Query() query: CashierReportDto) {
+    return await this.cashierLogService.cashierReport(req, query, true);
   }
 }

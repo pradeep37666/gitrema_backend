@@ -6,4 +6,9 @@ export class QueryCustomerDto {
   @IsString()
   @IsOptional()
   phoneNumber: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  search: string;
 }

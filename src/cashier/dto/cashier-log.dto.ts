@@ -81,6 +81,16 @@ export class ExpenseDto {
   @IsString()
   description: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  expenseNumber: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  attachment: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
