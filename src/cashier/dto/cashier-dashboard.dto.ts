@@ -1,15 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsDate, IsMongoId, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsDate, IsMongoId, IsOptional } from 'class-validator';
 
 export class CashierDashboardDto {
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsMongoId()
-  restaurantId: string;
+  @IsArray()
+  @IsMongoId({ each: true })
+  @Type(() => String)
+  @Transform(({ value }) => value.toString().split(','))
+  restaurantId: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsMongoId()
-  cashierId: string;
+  @IsArray()
+  @IsMongoId({ each: true })
+  @Type(() => String)
+  @Transform(({ value }) => value.toString().split(','))
+  cashierId: string[];
 }
