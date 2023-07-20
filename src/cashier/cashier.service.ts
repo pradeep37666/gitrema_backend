@@ -61,10 +61,15 @@ export class CashierService {
     query: QueryCashierDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<CashierDocument>> {
-    let userQuery = {};
+    let userQuery: any = {};
     const user = await this.userModel.findById(req.user.userId);
     if (user && user.cashier) {
       userQuery = { _id: user.cashier };
+    }
+    if (query.activeCashiers == true) {
+      userQuery.currentLog = { $ne: null };
+    } else if (query.nonActiveCashiers == true) {
+      userQuery.currentLog = null;
     }
 
     const cashiers = await this.cashierModelPag.paginate(
@@ -164,6 +169,7 @@ export class CashierService {
       currentLog: { $ne: null },
       ...resQuery,
     });
+
     const dashboard = {
       openingBalance: 0,
       totalRefunds: 0,
@@ -181,6 +187,7 @@ export class CashierService {
       const response = await this.cashierLogService.current(
         cashiers[i]._id.toString(),
       );
+
       if (response?.dashboard) {
         dashboard.openingBalance += response.dashboard.openingBalance;
         dashboard.totalRefunds += response.dashboard.totalRefunds;

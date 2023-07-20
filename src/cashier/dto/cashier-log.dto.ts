@@ -73,6 +73,16 @@ export class QueryCashierDto {
   @IsOptional()
   @ToBoolean()
   includeOrders?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ToBoolean()
+  activeCashiers?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ToBoolean()
+  nonActiveCashiers?: boolean;
 }
 
 export class ExpenseDto {

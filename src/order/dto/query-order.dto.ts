@@ -28,6 +28,11 @@ export class QueryOrderDto {
   customerId: string;
 
   @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
+  waiterId: string;
+
+  @ApiProperty({ required: false })
   @ToBoolean()
   @IsOptional()
   notBelongingToTable: boolean;
