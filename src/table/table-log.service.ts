@@ -95,7 +95,7 @@ export class TableLogService {
       throw new NotFoundException();
     }
 
-    let tableLog = table.currentTableLog;
+    let tableLog = await this.tableLogModel.findById(table.currentTableLog);
 
     if (start) {
       if (tableLog) {
@@ -138,6 +138,7 @@ export class TableLogService {
       }
 
       tableLog.closingTime = new Date();
+
       this.tableService.update(tableId, {
         status: TableStatus.Empty,
         currentTableLog: null,
