@@ -272,7 +272,13 @@ export class TableService {
         { allowDiskUse: true },
       ),
       {
-        sort: DefaultSort,
+        sort: paginateOptions.sortBy
+          ? {
+              [paginateOptions.sortBy]: paginateOptions.sortDirection
+                ? paginateOptions.sortDirection
+                : -1,
+            }
+          : DefaultSort,
         lean: true,
         ...paginateOptions,
         ...pagination,

@@ -804,6 +804,13 @@ export class OrderService {
       .lean();
     if (orders.length < 2)
       throw new BadRequestException(VALIDATION_MESSAGES.AllOrderClosed.key);
+    const tableIds = orders.map((v) => v.tableId);
+    var uniqueTableIds = new Set(tableIds);
+    if (tableIds.length != uniqueTableIds.size) {
+      throw new BadRequestException(
+        VALIDATION_MESSAGES.SameTableMergeNotAllowed.key,
+      );
+    }
     let items = [];
     orders.forEach((o) => {
       items = items.concat(o.items);
