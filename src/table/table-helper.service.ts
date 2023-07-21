@@ -154,6 +154,7 @@ export class TableHelperService {
           restaurantId: order.restaurantId,
           waiterId: order.waiterId,
           startingTime: new Date(),
+          tableId: table._id,
         });
         await this.tableModel.findByIdAndUpdate(order.tableId, {
           status: TableStatus.InUse,
