@@ -101,6 +101,7 @@ export enum OrderPermissions {
   Reset = 'Reset',
   OnTable = 'On Table',
   Change = 'Change',
+  Defer = 'Defer',
   KitchenDisplay = 'Kitchen Display',
   ChefInquiry = 'ChefInquiry',
   KitchenQueueProcess = 'Kitchen Queue Process',

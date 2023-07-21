@@ -172,15 +172,15 @@ export class CashierLogService {
         ...paginateOptions,
         ...pagination,
         populate: [
-          {
-            path: 'transactions',
-            populate: [
-              {
-                path: 'orderId',
-                select: { orderNumber: 1 },
-              },
-            ],
-          },
+          // {
+          //   path: 'transactions',
+          //   populate: [
+          //     {
+          //       path: 'orderId',
+          //       select: { orderNumber: 1 },
+          //     },
+          //   ],
+          // },
           {
             path: 'userId',
             select: {
@@ -195,12 +195,12 @@ export class CashierLogService {
         allowDiskUse: true,
       },
     );
-    for (const i in cashierLogs.docs) {
-      cashierLogs.docs[i].dashboard =
-        await this.cashierHelperService.prepareDashboardData(
-          cashierLogs.docs[i],
-        );
-    }
+    // for (const i in cashierLogs.docs) {
+    //   cashierLogs.docs[i].dashboard =
+    //     await this.cashierHelperService.prepareDashboardData(
+    //       cashierLogs.docs[i],
+    //     );
+    // }
 
     return cashierLogs;
   }
@@ -504,7 +504,7 @@ export class CashierLogService {
             ),
             paymentMethod: cashierLogs[i].transactions[j].paymentMethod,
             invoiceLinks: invoices.map((i) => i.imageUrl).join(','),
-            user: cashierLogs[i].userId.name,
+            user: cashierLogs[i]?.userId?.name ?? 'N/A',
 
             shift: moment
               .utc(cashierLogs[i].startedAt)
@@ -673,7 +673,7 @@ export class CashierLogService {
     }, []);
     for (const i in cashierLogs) {
       const row: any = {
-        username: users[cashierLogs[i]._id.userId.toString()]?.name,
+        username: users[cashierLogs[i]?._id?.userId?.toString()]?.name ?? 'N/A',
         cashSales: roundOffNumber(cashierLogs[i].cashSales),
         cardSales: roundOffNumber(cashierLogs[i].cardSales),
         totalExpenses: roundOffNumber(cashierLogs[i].totalExpenses),

@@ -150,6 +150,9 @@ export class TableHelperService {
         upsert: true,
         setDefaultsOnInsert: true,
         new: true,
+        sort: {
+          _id: -1,
+        },
       },
     );
     this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);

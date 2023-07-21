@@ -30,6 +30,7 @@ import { CashierLogDocument } from './schemas/cashier-log.schema';
 import { PaymentStatus } from 'src/core/Constants/enum';
 import { QueryCashierDto } from './dto/cashier-log.dto';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { CashierDashboardDto } from './dto/cashier-dashboard.dto';
 
 @Injectable()
 export class CashierService {
@@ -60,10 +61,15 @@ export class CashierService {
     query: QueryCashierDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<CashierDocument>> {
-    let userQuery = {};
+    let userQuery: any = {};
     const user = await this.userModel.findById(req.user.userId);
     if (user && user.cashier) {
       userQuery = { _id: user.cashier };
+    }
+    if (query.activeCashiers == true) {
+      userQuery.currentLog = { $ne: null };
+    } else if (query.nonActiveCashiers == true) {
+      userQuery.currentLog = null;
     }
 
     const cashiers = await this.cashierModelPag.paginate(
@@ -147,5 +153,55 @@ export class CashierService {
     const cashierData = await this.cashierLogService.current(cashierId);
 
     return cashierData?.dashboard ?? {};
+  }
+
+  async findDashboards(req, query: CashierDashboardDto) {
+    const resQuery: any = {};
+    if (query.restaurantId) {
+      resQuery.restaurantId = { $in: query.restaurantId };
+    }
+    if (query.cashierId) {
+      resQuery._id = { $in: query.cashierId };
+    }
+    const cashiers = await this.cashierModel.find({
+      supplierId: req.user.supplierId,
+      active: true,
+      currentLog: { $ne: null },
+      ...resQuery,
+    });
+
+    const dashboard = {
+      openingBalance: 0,
+      totalRefunds: 0,
+      totalSales: 0,
+      salesPaidWithCash: 0,
+      salesPaidWithCard: 0,
+      expectedCashAtClose: 0,
+      deferredAmount: 0,
+      totalRemianingAmountToCollect: 0,
+      expenseAmount: 0,
+      tip: 0,
+    };
+
+    for (const i in cashiers) {
+      const response = await this.cashierLogService.current(
+        cashiers[i]._id.toString(),
+      );
+
+      if (response?.dashboard) {
+        dashboard.openingBalance += response.dashboard.openingBalance;
+        dashboard.totalRefunds += response.dashboard.totalRefunds;
+        dashboard.totalSales += response.dashboard.totalSales;
+        dashboard.salesPaidWithCash += response.dashboard.salesPaidWithCash;
+        dashboard.salesPaidWithCard += response.dashboard.salesPaidWithCard;
+        dashboard.expectedCashAtClose += response.dashboard.expectedCashAtClose;
+        dashboard.deferredAmount += response.dashboard.deferredAmount;
+        dashboard.totalRemianingAmountToCollect +=
+          response.dashboard.totalRemianingAmountToCollect;
+        dashboard.expenseAmount += response.dashboard.expenseAmount;
+        dashboard.tip += response.dashboard.tip;
+      }
+    }
+    return dashboard;
   }
 }
