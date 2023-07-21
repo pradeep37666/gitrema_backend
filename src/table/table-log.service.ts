@@ -95,14 +95,10 @@ export class TableLogService {
       throw new NotFoundException();
     }
 
-    let tableLog = await this.tableLogModel.findOne(
-      { tableId },
-      {},
-      { sort: { _id: -1 } },
-    );
+    let tableLog = table.currentTableLog;
 
     if (start) {
-      if (tableLog && tableLog.closingTime == null) {
+      if (tableLog) {
         throw new BadRequestException(VALIDATION_MESSAGES.TableStarted.key);
       }
 
@@ -147,7 +143,6 @@ export class TableLogService {
         currentTableLog: null,
       });
     }
-
     await tableLog.save();
 
     this.socketGateway.emit(
