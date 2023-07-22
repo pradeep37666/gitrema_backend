@@ -371,7 +371,7 @@ export class CashierLogService {
 
   async storeExpense(req, cashierId: string, dto: ExpenseDto) {
     const log = await this.findCurrentLog(cashierId);
-    log.expenses.push(dto);
+    log.expenses.push({ ...dto, addedBy: req.user.userId });
     await log.save();
     return log;
   }
@@ -592,57 +592,55 @@ export class CashierLogService {
           transactions: { $ne: [] },
         },
       },
-      {
-        $addFields: {
-          total: '$transactions',
-          cashTransactions: {
-            $filter: {
-              input: '$transactions',
-              cond: {
-                $in: ['$$this.paymentMethod', [PaymentMethod.Cash]],
-              },
-            },
-          },
-          cardTransactions: {
-            $filter: {
-              input: '$transactions',
-              cond: {
-                $in: [
-                  '$$this.paymentMethod',
-                  [PaymentMethod.Card, PaymentMethod.Online],
-                ],
-              },
-            },
-          },
-        },
-      },
-      {
-        $addFields: {
-          totalExpenses: { $sum: '$expenses.amount' },
-          cashSales: { $sum: '$cashTransactions.amount' },
-          cardSales: { $sum: '$cardTransactions.amount' },
-        },
-      },
+
       {
         $unwind: '$transactions',
       },
+
       {
         $group: {
           _id: {
             userId: '$transactions.addedBy',
+            paymentMethod: '$transactions.paymentMethod',
             startedAt: '$startedAt',
             closedAt: '$closedAt',
           },
-          totalExpenses: { $sum: '$totalExpenses' },
-          cashSales: {
-            $sum: '$cashSales',
-          },
-          cardSales: {
-            $sum: '$cardSales',
+          //totalExpenses: { $sum: '$expenses.amount' },
+          sales: {
+            $sum: '$transactions.amount',
           },
         },
       },
     ]);
+
+    const expenses: any = await this.cashierLogModel.aggregate([
+      {
+        $match: {
+          supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          ...queryToApply,
+          expenses: { $exists: true, $not: { $size: 0 }, $ne: null },
+        },
+      },
+
+      {
+        $unwind: '$expenses',
+      },
+
+      {
+        $group: {
+          _id: {
+            userId: '$expenses.addedBy',
+            startedAt: '$startedAt',
+            closedAt: '$closedAt',
+          },
+
+          expense: {
+            $sum: '$expenses.amount',
+          },
+        },
+      },
+    ]);
+    console.log(cashierLogs, expenses);
     const book = new Workbook();
     const sheet = book.addWorksheet('Transactions');
     const response = [],
@@ -674,17 +672,74 @@ export class CashierLogService {
       acc[d._id.toString()] = d;
       return acc;
     }, []);
-    for (const i in cashierLogs) {
+    const cashierRecords = [];
+    cashierLogs.forEach((element) => {
+      if (
+        !cashierRecords[
+          `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+            element?._id?.closedAt
+          }`
+        ]
+      ) {
+        cashierRecords[
+          `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+            element?._id?.closedAt
+          }`
+        ] = {
+          _id: element._id,
+        };
+      }
+
+      if (element?._id?.paymentMethod == PaymentMethod.Card) {
+        cashierRecords[
+          `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+            element?._id?.closedAt
+          }`
+        ].cardSales = element.sales;
+      } else if (element?._id?.paymentMethod == PaymentMethod.Cash) {
+        cashierRecords[
+          `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+            element?._id?.closedAt
+          }`
+        ].cashSales = element.sales;
+      }
+    });
+    expenses.forEach((element) => {
+      if (element.expense > 0) {
+        if (
+          !cashierRecords[
+            `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+              element?._id?.closedAt
+            }`
+          ]
+        ) {
+          cashierRecords[
+            `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+              element?._id?.closedAt
+            }`
+          ] = {
+            _id: element._id,
+          };
+        }
+        cashierRecords[
+          `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+            element?._id?.closedAt
+          }`
+        ].expense = element.expense;
+      }
+    });
+    for (const i in cashierRecords) {
       const row: any = {
-        username: users[cashierLogs[i]?._id?.userId?.toString()]?.name ?? 'N/A',
-        cashSales: roundOffNumber(cashierLogs[i].cashSales),
-        cardSales: roundOffNumber(cashierLogs[i].cardSales),
-        totalExpenses: roundOffNumber(cashierLogs[i].totalExpenses),
+        username:
+          users[cashierRecords[i]?._id?.userId?.toString()]?.name ?? 'N/A',
+        cashSales: roundOffNumber(cashierRecords[i].cashSales ?? 0),
+        cardSales: roundOffNumber(cashierRecords[i].cardSales ?? 0),
+        totalExpenses: roundOffNumber(cashierRecords[i].expense),
         netCash: roundOffNumber(
-          cashierLogs[i].cashSales - cashierLogs[i].totalExpenses,
+          (cashierRecords[i].cashSales ?? 0) - (cashierRecords[i].expense ?? 0),
         ),
         shift: moment
-          .utc(cashierLogs[i]._id.startedAt)
+          .utc(cashierRecords[i]._id.startedAt)
           .tz(timezone)
           .format('DD/MM/yyyy hh:mm a'),
       };
