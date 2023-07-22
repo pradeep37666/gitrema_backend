@@ -144,6 +144,11 @@ export const VALIDATION_MESSAGES = {
     en: 'All provided orders are either closed or cancelled',
     ar: 'الطلبات المختارة مغلقة او ملغية',
   },
+  SameTableMergeNotAllowed: {
+    key: `SameTableMergeNotAllowed`,
+    en: 'Merge only allowed for orders within the same table',
+    ar: 'لايسمح دمج طلبات من طاولات مختلفة',
+  },
   NoSubscription: {
     key: `NoSubscription`,
     en: 'No active subscription! Please contact administrator',
@@ -248,5 +253,10 @@ export const VALIDATION_MESSAGES = {
     key: `NoBalanceMatch`,
     en: 'Closing balance is not matching the current balance. Difference is {{p1}}',
     ar: 'مبلغ الكاش في الصندوق لا يساوي المبلغ المستلم في الوردية. الفرق هو: {{p1}}',
+  },
+  MenuCategoryMandatory: {
+    key: 'MenuCategoryMandatory',
+    en: 'You must select item categoy',
+    ar: 'يجب اختيار القسم للمنتج',
   },
 };

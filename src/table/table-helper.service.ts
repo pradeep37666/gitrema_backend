@@ -136,32 +136,34 @@ export class TableHelperService {
   }
 
   async addOrderToTableLogWithAutoStart(order: OrderDocument) {
-    const tableLog = await this.tableLogModel.findOneAndUpdate(
-      { tableId: order.tableId, closingTime: null },
-      {
-        $push: { orders: order._id },
-        supplierId: order.supplierId,
-        restaurantId: order.restaurantId,
-        $setOnInsert: {
+    const table = await this.tableModel.findById(order.tableId);
+    if (table) {
+      let tableLog = null;
+      if (table.currentTableLog) {
+        tableLog = await this.tableLogModel.findByIdAndUpdate(
+          table.currentTableLog,
+          {
+            $push: { orders: order._id },
+          },
+          { new: true },
+        );
+      } else {
+        tableLog = await this.tableLogModel.create({
+          orders: [order._id],
+          supplierId: order.supplierId,
+          restaurantId: order.restaurantId,
           waiterId: order.waiterId,
-        },
-      },
-      {
-        upsert: true,
-        setDefaultsOnInsert: true,
-        new: true,
-        sort: {
-          _id: -1,
-        },
-      },
-    );
-    this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);
+          startingTime: new Date(),
+          tableId: table._id,
+        });
+        await this.tableModel.findByIdAndUpdate(order.tableId, {
+          status: TableStatus.InUse,
+          currentTableLog: tableLog._id,
+        });
+      }
+      this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);
 
-    await this.tableModel.findByIdAndUpdate(order.tableId, {
-      status: TableStatus.InUse,
-      currentTableLog: tableLog._id,
-    });
-
-    return tableLog;
+      return tableLog;
+    }
   }
 }

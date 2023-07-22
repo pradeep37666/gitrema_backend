@@ -624,9 +624,12 @@ export class CashierLogService {
         },
       },
       {
+        $unwind: '$transactions',
+      },
+      {
         $group: {
           _id: {
-            userId: '$userId',
+            userId: '$transactions.addedBy',
             startedAt: '$startedAt',
             closedAt: '$closedAt',
           },
