@@ -298,6 +298,7 @@ export class PaymentService {
         orderId: order._id,
         amount: splittedAmount,
         paymentGateway: null,
+        addedBy: req.user.userId,
       });
     }
 
