@@ -734,7 +734,7 @@ export class CashierLogService {
           users[cashierRecords[i]?._id?.userId?.toString()]?.name ?? 'N/A',
         cashSales: roundOffNumber(cashierRecords[i].cashSales ?? 0),
         cardSales: roundOffNumber(cashierRecords[i].cardSales ?? 0),
-        totalExpenses: roundOffNumber(cashierRecords[i].expense),
+        totalExpenses: roundOffNumber(cashierRecords[i].expense ?? 0),
         netCash: roundOffNumber(
           (cashierRecords[i].cashSales ?? 0) - (cashierRecords[i].expense ?? 0),
         ),
