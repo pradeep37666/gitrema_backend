@@ -180,6 +180,15 @@ export class Supplier {
   @Prop({ default: false })
   isVendor: boolean;
 
+  @Prop({ default: false })
+  isSmallRestaurant: boolean;
+
+  @Prop({ default: false })
+  isLargeKitchenReceipt: boolean;
+
+  @Prop({ default: false })
+  canBeDeferred: boolean;
+
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Import',
