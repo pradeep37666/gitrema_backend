@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      .text-24 {
+        font-size: 24px;
+      }
+      .text-30 {
+        font-size: 30px;
+      }
+      .text-8 {
+        font-size: 8px;
+      }
+      .fw-600 {
+        font-weight: 600;
+      }
+      .header-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-bottom: 20px;
+        padding-top: 20px;
+        text-align: center;
+      }
+      .title {
+        font-family: 'Calibri';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 40px;
+        line-height: 40px;
+        color: #0e110e;
+        margin: 12px 0;
+      }
+      .container {
+        width: 550px;
+        margin: 0px auto;
+        padding: 0px 21px;
+        font-family: 'Cairo';
+        border-radius: 4px;
+        background: #ffffff;
+      }
+      .topContainer {
+        width: 100%;
+        display: flex;
+        justify-content: end;
+        padding: 12px 0;
+      }
+      .detailsContainer {
+        display: grid;
+        margin-top: 10px;
+        grid-template-columns: 1fr 1fr;
+        grid-row-gap: 4px;
+        grid-column-gap: 12px;
+      }
+      .detailsItem {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      ​ .table {
+        border-collapse: collapse;
+      }
+      ​ .cell {
+        border: 2px solid #000000;
+        padding: 6px;
+        text-align: center;
+        border-style: dashed;
+        font-size: 20px;
+      }
+      .tableHeader {
+        background-color: rgba(200, 200, 200, 0.75);
+      }
+      body {
+        line-height: 35px;
+        font-family: 'Calibri', sans-serif;
+      }
+    </style>
+  </head>
+  ​
+  <body dir="rtl">
+    <div class="container" id="container">
+      <div>
+        <div style="text-align: center">
+          <div class="header-container">
+            <!-- <div class="title">{{ order.restaurantId.name }}</div> -->
+            <div class="title">{{ printer.nameAr }}</div>
+            <div class="title">{{orderType}}</div>
+            <div class="detailsContainer">
+              <div class="detailsItem text-24 fw-600">
+                <span style="justify-self: start">رقم اليومي</span>
+                <sapn>{{order.orderNumber}}</sapn>
+              </div>
+              <div class="detailsItem text-24 fw-600">
+                <span style="justify-self: start">الطاولة</span>
+                <sapn>{{order.tableId.nameAr}}</sapn>
+              </div>
+              <div
+                style="
+                  grid-column: 3/1;
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr;
+                "
+                class="text-24"
+              >
+                <span class="fw-600" style="justify-self: start">التاريخ</span>
+                <sapn>{{moment order.createdAt format="YYYY-M-D"}}</sapn>
+                <sapn>{{moment order.createdAt format="h:mm A"}}</sapn>
+              </div>
+              <div class="detailsItem text-24">
+                <span class="fw-600" style="justify-self: start">المضيف</span>
+                <sapn>{{order.waiterId.name}}</sapn>
+              </div>
+              <div class="detailsItem text-24">
+                <span class="fw-600" style="justify-self: start">الزبون</span>
+                <sapn>{{order.name}}</sapn>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style="
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding-bottom: 40px;
+          "
+          class="tableData"
+          dir="ltr"
+        >
+          <div
+            class="text-30"
+            style="margin: 15px 0px; text-align: center; line-height: 30px"
+          >
+            {{#each order.items}}
+            <div
+              style="display: flex; justify-content: space-between; gap: 10px"
+            >
+              <div style="flex: 1">Item{{math @index "+" 1}}</div>
+              <div style="flex: 3">
+                <div style="display: flex; flex-direction: column">
+                  <div style="direction: rtl">{{this.menuItem.nameAr}}</div>
+                  <br />
+                  <div>{{ this.additionTextAr }}</div>
+                </div>
+              </div>
+              <div style="flex: 1">X{{this.quantity}}</div>
+            </div>
+            <br />
+            <div><span>{{this.notes}}</span></div>
+            <br />
+            {{/each}}
+            <div></div>
+          </div>
+        </div>
+        <!-- <table style="width: 100%; border-collapse: collapse">
+          <thead>
+            <tr class="tableHeader" style="font-weight: 700">
+              <td
+                class="text-24"
+                style="
+                  border: 2px dashed #000000;
+                  padding: 6px;
+                  text-align: center;
+                  border-style: dashed;
+                  font-size: 24px;
+                "
+              >
+                المادة
+              </td>
+              <td
+                class="text-24"
+                style="
+                  border: 2px dashed #000000;
+                  padding: 6px;
+                  text-align: center;
+                  border-style: dashed;
+                  font-size: 24px;
+                "
+              >
+                الكمية
+              </td>
+              <td
+                class="text-24"
+                style="
+                  border: 2px dashed #000000;
+                  padding: 6px;
+                  text-align: center;
+                  border-style: dashed;
+                  font-size: 24px;
+                "
+              >
+                الملاحظات
+              </td>
+            </tr>
+          </thead>
+          ​
+          <tbody className="">
+            {{#each order.items}}
+            <tr key="{index}">
+              <td
+                class=""
+                style="
+                  border: 2px dashed #000000;
+                  padding: 6px;
+                  text-align: center;
+                  border-style: dashed;
+                  font-size: 24px;
+                "
+              >
+                <div class="">
+                  <span>{{this.menuItem.nameAr}}</span>
+                </div>
+                <div class="">
+                  <span>{{this.additionTextAr}}</span>
+                </div>
+              </td>
+              <td
+                class=""
+                style="
+                  border: 2px dashed #000000;
+                  padding: 6px;
+                  text-align: center;
+                  border-style: dashed;
+                  font-size: 24px;
+                "
+              >
+                <span>{{this.quantity}}</span>
+              </td>
+              <td
+                class=""
+                style="
+                  border: 2px dashed #000000;
+                  padding: 6px;
+                  text-align: center;
+                  border-style: dashed;
+                  font-size: 24px;
+                "
+              >
+                <span>{{this.notes}}</span>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table> -->
+        <br />
+      </div>
+    </div>
+  </body>
+</html>

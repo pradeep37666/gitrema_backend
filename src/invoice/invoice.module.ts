@@ -14,6 +14,10 @@ import { PrinterModule } from 'src/printer/printer.module';
 import { HttpModule } from '@nestjs/axios';
 import { SocketIoModule } from 'src/socket-io/socket-io.module';
 import { Printer, PrinterSchema } from 'src/printer/schema/printer.schema';
+import {
+  Supplier,
+  SupplierSchema,
+} from 'src/supplier/schemas/suppliers.schema';
 
 @Module({
   imports: [
@@ -22,6 +26,7 @@ import { Printer, PrinterSchema } from 'src/printer/schema/printer.schema';
       { name: Invoice.name, schema: InvoiceSchema },
       { name: Order.name, schema: OrderSchema },
       { name: Printer.name, schema: PrinterSchema },
+      { name: Supplier.name, schema: SupplierSchema },
     ]),
     forwardRef(() => OrderModule),
     PrinterModule,
