@@ -89,6 +89,7 @@ import { InventoryReportModule } from './inventory-report/inventory-report.modul
 import { CostSimulatorModule } from './cost-simulator/cost-simulator.module';
 import { PrinterModule } from './printer/printer.module';
 import { PublishModule } from './publish/publish.module';
+import { DriverModule } from './driver/driver.module';
 
 @Module({
   imports: [
@@ -189,6 +190,7 @@ import { PublishModule } from './publish/publish.module';
     InventoryReportModule,
     CostSimulatorModule,
     PublishModule,
+    DriverModule,
   ],
   controllers: [AppController],
   providers: [
