@@ -19,8 +19,12 @@ import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 import { DriverDocument } from './schema/driver.schema';
 import { I18n, I18nContext } from 'nestjs-i18n';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 @Controller('driver')
+@ApiTags('Drivers')
+@ApiBearerAuth('access-token')
+@ApiHeader({ name: 'lang' })
 export class DriverController {
   constructor(private readonly driverService: DriverService) {}
 
