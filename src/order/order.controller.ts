@@ -280,6 +280,14 @@ export class OrderController {
     });
   }
 
+  @Patch(':orderId/remove-driver')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.SetDriver)
+  async removeDriver(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.update(req, orderId, {
+      driverId: null,
+    });
+  }
+
   @Delete('delete-all')
   @PermissionGuard(PermissionSubject.Order, Permission.Common.DELETE)
   async deleteAll(@Req() req) {
