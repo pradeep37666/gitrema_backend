@@ -44,6 +44,10 @@ import { OrderType } from 'src/order/enum/en.enum';
 
 import { OrderType as ArOrderType } from 'src/order/enum/ar.enum';
 import { TIMEZONE } from 'src/core/Constants/system.constant';
+import {
+  Supplier,
+  SupplierDocument,
+} from 'src/supplier/schemas/suppliers.schema';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -77,6 +81,7 @@ export class InvoiceHelperService {
     private readonly invoiceService: InvoiceService,
     private readonly socketGateway: SocketIoGateway,
     @InjectModel(Printer.name) private printerModel: Model<PrinterDocument>,
+    @InjectModel(Supplier.name) private supplierModel: Model<SupplierDocument>,
   ) {}
 
   async generateInvoice(
@@ -208,6 +213,7 @@ export class InvoiceHelperService {
     printerDetails: { printers: string[]; printerItems: string[] },
     print = true,
   ): Promise<Receipts[]> {
+    const supplier = await this.supplierModel.findById(order.supplierId);
     await order.populate([
       { path: 'restaurantId' },
       { path: 'tableId' },
@@ -229,7 +235,9 @@ export class InvoiceHelperService {
     });
 
     const templateHtml = fs.readFileSync(
-      'src/invoice/templates/large-kitchen-receipt.v2.html',
+      supplier?.isLargeKitchenReceipt
+        ? 'src/invoice/templates/large-kitchen-receipt.v2.html'
+        : 'src/invoice/templates/kitchen-receipt.v2.html',
       'utf8',
     );
 
