@@ -52,6 +52,8 @@ export class UpdateOrderDto extends PartialType(
   tip?: number;
 
   groupId?: string;
+
+  driverId?: string;
 }
 
 export class ChangeOrderDto {

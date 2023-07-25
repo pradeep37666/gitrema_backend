@@ -414,6 +414,7 @@ export class OrderService {
           { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
           { path: 'customerId' },
           { path: 'waiterId' },
+          { path: 'driverId' },
           { path: 'tableId', select: { name: 1, nameAr: 1 } },
           { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
         ],
@@ -558,6 +559,7 @@ export class OrderService {
           { path: 'waiterId', select: { name: 1 } },
           { path: 'tableId', select: { name: 1, nameAr: 1 } },
           { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
+          { path: 'driverId' },
         ],
       },
     );
@@ -619,6 +621,7 @@ export class OrderService {
         { path: 'customerId' },
         { path: 'waiterId', select: { name: 1 } },
         { path: 'tableId', select: { name: 1, nameAr: 1 } },
+        { path: 'driverId' },
         { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
       ]);
 

@@ -56,6 +56,7 @@ export enum PermissionSubject {
   Printer = 'Printer',
   Restricted = 'Restricted',
   Payment = 'Payment',
+  Driver = 'Driver',
 }
 export enum SubjectsRestrictedForSupplier {
   ALL = 'ALL',
@@ -108,6 +109,7 @@ export enum OrderPermissions {
   LimitedOrderCancel = 'Limited Order Cancel',
   LimitedOrderUpdate = 'Limited Order Update',
   ApplyDiscount = 'Apply Discount',
+  SetDriver = 'Set Driver',
 }
 
 export enum UserPermission {
