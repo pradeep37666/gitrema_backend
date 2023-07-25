@@ -25,6 +25,11 @@ export class QueryOrderDto {
   @ApiProperty({ required: false })
   @IsMongoId()
   @IsOptional()
+  driverId: string;
+
+  @ApiProperty({ required: false })
+  @IsMongoId()
+  @IsOptional()
   customerId: string;
 
   @ApiProperty({ required: false })

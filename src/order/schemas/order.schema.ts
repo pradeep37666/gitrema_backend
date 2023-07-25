@@ -27,6 +27,7 @@ import { TransactionDocument } from 'src/transaction/schemas/transactions.schema
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import { CustomerDocument } from 'src/customer/schemas/customer.schema';
 import { PrinterDocument } from 'src/printer/schema/printer.schema';
+import { DriverDocument } from 'src/driver/schema/driver.schema';
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
@@ -108,6 +109,13 @@ export class Order {
     default: null,
   })
   cashierId: CashierDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Driver',
+    default: null,
+  })
+  driverId: DriverDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
