@@ -32,7 +32,10 @@ import { PauseDto } from './dto/pause.dto';
 import { CashierDocument } from './schemas/cashier.schema';
 import { CashierService } from './cashier.service';
 import { SocketIoGateway } from 'src/socket-io/socket-io.gateway';
-import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
+import {
+  Transaction,
+  TransactionDocument,
+} from 'src/transaction/schemas/transactions.schema';
 import { SocketEvents } from 'src/socket-io/enum/events.enum';
 import { CashierHelperService } from './cashier-helper.service';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
@@ -55,6 +58,10 @@ import { Type } from 'class-transformer';
 import ObjectId from 'mongoose';
 import { PaymentMethod } from 'src/payment/enum/en.enum';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
+import {
+  DeferredTransaction,
+  DeferredTransactionDocument,
+} from 'src/order/schemas/deferred-transaction.schema';
 
 @Injectable()
 export class CashierLogService {
@@ -76,6 +83,8 @@ export class CashierLogService {
     private readonly cashierService: CashierService,
     @Inject(forwardRef(() => CashierHelperService))
     private readonly cashierHelperService: CashierHelperService,
+    @InjectModel(DeferredTransaction.name)
+    private readonly deferredTransactionModel: Model<DeferredTransactionDocument>,
     private socketGateway: SocketIoGateway,
   ) {}
 
@@ -435,10 +444,14 @@ export class CashierLogService {
               $gte: query.startDate,
               $lte: query.endDate,
             },
+            status: PaymentStatus.Success,
           },
           populate: [
             {
               path: 'orderId',
+            },
+            {
+              path: 'addedBy',
             },
           ],
         },
@@ -447,8 +460,19 @@ export class CashierLogService {
         },
       ]);
 
-    const response = [],
-      records = [
+    const deferredTransactions = await this.deferredTransactionModel
+      .find({
+        supplierId: req.user.supplierId,
+        ...queryToApply,
+      })
+      .populate([
+        {
+          path: 'addedBy',
+        },
+      ]);
+
+    const response: any = [],
+      records: any = [
         [
           'Order Number',
           'Invoice Number',
@@ -474,6 +498,12 @@ export class CashierLogService {
       ];
     const book = new Workbook();
     const sheet = book.addWorksheet('Transactions');
+    let cash = 0,
+      card = 0,
+      online = 0,
+      deferred = 0,
+      refund = 0,
+      expense = 0;
     for (const i in cashierLogs) {
       for (const j in cashierLogs[i].transactions) {
         const order = response.find(
@@ -500,11 +530,14 @@ export class CashierLogService {
             date: moment(date).format('DD/MM/YYYY'),
             time: moment(date).format('hh:mm A'),
             totalPaid: roundOffNumber(
-              cashierLogs[i].transactions[j].orderId.summary.totalPaid,
+              cashierLogs[i].transactions[j].amount *
+                cashierLogs[i].transactions[j].isRefund
+                ? -1
+                : 1,
             ),
             paymentMethod: cashierLogs[i].transactions[j].paymentMethod,
             invoiceLinks: invoices.map((i) => i.imageUrl).join(','),
-            user: cashierLogs[i]?.userId?.name ?? 'N/A',
+            user: cashierLogs[i]?.transactions[j]?.addedBy?.name ?? 'N/A',
 
             shift: moment
               .utc(cashierLogs[i].startedAt)
@@ -515,9 +548,108 @@ export class CashierLogService {
           if (isFile) {
             records.push(Object.values(row));
           }
+          if (cashierLogs[i].transactions[j].isRefund) {
+            refund += cashierLogs[i].transactions[j].amount;
+          } else if (
+            cashierLogs[i].transactions[j].paymentMethod == PaymentMethod.Card
+          ) {
+            card += cashierLogs[i].transactions[j].amount;
+          } else if (
+            cashierLogs[i].transactions[j].paymentMethod == PaymentMethod.Cash
+          ) {
+            cash += cashierLogs[i].transactions[j].amount;
+          } else if (
+            cashierLogs[i].transactions[j].paymentMethod == PaymentMethod.Online
+          ) {
+            online += cashierLogs[i].transactions[j].amount;
+          }
         }
       }
+      for (const j in cashierLogs[i].expenses) {
+        const date = convertUtcToSupplierTimezone(
+          cashierLogs[i].expenses[j].createdAt,
+          timezone,
+        );
+        const row = {
+          orderNumber: '',
+          invoiceNumber: '',
+          date: moment(date).format('DD/MM/YYYY'),
+          time: moment(date).format('hh:mm A'),
+          totalPaid: roundOffNumber(cashierLogs[i].expenses[j].expense * -1),
+          paymentMethod: 'Expense',
+          invoiceLinks: '',
+          user: cashierLogs[i]?.expenses[j]?.addedBy?.name ?? 'N/A',
+
+          shift: moment
+            .utc(cashierLogs[i].startedAt)
+            .tz(timezone)
+            .format('DD/MM/yyyy hh:mm a'),
+        };
+        response.push(row);
+        if (isFile) {
+          records.push(Object.values(row));
+        }
+        expense += cashierLogs[i].expenses[j].expense;
+      }
     }
+    for (const i in deferredTransactions) {
+      const date = convertUtcToSupplierTimezone(
+        deferredTransactions[i].createdAt,
+        timezone,
+      );
+      const row = {
+        orderNumber: '',
+        invoiceNumber: '',
+        date: moment(date).format('DD/MM/YYYY'),
+        time: moment(date).format('hh:mm A'),
+        totalPaid: roundOffNumber(deferredTransactions[i].amount),
+        paymentMethod: 'Deferred',
+        invoiceLinks: '',
+        user: deferredTransactions[i]?.addedBy?.name ?? 'N/A',
+
+        shift: moment(date).format('DD/MM/yyyy hh:mm a'),
+      };
+      response.push(row);
+      if (isFile) {
+        records.push(Object.values(row));
+      }
+      deferred += deferredTransactions[i].amount;
+    }
+    response.push(
+      {
+        summaryLabel: 'Cash',
+        value: cash,
+      },
+      {
+        summaryLabel: 'Card',
+        value: card,
+      },
+      {
+        summaryLabel: 'Online',
+        value: online,
+      },
+      {
+        summaryLabel: 'Deferred',
+        value: deferred,
+      },
+      {
+        summaryLabel: 'Refunded',
+        value: refund,
+      },
+      {
+        summaryLabel: 'Expense',
+        value: expense,
+      },
+    );
+    records.push(
+      ['Cash', cash],
+      ['Card', card],
+      ['Online', online],
+      ['Deferred', deferred],
+      ['Refunded', refund],
+      ['Expense', expense],
+    );
+
     if (!isFile) return response;
     sheet.addRows(records);
     const tmpFile = tmp.fileSync({
@@ -640,6 +772,36 @@ export class CashierLogService {
         },
       },
     ]);
+
+    const deferredTransactions = await this.deferredTransactionModel.aggregate([
+      {
+        $match: {
+          supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          ...queryToApply,
+        },
+      },
+      {
+        $addFields: {
+          y: { $year: { date: '$createdAt', timezone } },
+          m: { $month: { date: '$createdAt', timezone } },
+          d: { $dayOfMonth: { date: '$createdAt', timezone } },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            userId: '$addedBy',
+            year: '$y',
+            month: '$m',
+            day: '$d',
+          },
+
+          amount: {
+            $sum: '$amount',
+          },
+        },
+      },
+    ]);
     console.log(cashierLogs, expenses);
     const book = new Workbook();
     const sheet = book.addWorksheet('Transactions');
@@ -728,6 +890,63 @@ export class CashierLogService {
         ].expense = element.expense;
       }
     });
+
+    deferredTransactions.forEach((element) => {
+      const index = cashierRecords.findIndex((o) => {
+        if (o._id.userId.toString() == element._id.userId.toString()) {
+          const date = moment(
+            `${element.year}-${element.month}-${element.day}`,
+          );
+          const startedAt = moment(o._id.startedAt);
+          const closedAt = o._id.closedAt ? moment(o._id.closedAt) : null;
+
+          if (closedAt) {
+            return date.isBetween(startedAt, closedAt);
+          } else {
+            return date.isSameOrBefore(startedAt);
+          }
+        }
+      });
+      if (index == -1) {
+        cashierRecords[
+          `${element?._id?.userId?.toString()}_${element?._id?.year}_${
+            element?._id?.month
+          }_${element?._id?.day}`
+        ] = {
+          _id: {
+            userId: element._id.userId,
+            startedAt: `${element.year}-${element.month}-${element.day}`,
+            closedAt: `${element.year}-${element.month}-${element.day}`,
+          },
+          deferred: element.amount,
+        };
+      } else {
+        cashierRecords[index].deferred += element.amount;
+      }
+      if (element.expense > 0) {
+        if (
+          !cashierRecords[
+            `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+              element?._id?.closedAt
+            }`
+          ]
+        ) {
+          cashierRecords[
+            `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+              element?._id?.closedAt
+            }`
+          ] = {
+            _id: element._id,
+          };
+        }
+        cashierRecords[
+          `${element?._id?.userId?.toString()}_${element?._id?.startedAt}_${
+            element?._id?.closedAt
+          }`
+        ].expense = element.expense;
+      }
+    });
+
     for (const i in cashierRecords) {
       const row: any = {
         username:
@@ -738,6 +957,7 @@ export class CashierLogService {
         netCash: roundOffNumber(
           (cashierRecords[i].cashSales ?? 0) - (cashierRecords[i].expense ?? 0),
         ),
+        deferred: roundOffNumber(cashierRecords[i].deferred ?? 0),
         shift: moment
           .utc(cashierRecords[i]._id.startedAt)
           .tz(timezone)

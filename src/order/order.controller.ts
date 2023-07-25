@@ -39,6 +39,7 @@ import { QueryIdentifyPrinterDto } from './dto/query-identify-printer.dto';
 import { Public } from 'src/core/decorators/public.decorator';
 import { PermissionService } from '../permission/permission.service';
 import { DiscountOrderDto } from './dto/discount-order.dto';
+import { Driver } from '../driver/schema/driver.schema';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -265,6 +266,26 @@ export class OrderController {
   @PermissionGuard(PermissionSubject.Order, Permission.Order.Defer)
   async defer(@Req() req, @Param('orderId') orderId: string) {
     return await this.orderService.deferOrder(req, orderId);
+  }
+
+  @Patch(':orderId/set-driver/:driverId')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.SetDriver)
+  async driver(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Param('driverId') driverId: string,
+  ) {
+    return await this.orderService.update(req, orderId, {
+      driverId,
+    });
+  }
+
+  @Patch(':orderId/remove-driver')
+  @PermissionGuard(PermissionSubject.Order, Permission.Order.SetDriver)
+  async removeDriver(@Req() req, @Param('orderId') orderId: string) {
+    return await this.orderService.update(req, orderId, {
+      driverId: null,
+    });
   }
 
   @Delete('delete-all')

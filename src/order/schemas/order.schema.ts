@@ -15,6 +15,7 @@ import {
   OrderType,
   OrderPaymentStatus,
   Source,
+  DeliveryStatus,
 } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
@@ -27,6 +28,7 @@ import { TransactionDocument } from 'src/transaction/schemas/transactions.schema
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import { CustomerDocument } from 'src/customer/schemas/customer.schema';
 import { PrinterDocument } from 'src/printer/schema/printer.schema';
+import { DriverDocument } from 'src/driver/schema/driver.schema';
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
@@ -111,6 +113,13 @@ export class Order {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
+    ref: 'Driver',
+    default: null,
+  })
+  driverId: DriverDocument;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
     default: null,
   })
   groupId: string;
@@ -154,6 +163,9 @@ export class Order {
 
   @Prop({ type: String, enum: InvoiceStatus })
   invoiceStatus: InvoiceStatus;
+
+  @Prop({ type: String, enum: DeliveryStatus })
+  deliveryStatus: DeliveryStatus;
 
   @Prop({
     default: {
