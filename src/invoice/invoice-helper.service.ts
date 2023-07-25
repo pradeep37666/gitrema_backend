@@ -229,7 +229,7 @@ export class InvoiceHelperService {
     });
 
     const templateHtml = fs.readFileSync(
-      'src/invoice/templates/kitchen-receipt.v2.html',
+      'src/invoice/templates/large-kitchen-receipt.v2.html',
       'utf8',
     );
 
