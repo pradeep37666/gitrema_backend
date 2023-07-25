@@ -109,7 +109,8 @@ export class TableLogService {
         startingTime: new Date(),
         waiterId: req.user.userId ?? null,
       });
-      this.tableService.update(tableId, {
+      await tableLog.save();
+      await this.tableService.update(tableId, {
         status: TableStatus.InUse,
         currentTableLog: tableLog._id,
       });
@@ -138,13 +139,12 @@ export class TableLogService {
       }
 
       tableLog.closingTime = new Date();
-
-      this.tableService.update(tableId, {
+      await tableLog.save();
+      await this.tableService.update(tableId, {
         status: TableStatus.Empty,
         currentTableLog: null,
       });
     }
-    await tableLog.save();
 
     this.socketGateway.emit(
       tableLog.supplierId.toString(),
