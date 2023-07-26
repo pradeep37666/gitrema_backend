@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   Query,
+  Header,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -40,6 +41,9 @@ import { Public } from 'src/core/decorators/public.decorator';
 import { PermissionService } from '../permission/permission.service';
 import { DiscountOrderDto } from './dto/discount-order.dto';
 import { Driver } from '../driver/schema/driver.schema';
+import { ChangeDeliveryStatusDto } from './dto/change-delivery-status.dto';
+import { DriverReportDto } from './dto/driver-report.dto';
+import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -288,9 +292,37 @@ export class OrderController {
     });
   }
 
+  @Patch(':orderId/change-delivery-status')
+  @PermissionGuard(
+    PermissionSubject.Order,
+    Permission.Order.ChangeDeliveryStatus,
+  )
+  async changeDeliveryStatus(
+    @Req() req,
+    @Param('orderId') orderId: string,
+    @Body() dto: ChangeDeliveryStatusDto,
+  ) {
+    return await this.orderService.update(req, orderId, dto);
+  }
+
   @Delete('delete-all')
   @PermissionGuard(PermissionSubject.Order, Permission.Common.DELETE)
   async deleteAll(@Req() req) {
     return await this.orderService.deleteAll(req);
+  }
+
+  @Get('driver-report')
+  @PermissionGuard(PermissionSubject.Report, Permission.Common.FETCH)
+  async cashierReport(@Req() req, @Query() query: DriverReportDto) {
+    return await this.orderService.driverReport(req, query);
+  }
+
+  @Get('driver-report/export')
+  @Header('Content-Type', 'application/xlsx')
+  @Header('Content-Disposition', 'attachment; filename="driver.xlsx"')
+  @SkipInterceptor()
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async orderReportExport(@Req() req, @Query() query: DriverReportDto) {
+    return await this.orderService.driverReport(req, query, true);
   }
 }

@@ -6,7 +6,11 @@ import {
 
 import { InjectModel } from '@nestjs/mongoose';
 import { LeanDocument, Model, PaginateModel, PaginateResult } from 'mongoose';
-import { ImpersonateSupplierDto, UserUpdateDto } from './users.dto';
+import {
+  ImpersonateSupplierDto,
+  QueryUserDto,
+  UserUpdateDto,
+} from './users.dto';
 
 import { User, UserDocument } from './schemas/users.schema';
 import { STATUS_MSG } from 'src/core/Constants/status-message.constants';
@@ -131,11 +135,13 @@ export class UserService {
 
   async all(
     req: any,
+    query: QueryUserDto,
     paginateOptions: PaginationDto,
   ): Promise<PaginateResult<UserDocument>> {
     const users = await this.userModelPag.paginate(
       {
         supplierId: req.user.supplierId,
+        ...query,
       },
       {
         projection: { password: 0 },

@@ -84,6 +84,9 @@ export class User {
   isBlocked: boolean;
 
   @Prop({ default: false })
+  isDriver: boolean;
+
+  @Prop({ default: false })
   isWaiter: boolean;
 
   @Prop({
