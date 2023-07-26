@@ -58,7 +58,8 @@ export enum PreparationStatus {
 }
 
 export enum DeliveryStatus {
-  Pending = 'Pending',
-  Success = 'Success',
+  New = 'New',
+  Started = 'Started',
+  Delivered = 'Delivered',
   Failed = 'Failed',
 }

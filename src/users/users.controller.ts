@@ -17,6 +17,7 @@ import { LeanDocument, PaginateResult } from 'mongoose';
 import { UserService } from './users.service';
 import {
   ImpersonateSupplierDto,
+  QueryUserDto,
   UserCreateDto,
   UserUpdateDto,
 } from './users.dto';
@@ -48,9 +49,11 @@ export class UserController {
   @PermissionGuard(PermissionSubject.User, Permission.Common.LIST)
   async all(
     @Req() req,
-    @Query() paginateOptions: PaginationDto,
+    @Query() query: QueryUserDto,
+    @Query()
+    paginateOptions: PaginationDto,
   ): Promise<PaginateResult<UserDocument>> {
-    return await this.userService.all(req, paginateOptions);
+    return await this.userService.all(req, query, paginateOptions);
   }
 
   @Get(':userId')

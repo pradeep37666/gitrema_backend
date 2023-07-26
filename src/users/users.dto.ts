@@ -16,6 +16,7 @@ import {
 
 import { Role } from 'src/role/schemas/roles.schema';
 import { Transform } from 'class-transformer';
+import { ToBoolean } from 'src/core/Helpers/custom.validators';
 
 export class UserCreateDto {
   @IsOptional()
@@ -69,6 +70,11 @@ export class UserCreateDto {
   @IsOptional()
   @IsBoolean()
   isWaiter?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  isDriver?: boolean;
 }
 
 export class UserUpdateDto extends PartialType(
@@ -100,4 +106,11 @@ export class ImpersonateSupplierDto {
   @IsNotEmpty()
   @IsMongoId()
   supplierId: string;
+}
+
+export class QueryUserDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ToBoolean()
+  isDriver?: boolean;
 }
