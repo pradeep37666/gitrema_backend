@@ -53,11 +53,8 @@ export class TableLogService {
   ) {}
 
   async current(tableId: string): Promise<TableLogDocument> {
-    const exists = await this.tableLogModel.findOne(
-      { tableId },
-      {},
-      { sort: { _id: -1 } },
-    );
+    const table = await this.tableModel.findById(tableId);
+    const exists = await this.tableLogModel.findById(table?.currentTableLog);
 
     if (!exists) {
       throw new NotFoundException();
@@ -244,8 +241,10 @@ export class TableLogService {
     tableId: string,
     dto: TableLogDto,
   ): Promise<TableLogDocument> {
-    const tableLog = await this.tableLogModel.findOneAndUpdate(
-      { tableId, closingTime: null },
+    const table = await this.tableModel.findById(tableId);
+
+    const tableLog = await this.tableLogModel.findByIdAndUpdate(
+      table?.currentTableLog,
       dto,
       {
         new: true,
