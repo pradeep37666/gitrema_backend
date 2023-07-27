@@ -113,10 +113,10 @@ export class Order {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Driver',
+    ref: 'User',
     default: null,
   })
-  driverId: DriverDocument;
+  driverId: UserDocument;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -164,7 +164,7 @@ export class Order {
   @Prop({ type: String, enum: InvoiceStatus })
   invoiceStatus: InvoiceStatus;
 
-  @Prop({ type: String, enum: DeliveryStatus })
+  @Prop({ type: String, enum: DeliveryStatus, default: DeliveryStatus.New })
   deliveryStatus: DeliveryStatus;
 
   @Prop({

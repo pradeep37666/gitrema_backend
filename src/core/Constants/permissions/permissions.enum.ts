@@ -110,6 +110,7 @@ export enum OrderPermissions {
   LimitedOrderUpdate = 'Limited Order Update',
   ApplyDiscount = 'Apply Discount',
   SetDriver = 'Set Driver',
+  ChangeDeliveryStatus = 'Change Delivery Status',
 }
 
 export enum UserPermission {
