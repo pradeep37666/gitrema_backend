@@ -1228,7 +1228,7 @@ export class OrderService {
       },
       {
         $group: {
-          _id: '$driverId._id',
+          _id: { driverId: '$driverId._id', deliveryStatus: '$deliveryStatus' },
           //totalExpenses: { $sum: '$expenses.amount' },
           name: { $first: '$driverId.name' },
           totalOrders: { $sum: 1 },
@@ -1242,6 +1242,7 @@ export class OrderService {
     for (const i in orders) {
       const row = {
         name: orders[i].name,
+        deliveryStatus: orders[i]._id.deliveryStatus,
         totalOrders: orders[i].totalOrders,
         totalAmount: orders[i].totalAmount,
       };
