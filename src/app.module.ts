@@ -11,6 +11,7 @@ import mongoConfiguration from './config/mongo.configuration';
 import awsConfiguration from './config/aws.configuration';
 import arbPgConfiguration from './config/arb-pg.configuration';
 import mailConfiguration from './config/mail.configuration';
+import clickPayConfiguration from './config/clickpay.configuration';
 import pushNotificationConfiguration from './config/push-notification.configuration';
 
 import { UserModule } from './users/users.module';
@@ -105,6 +106,7 @@ import { DriverModule } from './driver/driver.module';
         taqnyatSmsConfiguration,
         yallowDeliveryConfiguration,
         pushNotificationConfiguration,
+        clickPayConfiguration,
       ],
     }),
     MongooseModule.forRootAsync({
