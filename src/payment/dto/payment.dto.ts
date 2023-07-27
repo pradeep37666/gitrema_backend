@@ -15,7 +15,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { ObjectId } from 'mongoose';
 import { Type } from 'class-transformer';
-import { PaymentGateways, PaymentMethod, SplitType } from '../enum/en.enum';
+import { PaymentMethod, SplitType } from '../enum/en.enum';
 import { PaymentGateway } from 'src/payment-gateway/schema/payment-gateway.schema';
 
 class ItemDto {
@@ -70,16 +70,6 @@ export class PaymentInitiateDto {
   @IsString()
   @IsOptional()
   redirectUrl?: string;
-
-  @ApiProperty({
-    required: false,
-    type: String,
-    enum: PaymentGateways,
-    enumName: 'PaymentGateways',
-  })
-  @IsEnum(PaymentGateways)
-  @IsOptional()
-  paymentGateway?: PaymentGateways;
 }
 
 export class PaymentSplitDto {
