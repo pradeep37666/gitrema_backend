@@ -60,6 +60,7 @@ export class DeferredTransaction {
     type: MongooseSchema.Types.ObjectId,
     index: true,
     default: null,
+    ref: 'User',
   })
   addedBy: UserDocument;
 }

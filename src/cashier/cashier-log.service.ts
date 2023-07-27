@@ -421,6 +421,10 @@ export class CashierLogService {
       query.endDate = new Date(
         query.endDate.toLocaleString('en', { timeZone: timezone }),
       );
+      queryToApply.createdAt = {
+        $gte: query.startDate,
+        $lte: query.endDate,
+      };
     }
     if (query.restaurantId) {
       queryToApply.restaurantId = query.restaurantId;
@@ -457,6 +461,9 @@ export class CashierLogService {
         },
         {
           path: 'userId',
+        },
+        {
+          path: 'expenses.addedBy',
         },
       ]);
 
@@ -592,7 +599,9 @@ export class CashierLogService {
         expense += cashierLogs[i].expenses[j].expense;
       }
     }
+
     for (const i in deferredTransactions) {
+      console.log(deferredTransactions[i]);
       const date = convertUtcToSupplierTimezone(
         deferredTransactions[i].createdAt,
         timezone,
@@ -676,11 +685,9 @@ export class CashierLogService {
       query.endDate = new Date(
         query.endDate.toLocaleString('en', { timeZone: timezone }),
       );
-      createdAtQuery = {
-        createdAt: {
-          $gte: query.startDate,
-          $lte: query.endDate,
-        },
+      queryToApply.createdAt = {
+        $gte: query.startDate,
+        $lte: query.endDate,
       };
     }
     if (query.restaurantId) {
@@ -826,7 +833,12 @@ export class CashierLogService {
       ];
     let users = await this.userModel.find(
       {
-        _id: { $in: cashierLogs.map((c) => c._id?.userId) },
+        _id: {
+          $in: cashierLogs
+            .map((c) => c._id?.userId)
+            .concat(expenses.map((e) => e._id?.userId))
+            .concat(deferredTransactions.map((d) => d._id?.userId)),
+        },
       },
       { name: 1, _id: 1 },
     );
