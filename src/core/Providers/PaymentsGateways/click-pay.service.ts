@@ -20,21 +20,28 @@ import { ClickPayRequestDto } from './dto/clickpay-request.dto';
 
 @Injectable()
 export class ClickPayService {
-  private credentials = {};
+  private credentials: any = {
+    profileId: this.configService.get('clickpay.CLICKPAY_PROFILE_ID'),
+    serverKey: this.configService.get('clickpay.CLICKPAY_SERVER_KEY'),
+    apiUrl: this.configService.get('clickpay.CLICKPAY_API_URL'),
+  };
   constructor(
     private readonly httpService: HttpService,
     private configService: ConfigService,
   ) {}
 
+  async init(paymentGateway: PaymentGatewayDocument) {
+    if (paymentGateway) {
+      this.credentials = paymentGateway.credentials;
+    }
+  }
   async requestPaymentToken(options: ClickPayRequestDto) {
     const response = await lastValueFrom(
       this.httpService
         .post(
-          `${this.configService.get(
-            'clickpay.CLICKPAY_API_URL',
-          )}/payment/request`,
+          `${this.credentials.apiUrl}/payment/request`,
           {
-            profile_id: this.configService.get('clickpay.CLICKPAY_PROFILE_ID'),
+            profile_id: this.credentials.profileId,
             tran_type: 'sale',
             tran_class: 'ecom',
             cart_id: options.transactionId,
@@ -48,9 +55,7 @@ export class ClickPayService {
           },
           {
             headers: {
-              authorization: this.configService.get(
-                'clickpay.CLICKPAY_SERVER_KEY',
-              ),
+              authorization: this.credentials.serverKey,
             },
           },
         )

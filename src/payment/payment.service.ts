@@ -18,7 +18,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Order, OrderDocument } from 'src/order/schemas/order.schema';
 import { OrderService } from 'src/order/order.service';
-import { PaymentGateways, PaymentMethod } from './enum/en.enum';
+import { PaymentMethod } from './enum/en.enum';
 import {
   Transaction,
   TransactionDocument,
@@ -48,7 +48,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { PaymentGatewayService } from 'src/payment-gateway/payment-gateway.service';
 import { ClickPayService } from 'src/core/Providers/PaymentsGateways/click-pay.service';
-import { PaymentGateway } from 'src/payment-gateway/schema/payment-gateway.schema';
+import { PaymentGateways } from 'src/payment-gateway/enum/en';
 
 @Injectable()
 export class PaymentService {
@@ -179,6 +179,7 @@ export class PaymentService {
     this.cashierLogService.logTransactionAsync(cashierId, transaction._id);
 
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Online) {
+      const globalConfig = await this.globalConfigService.fetch();
       const supplier = await this.supplierService.getOne(
         order.supplierId.toString(),
       );
@@ -187,7 +188,8 @@ export class PaymentService {
       );
       let res = null,
         dataToUpdate: any = {};
-      if (paymentRequestDetails.paymentGateway == PaymentGateways.Clickpay) {
+      if (globalConfig.paymentGateway == PaymentGateways.Clickpay) {
+        await this.clickpayService.init(paymentGateway);
         res = await this.clickpayService.requestPaymentToken({
           transactionId: transaction._id.toString(),
           amount: transaction.amount,
@@ -195,6 +197,10 @@ export class PaymentService {
         });
         dataToUpdate = {
           externalTransactionId: res.paymentId,
+          paymentGatewayDetails: {
+            paymentGatewayId: paymentGateway?._id ?? null,
+          },
+          paymentGateway: PaymentGateways.Clickpay,
         };
       } else {
         await this.arbPgService.init(paymentGateway);

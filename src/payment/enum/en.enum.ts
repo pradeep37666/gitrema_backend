@@ -12,8 +12,3 @@ export enum SplitType {
   Equal = 'Equal',
   Item = 'Item',
 }
-
-export enum PaymentGateways {
-  Alrazhi = 'Alrazhi',
-  Clickpay = 'Clickpay',
-}
