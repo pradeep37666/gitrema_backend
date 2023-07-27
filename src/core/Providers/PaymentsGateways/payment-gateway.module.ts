@@ -14,6 +14,8 @@ import {
   TransactionSchema,
 } from 'src/transaction/schemas/transactions.schema';
 import { PaymentGatewayModule as PaymentGatewayConfigModule } from 'src/payment-gateway/payment-gateway.module';
+import { ClickPayService } from './click-pay.service';
+import { ClickPayController } from './click-pay.controller';
 
 @Module({
   imports: [
@@ -29,8 +31,8 @@ import { PaymentGatewayModule as PaymentGatewayConfigModule } from 'src/payment-
       { name: Transaction.name, schema: TransactionSchema },
     ]),
   ],
-  providers: [ArbPgService, NearPayService],
-  controllers: [ArbPgController, NearPayController],
-  exports: [ArbPgService],
+  providers: [ArbPgService, NearPayService, ClickPayService],
+  controllers: [ArbPgController, NearPayController, ClickPayController],
+  exports: [ArbPgService, ClickPayService],
 })
 export class PaymentGatewayModule {}
