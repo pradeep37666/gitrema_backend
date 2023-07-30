@@ -28,10 +28,10 @@ export class TableHelperService {
 
   async handlePaymentNeeded(tableId: string, tableLog = null) {
     if (!tableLog) {
-      tableLog = await this.tableLogModel.findOne({
-        tableId,
-        closingTime: null,
-      });
+      const table = await this.tableModel.findById(tableId);
+      if (table && table.currentTableLog) {
+        tableLog = await this.tableLogModel.findById(table.currentTableLog);
+      }
     }
     if (tableLog) {
       const result = await this.orderModel.aggregate([
@@ -73,92 +73,94 @@ export class TableHelperService {
 
   async handleTableTransfer(order: OrderDocument, sourceTableId) {
     if (sourceTableId) {
-      const sourceTableLog = await this.tableLogModel.findOneAndUpdate(
-        {
-          tableId: sourceTableId,
-          closingTime: null,
-        },
-        {
-          $pull: { orders: order._id },
-        },
-        {
-          new: true,
-        },
-      );
-      console.log('Source Table Log', sourceTableLog);
-      this.handlePaymentNeeded(sourceTableId, sourceTableLog);
+      const table = await this.tableModel.findById(sourceTableId);
+      if (table && table.currentTableLog) {
+        const tableLog = await this.tableLogModel.findByIdAndUpdate(
+          table.currentTableLog,
+          {
+            $pull: { orders: order._id },
+          },
+          { new: true },
+        );
+        this.handlePaymentNeeded(sourceTableId, tableLog);
+      }
     }
 
     await this.addOrderToTableLogWithAutoStart(order);
   }
 
   async handleReadyFlag(order: OrderDocument) {
-    const tableLog = await this.tableLogModel.findOne({
-      tableId: order.tableId,
-      closingTime: null,
-    });
-    if (tableLog) {
-      const orders = await this.orderModel.find({
-        _id: { $in: tableLog.orders },
-        status: {
-          $nin: [
-            OrderStatus.Cancelled,
-            OrderStatus.CancelledWihPaymentFailed,
-            OrderStatus.Closed,
-          ],
-        },
-      });
-      const donePreparingOrders = orders.filter(
-        (o) => o.status == OrderStatus.DonePreparing,
-      );
-      const donePreparingItems = orders.filter((o) => {
-        const item = o.items.find(
-          (oi) => oi.preparationStatus == PreparationStatus.DonePreparing,
+    const table = await this.tableModel.findById(order.tableId);
+    if (table && table.currentTableLog) {
+      const tableLog = await this.tableLogModel.findById(table.currentTableLog);
+      if (tableLog) {
+        const orders = await this.orderModel.find({
+          _id: { $in: tableLog.orders },
+          status: {
+            $nin: [
+              OrderStatus.Cancelled,
+              OrderStatus.CancelledWihPaymentFailed,
+              OrderStatus.Closed,
+            ],
+          },
+        });
+        const donePreparingOrders = orders.filter(
+          (o) => o.status == OrderStatus.DonePreparing,
         );
-        if (item) return true;
-      });
-      tableLog.orderReady = false;
-      if (donePreparingOrders.length > 0) {
-        tableLog.orderReady = true;
-      }
-      tableLog.itemReady = false;
-      if (donePreparingItems.length > 0) {
-        tableLog.itemReady = true;
-      }
+        const donePreparingItems = orders.filter((o) => {
+          const item = o.items.find(
+            (oi) => oi.preparationStatus == PreparationStatus.DonePreparing,
+          );
+          if (item) return true;
+        });
+        tableLog.orderReady = false;
+        if (donePreparingOrders.length > 0) {
+          tableLog.orderReady = true;
+        }
+        tableLog.itemReady = false;
+        if (donePreparingItems.length > 0) {
+          tableLog.itemReady = true;
+        }
 
-      tableLog.save();
-      this.socketGateway.emit(
-        tableLog.supplierId.toString(),
-        SocketEvents.TableLog,
-        tableLog.toObject(),
-      );
+        tableLog.save();
+        this.socketGateway.emit(
+          tableLog.supplierId.toString(),
+          SocketEvents.TableLog,
+          tableLog.toObject(),
+        );
+      }
     }
   }
 
   async addOrderToTableLogWithAutoStart(order: OrderDocument) {
-    const tableLog = await this.tableLogModel.findOneAndUpdate(
-      { tableId: order.tableId, closingTime: null },
-      {
-        $push: { orders: order._id },
-        supplierId: order.supplierId,
-        restaurantId: order.restaurantId,
-        $setOnInsert: {
+    const table = await this.tableModel.findById(order.tableId);
+    if (table) {
+      let tableLog = null;
+      if (table.currentTableLog) {
+        tableLog = await this.tableLogModel.findByIdAndUpdate(
+          table.currentTableLog,
+          {
+            $push: { orders: order._id },
+          },
+          { new: true },
+        );
+      } else {
+        tableLog = await this.tableLogModel.create({
+          orders: [order._id],
+          supplierId: order.supplierId,
+          restaurantId: order.restaurantId,
           waiterId: order.waiterId,
-        },
-      },
-      {
-        upsert: true,
-        setDefaultsOnInsert: true,
-        new: true,
-      },
-    );
-    this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);
+          startingTime: new Date(),
+          tableId: table._id,
+        });
+        await this.tableModel.findByIdAndUpdate(order.tableId, {
+          status: TableStatus.InUse,
+          currentTableLog: tableLog._id,
+        });
+      }
+      this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);
 
-    await this.tableModel.findByIdAndUpdate(order.tableId, {
-      status: TableStatus.InUse,
-      currentTableLog: tableLog._id,
-    });
-
-    return tableLog;
+      return tableLog;
+    }
   }
 }

@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  StreamableFile,
   forwardRef,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -28,6 +29,7 @@ import {
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
 import {
+  DeliveryStatus,
   InvoiceStatus,
   OrderPaymentStatus,
   OrderStatus,
@@ -72,6 +74,11 @@ import {
   TransactionDocument,
 } from 'src/transaction/schemas/transactions.schema';
 import { Invoice, InvoiceDocument } from 'src/invoice/schemas/invoice.schema';
+import { ChangeDeliveryStatusDto } from './dto/change-delivery-status.dto';
+import { DriverReportDto } from './dto/driver-report.dto';
+import { Workbook } from 'exceljs';
+import * as tmp from 'tmp';
+import * as fs from 'fs';
 
 @Injectable()
 export class OrderService {
@@ -412,8 +419,9 @@ export class OrderService {
         ...pagination,
         populate: [
           { path: 'restaurantId', select: { name: 1, nameAr: 1 } },
-          { path: 'customerId', select: { name: 1 } },
-          { path: 'waiterId', select: { name: 1 } },
+          { path: 'customerId' },
+          { path: 'waiterId' },
+          { path: 'driverId' },
           { path: 'tableId', select: { name: 1, nameAr: 1 } },
           { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
         ],
@@ -558,6 +566,7 @@ export class OrderService {
           { path: 'waiterId', select: { name: 1 } },
           { path: 'tableId', select: { name: 1, nameAr: 1 } },
           { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
+          { path: 'driverId' },
         ],
       },
     );
@@ -619,6 +628,7 @@ export class OrderService {
         { path: 'customerId' },
         { path: 'waiterId', select: { name: 1 } },
         { path: 'tableId', select: { name: 1, nameAr: 1 } },
+        { path: 'driverId' },
         { path: 'kitchenQueueId', select: { name: 1, nameAr: 1 } },
       ]);
 
@@ -769,6 +779,7 @@ export class OrderService {
       orderId: order._id,
       cashierId,
       amount: order.summary.remainingAmountToCollect,
+      addedBy: req.user.userId,
     });
     const modified = await this.orderModel.findByIdAndUpdate(
       orderId,
@@ -804,6 +815,13 @@ export class OrderService {
       .lean();
     if (orders.length < 2)
       throw new BadRequestException(VALIDATION_MESSAGES.AllOrderClosed.key);
+    const tableIds = orders.map((v) => v.tableId);
+    var uniqueTableIds = new Set(tableIds);
+    if (tableIds.length != uniqueTableIds.size) {
+      throw new BadRequestException(
+        VALIDATION_MESSAGES.SameTableMergeNotAllowed.key,
+      );
+    }
     let items = [];
     orders.forEach((o) => {
       items = items.concat(o.items);
@@ -882,7 +900,7 @@ export class OrderService {
     console.log(groupOrder.items, groupOrder.summary);
     const groupOrderObj = await this.orderModel.create(groupOrder);
 
-    this.orderHelperService.postOrderCreate(req, groupOrderObj);
+    await this.orderHelperService.postOrderCreate(req, groupOrderObj);
 
     this.orderHelperService.generateKitchenReceipts(groupOrderObj, false);
 
@@ -1136,5 +1154,112 @@ export class OrderService {
     await this.transactionModel.deleteMany({ supplierId: req.user.supplierId });
     await this.invoiceModel.deleteMany({ supplierId: req.user.supplierId });
     await this.orderModel.deleteMany({ supplierId: req.user.supplierId });
+  }
+  async driverReport(req, query: DriverReportDto, isFile = false) {
+    const supplier = await this.supplierModel.findById(req.user.supplierId);
+    const timezone = supplier?.timezone ?? TIMEZONE;
+    let queryToApply: any = {};
+    let createdAtQuery: any = {};
+    if (query.startDate && query.endDate) {
+      query.startDate.setUTCHours(query.startDate.getHours());
+      query.startDate.setUTCMinutes(query.startDate.getMinutes());
+      query.startDate = new Date(
+        query.startDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      query.endDate.setUTCHours(query.endDate.getHours());
+      query.endDate.setUTCMinutes(query.endDate.getMinutes());
+      query.endDate = new Date(
+        query.endDate.toLocaleString('en', { timeZone: timezone }),
+      );
+      createdAtQuery = {
+        createdAt: {
+          $gte: query.startDate,
+          $lte: query.endDate,
+        },
+      };
+    }
+    if (query.restaurantId) {
+      queryToApply.restaurantId = new mongoose.Types.ObjectId(
+        query.restaurantId,
+      );
+    }
+
+    const book = new Workbook();
+    const sheet = book.addWorksheet('Drivers');
+    const response = [],
+      records = [
+        ['Names', 'Number of Orders', 'Order Value'],
+        // [
+        //   'اسم الموظف',
+        //   'مبيعات كاش',
+        //   'مبيعات شبكة',
+        //   'مصروفات',
+        //   'صافي الكاش',
+        //   'الشفت',
+        // ],
+      ];
+    const orders = await this.orderModel.aggregate([
+      {
+        $match: {
+          supplierId: new mongoose.Types.ObjectId(req.user.supplierId),
+          driverId: { $ne: null },
+          deliveryStatus: DeliveryStatus.Delivered,
+          status: {
+            $nin: [
+              OrderStatus.Cancelled,
+              OrderStatus.Closed,
+              OrderStatus.CancelledByMerge,
+              OrderStatus.CancelledWihPaymentFailed,
+            ],
+          },
+          ...queryToApply,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'driverId',
+          foreignField: '_id',
+          as: 'driverId',
+        },
+      },
+      {
+        $unwind: '$driverId',
+      },
+      {
+        $group: {
+          _id: { driverId: '$driverId._id', deliveryStatus: '$deliveryStatus' },
+          //totalExpenses: { $sum: '$expenses.amount' },
+          name: { $first: '$driverId.name' },
+          totalOrders: { $sum: 1 },
+          totalAmount: {
+            $sum: '$summary.totalWithTax',
+          },
+        },
+      },
+    ]);
+
+    for (const i in orders) {
+      const row = {
+        name: orders[i].name,
+        deliveryStatus: orders[i]._id.deliveryStatus,
+        totalOrders: orders[i].totalOrders,
+        totalAmount: orders[i].totalAmount,
+      };
+      if (isFile) {
+        records.push(Object.values(row));
+      } else {
+        response.push(row);
+      }
+    }
+
+    if (!isFile) return response;
+    sheet.addRows(records);
+    const tmpFile = tmp.fileSync({
+      mode: 0o644,
+    });
+    await book.xlsx.writeFile(tmpFile.name);
+    const file = fs.createReadStream(tmpFile.name);
+    return new StreamableFile(file);
   }
 }

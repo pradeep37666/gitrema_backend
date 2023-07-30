@@ -254,6 +254,21 @@ export class AddSupplierDto {
   acceptTip?: boolean;
 
   @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  isSmallRestaurant?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  isLargeKitchenReceipt?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  canBeDeferred?: boolean;
+
+  @ApiProperty({ required: false })
   @IsNumber()
   @IsOptional()
   feeRate?: number;

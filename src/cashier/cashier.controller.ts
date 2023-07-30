@@ -33,6 +33,7 @@ import { CashierLogService } from './cashier-log.service';
 import { PauseDto } from './dto/pause.dto';
 import { CashierReportDto } from './dto/cashier-report.dto';
 import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
+import { CashierDashboardDto } from './dto/cashier-dashboard.dto';
 
 @Controller('cashier')
 @ApiTags('Cashiers')
@@ -167,6 +168,12 @@ export class CashierController {
   @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
   async findDashboard(@Param('cashierId') cashierId: string) {
     return await this.cashierService.findDashboard(cashierId);
+  }
+
+  @Get('dashboard')
+  @PermissionGuard(PermissionSubject.Cashier, Permission.Common.FETCH)
+  async findDashboards(@Req() req, @Query() query: CashierDashboardDto) {
+    return await this.cashierService.findDashboards(req, query);
   }
 
   @Get('order-report')

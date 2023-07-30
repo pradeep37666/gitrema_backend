@@ -1,5 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema, ObjectId } from 'mongoose';
+import {
+  Document,
+  Schema as MongooseSchema,
+  ObjectId,
+  SchemaTimestampsConfig,
+} from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 
 import { OrderDocument } from 'src/order/schemas/order.schema';
@@ -9,8 +14,11 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
+import { UserDocument } from 'src/users/schemas/users.schema';
 
-export type DeferredTransactionDocument = DeferredTransaction & Document;
+export type DeferredTransactionDocument = DeferredTransaction &
+  Document &
+  SchemaTimestampsConfig;
 
 @Schema({ timestamps: true })
 export class DeferredTransaction {
@@ -47,6 +55,14 @@ export class DeferredTransaction {
 
   @Prop({ required: true })
   amount: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    default: null,
+    ref: 'User',
+  })
+  addedBy: UserDocument;
 }
 
 export const DeferredTransactionSchema =

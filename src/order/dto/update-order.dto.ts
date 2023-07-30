@@ -13,7 +13,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderStatus } from '../enum/en.enum';
+import { DeliveryStatus, OrderStatus } from '../enum/en.enum';
 
 export class UpdateOrderItemDto extends OrderItemDto {
   @ApiProperty({ required: false })
@@ -42,6 +42,16 @@ export class UpdateOrderDto extends PartialType(
   @IsOptional()
   status?: OrderStatus;
 
+  @ApiProperty({
+    type: String,
+    enum: DeliveryStatus,
+    required: false,
+    enumName: 'DeliveryStatus',
+  })
+  @IsEnum(DeliveryStatus)
+  @IsOptional()
+  deliveryStatus?: DeliveryStatus;
+
   orderItemIds?: string[];
 
   @ApiProperty({ required: false })
@@ -52,6 +62,8 @@ export class UpdateOrderDto extends PartialType(
   tip?: number;
 
   groupId?: string;
+
+  driverId?: string;
 }
 
 export class ChangeOrderDto {

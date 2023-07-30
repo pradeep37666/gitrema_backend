@@ -23,6 +23,14 @@ class Expense {
 
   @Prop({ required: true })
   expense: number;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    index: true,
+    default: null,
+  })
+  addedBy: UserDocument;
 }
 const ExpenseSchema = SchemaFactory.createForClass(Expense);
 

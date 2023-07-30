@@ -56,3 +56,10 @@ export enum PreparationStatus {
   DonePreparing = 'Done Preparing',
   OnTable = 'On Table',
 }
+
+export enum DeliveryStatus {
+  New = 'New',
+  Started = 'Started',
+  Delivered = 'Delivered',
+  Failed = 'Failed',
+}

@@ -11,6 +11,7 @@ import mongoConfiguration from './config/mongo.configuration';
 import awsConfiguration from './config/aws.configuration';
 import arbPgConfiguration from './config/arb-pg.configuration';
 import mailConfiguration from './config/mail.configuration';
+import clickPayConfiguration from './config/clickpay.configuration';
 import pushNotificationConfiguration from './config/push-notification.configuration';
 
 import { UserModule } from './users/users.module';
@@ -89,6 +90,7 @@ import { InventoryReportModule } from './inventory-report/inventory-report.modul
 import { CostSimulatorModule } from './cost-simulator/cost-simulator.module';
 import { PrinterModule } from './printer/printer.module';
 import { PublishModule } from './publish/publish.module';
+import { DriverModule } from './driver/driver.module';
 
 @Module({
   imports: [
@@ -104,6 +106,7 @@ import { PublishModule } from './publish/publish.module';
         taqnyatSmsConfiguration,
         yallowDeliveryConfiguration,
         pushNotificationConfiguration,
+        clickPayConfiguration,
       ],
     }),
     MongooseModule.forRootAsync({
@@ -189,6 +192,7 @@ import { PublishModule } from './publish/publish.module';
     InventoryReportModule,
     CostSimulatorModule,
     PublishModule,
+    DriverModule,
   ],
   controllers: [AppController],
   providers: [
