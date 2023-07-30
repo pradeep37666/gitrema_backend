@@ -290,7 +290,8 @@ export class InvoiceHelperService {
         url: imageUrl,
       });
       if (print)
-        this.printKitchenReceipts(order.supplierId.toString(), {
+//        this.printKitchenReceipts(order.supplierId.toString(), {
+          this.printKitchenReceipts(order.supplierId._id.toString(), {
           printer: printer,
           url: imageUrl,
         });
