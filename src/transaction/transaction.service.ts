@@ -229,8 +229,8 @@ export class TransactionService {
               OrderEvents.OrderPaid,
               order,
             );
-            if (order.orderType == OrderType.Delivery)
-              this.deliveryService.create(order);
+            // if (order.orderType == OrderType.Delivery)
+            //   this.deliveryService.create(order);
 
             this.profitDetailService.updatePaymentStatus(
               order._id,
