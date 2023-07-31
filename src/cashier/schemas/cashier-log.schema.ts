@@ -7,6 +7,7 @@ import { CashierDocument } from './cashier.schema';
 import { TransactionDocument } from 'src/transaction/schemas/transactions.schema';
 import { PausedLog, PausedLogSchema } from './paused-log.schema';
 import { OrderDocument } from 'src/order/schemas/order.schema';
+import { auditLogPlugin } from 'src/log-payload/plugin/audit-log.plugin';
 
 export type CashierLogDocument = CashierLog & Document;
 
@@ -112,3 +113,4 @@ export class CashierLog {
 
 export const CashierLogSchema = SchemaFactory.createForClass(CashierLog);
 CashierLogSchema.plugin(paginate);
+CashierLogSchema.plugin(auditLogPlugin);

@@ -8,6 +8,7 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { TableDocument } from './table.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
+import { auditLogPlugin } from 'src/log-payload/plugin/audit-log.plugin';
 
 export type TableLogDocument = TableLog & Document;
 
@@ -72,3 +73,4 @@ export class TableLog {
 
 export const TableLogSchema = SchemaFactory.createForClass(TableLog);
 TableLogSchema.plugin(paginate);
+TableLogSchema.plugin(auditLogPlugin);

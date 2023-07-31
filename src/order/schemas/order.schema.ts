@@ -29,6 +29,7 @@ import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import { CustomerDocument } from 'src/customer/schemas/customer.schema';
 import { PrinterDocument } from 'src/printer/schema/printer.schema';
 import { DriverDocument } from 'src/driver/schema/driver.schema';
+import { auditLogPlugin } from 'src/log-payload/plugin/audit-log.plugin';
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
@@ -291,3 +292,4 @@ export class Order {
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.plugin(paginate);
 OrderSchema.plugin(mongooseAggregatePaginate);
+OrderSchema.plugin(auditLogPlugin);
