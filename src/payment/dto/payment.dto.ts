@@ -16,6 +16,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ObjectId } from 'mongoose';
 import { Type } from 'class-transformer';
 import { PaymentMethod, SplitType } from '../enum/en.enum';
+import { PaymentGateway } from 'src/payment-gateway/schema/payment-gateway.schema';
 
 class ItemDto {
   @ApiProperty()

@@ -47,6 +47,8 @@ import {
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import { PaymentGatewayService } from 'src/payment-gateway/payment-gateway.service';
+import { ClickPayService } from 'src/core/Providers/PaymentsGateways/click-pay.service';
+import { PaymentGateways } from 'src/payment-gateway/enum/en';
 
 @Injectable()
 export class PaymentService {
@@ -69,6 +71,7 @@ export class PaymentService {
 
     private socketGateway: SocketIoGateway,
     private readonly paymentGatewayService: PaymentGatewayService,
+    private readonly clickpayService: ClickPayService,
   ) {}
 
   async create(
@@ -176,40 +179,63 @@ export class PaymentService {
     this.cashierLogService.logTransactionAsync(cashierId, transaction._id);
 
     if (paymentRequestDetails.paymentMethod == PaymentMethod.Online) {
+      const globalConfig = await this.globalConfigService.fetch();
       const supplier = await this.supplierService.getOne(
         order.supplierId.toString(),
       );
       const paymentGateway = await this.paymentGatewayService.findOneBySupplier(
         order.supplierId.toString(),
       );
-      await this.arbPgService.init(paymentGateway);
-      const options: PaymentTokenDto = {
-        orderId: order._id,
-        transactionId: transaction._id,
-        amount: transaction.amount,
-        action: 1,
-        metaId: paymentRequestDetails.metaId,
-        redirectUrl: paymentRequestDetails.redirectUrl,
-        accountDetails: await this.preparePayout(supplier, transaction.amount),
-      };
+      let res = null,
+        dataToUpdate: any = {};
+      if (globalConfig.paymentGateway == PaymentGateways.Clickpay) {
+        await this.clickpayService.init(paymentGateway);
+        res = await this.clickpayService.requestPaymentToken({
+          transactionId: transaction._id.toString(),
+          amount: transaction.amount,
+          redirect: paymentRequestDetails.redirectUrl,
+        });
+        dataToUpdate = {
+          externalTransactionId: res.paymentId,
+          paymentGatewayDetails: {
+            paymentGatewayId: paymentGateway?._id ?? null,
+          },
+          paymentGateway: PaymentGateways.Clickpay,
+        };
+      } else {
+        await this.arbPgService.init(paymentGateway);
+        const options: PaymentTokenDto = {
+          orderId: order._id,
+          transactionId: transaction._id,
+          amount: transaction.amount,
+          action: 1,
+          metaId: paymentRequestDetails.metaId,
+          redirectUrl: paymentRequestDetails.redirectUrl,
+          accountDetails: await this.preparePayout(
+            supplier,
+            transaction.amount,
+          ),
+        };
+        res = await this.arbPgService.requestPaymentToken(options);
 
-      const res = await this.arbPgService.requestPaymentToken(options);
+        dataToUpdate = {
+          externalTransactionId: res.paymentId,
+          paymentGatewayDetails: {
+            paymentGatewayId: paymentGateway?._id ?? null,
+            terminalName:
+              paymentGateway?.credentials.terminalName ?? 'TalabatMenu',
+          },
+        };
+        if (options.accountDetails && options.accountDetails.length > 0) {
+          dataToUpdate.isRemitScheduled = true;
 
-      const dataToUpdate: any = {
-        externalTransactionId: res.paymentId,
-        paymentGatewayDetails: {
-          paymentGatewayId: paymentGateway?._id ?? null,
-          terminalName:
-            paymentGateway?.credentials.terminalName ?? 'TalabatMenu',
-        },
-      };
-      if (options.accountDetails && options.accountDetails.length > 0) {
-        dataToUpdate.isRemitScheduled = true;
-
-        dataToUpdate.scheduledPayoutDate = new Date(
-          moment.utc(options.accountDetails[0].valueDate).format('YYYY-MM-DD'),
-        );
-        dataToUpdate.payoutAmount = options.accountDetails[0].serviceAmount;
+          dataToUpdate.scheduledPayoutDate = new Date(
+            moment
+              .utc(options.accountDetails[0].valueDate)
+              .format('YYYY-MM-DD'),
+          );
+          dataToUpdate.payoutAmount = options.accountDetails[0].serviceAmount;
+        }
       }
       this.transactionService.update(transaction._id, dataToUpdate);
       return res;

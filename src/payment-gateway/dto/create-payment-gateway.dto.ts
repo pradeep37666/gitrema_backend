@@ -11,6 +11,9 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { Type } from 'class-transformer';
 import { AlrahjiCredentialsDto } from './alrahji-credentials.dto';
+import { ClickpayCredentialsDto } from './clickpay-credentials.dto';
+
+const gatewayList = [AlrahjiCredentialsDto, ClickpayCredentialsDto];
 
 export class CreatePaymentGatewayDto {
   @ApiProperty()
@@ -35,7 +38,7 @@ export class CreatePaymentGatewayDto {
   })
   gateway: PaymentGateways;
 
-  @ApiProperty({ type: AlrahjiCredentialsDto })
+  @ApiProperty({})
   @IsNotEmpty({
     message: i18nValidationMessage('validation.NOT_EMPTY'),
   })
@@ -43,6 +46,8 @@ export class CreatePaymentGatewayDto {
     message: i18nValidationMessage('validation.MUST_BE_OBJECT'),
   })
   @ValidateNested()
-  @Type(() => AlrahjiCredentialsDto)
-  credentials: AlrahjiCredentialsDto;
+  @Type((t) => {
+    return gatewayList[PaymentGateways[t.object.gateway]] || null;
+  })
+  credentials: AlrahjiCredentialsDto | ClickpayCredentialsDto;
 }
