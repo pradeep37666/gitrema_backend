@@ -91,6 +91,7 @@ import { CostSimulatorModule } from './cost-simulator/cost-simulator.module';
 import { PrinterModule } from './printer/printer.module';
 import { PublishModule } from './publish/publish.module';
 import { DriverModule } from './driver/driver.module';
+import { LogPayloadModule } from './log-payload/log-payload.module';
 
 @Module({
   imports: [
@@ -193,6 +194,7 @@ import { DriverModule } from './driver/driver.module';
     CostSimulatorModule,
     PublishModule,
     DriverModule,
+    LogPayloadModule,
   ],
   controllers: [AppController],
   providers: [

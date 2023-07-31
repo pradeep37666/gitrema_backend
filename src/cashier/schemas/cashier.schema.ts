@@ -9,6 +9,7 @@ import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { CashierLogDocument } from './cashier-log.schema';
 import { PrinterDocument } from 'src/printer/schema/printer.schema';
+import { auditLogPlugin } from 'src/log-payload/plugin/audit-log.plugin';
 
 export type CashierDocument = Cashier & Document;
 
@@ -69,3 +70,4 @@ export class Cashier {
 
 export const CashierSchema = SchemaFactory.createForClass(Cashier);
 CashierSchema.plugin(paginate);
+CashierSchema.plugin(auditLogPlugin);
