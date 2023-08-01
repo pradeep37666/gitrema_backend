@@ -214,10 +214,20 @@ export class UserService {
     const adminRole = await this.roleModel.findOne({
       slug: RoleSlug.SupplierAdmin,
     });
-    const payload = {
-      userId: req.user._id,
+    const user = await this.userModel.findOne({
+      supplierId: supplierDetails.supplierId,
+      role: adminRole._id,
+      isBlocked: false,
+    });
 
-      roleId: adminRole._id,
+    if (!user) {
+      throw new BadRequestException();
+    }
+    const payload = {
+      userId: user._id,
+
+      roleId: user.role,
+      email: user.email,
 
       supplierId: supplierDetails.supplierId,
     };
