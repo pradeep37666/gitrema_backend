@@ -36,11 +36,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw err || new UnauthorizedException();
     }
     appContext.request.user = user;
-    this.logPayloadService.create(appContext.request, {
-      query: appContext.request.query,
-      body: appContext.request.body,
-      url: appContext.request.url,
-    });
+    // this.logPayloadService.create(appContext.request, {
+    //   query: appContext.request.query,
+    //   body: appContext.request.body,
+    //   url: appContext.request.url,
+    // });
     return user;
   }
 }
