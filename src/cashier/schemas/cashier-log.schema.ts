@@ -113,4 +113,4 @@ export class CashierLog {
 
 export const CashierLogSchema = SchemaFactory.createForClass(CashierLog);
 CashierLogSchema.plugin(paginate);
-CashierLogSchema.plugin(auditLogPlugin);
+//CashierLogSchema.plugin(auditLogPlugin);

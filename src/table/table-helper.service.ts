@@ -133,34 +133,61 @@ export class TableHelperService {
   }
 
   async addOrderToTableLogWithAutoStart(order: OrderDocument) {
-    const table = await this.tableModel.findById(order.tableId);
-    if (table) {
-      let tableLog = null;
-      if (table.currentTableLog) {
-        tableLog = await this.tableLogModel.findByIdAndUpdate(
-          table.currentTableLog,
-          {
-            $push: { orders: order._id },
-          },
-          { new: true },
-        );
-      } else {
-        tableLog = await this.tableLogModel.create({
-          orders: [order._id],
+    const session = await this.tableLogModel.startSession();
+    session.startTransaction();
+    const tableLog = await this.tableLogModel.findOneAndUpdate(
+      {
+        tableId: order.tableId,
+        closingTime: null,
+      },
+      {
+        $push: { orders: order._id },
+        $setOnInsert: {
           supplierId: order.supplierId,
           restaurantId: order.restaurantId,
           waiterId: order.waiterId,
           startingTime: new Date(),
-          tableId: table._id,
-        });
-        await this.tableModel.findByIdAndUpdate(order.tableId, {
-          status: TableStatus.InUse,
-          currentTableLog: tableLog._id,
-        });
-      }
-      this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);
+          tableId: order.tableId,
+        },
+      },
+      { upsert: true, sort: { _id: -1 }, setDefaultsOnInsert: true, new: true },
+    );
+    await session.commitTransaction();
+    
+    await this.tableModel.findByIdAndUpdate(order.tableId, {
+      status: TableStatus.InUse,
+      currentTableLog: tableLog._id,
+    });
+    session.endSession();
 
-      return tableLog;
-    }
+    // const table = await this.tableModel.findById(order.tableId);
+    // if (table) {
+    //   let tableLog = null;
+    //   if (table.currentTableLog) {
+    //     tableLog = await this.tableLogModel.findByIdAndUpdate(
+    //       table.currentTableLog,
+    //       {
+    //         $push: { orders: order._id },
+    //       },
+    //       { new: true },
+    //     );
+    //   } else {
+    //     tableLog = await this.tableLogModel.create({
+    //       orders: [order._id],
+    //       supplierId: order.supplierId,
+    //       restaurantId: order.restaurantId,
+    //       waiterId: order.waiterId,
+    //       startingTime: new Date(),
+    //       tableId: table._id,
+    //     });
+    //     await this.tableModel.findByIdAndUpdate(order.tableId, {
+    //       status: TableStatus.InUse,
+    //       currentTableLog: tableLog._id,
+    //     });
+    //   }
+    //   this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);
+
+    //   return tableLog;
+    // }
   }
 }
