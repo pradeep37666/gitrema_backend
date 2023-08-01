@@ -70,4 +70,4 @@ export class Cashier {
 
 export const CashierSchema = SchemaFactory.createForClass(Cashier);
 CashierSchema.plugin(paginate);
-CashierSchema.plugin(auditLogPlugin);
+//CashierSchema.plugin(auditLogPlugin);

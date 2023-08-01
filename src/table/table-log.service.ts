@@ -87,32 +87,47 @@ export class TableLogService {
     tableId: string,
     start = true,
   ): Promise<TableLogDocument> {
-    const table = await this.tableModel.findById(tableId);
-    if (!table) {
-      throw new NotFoundException();
-    }
+    let tableLog = null;
 
-    let tableLog = await this.tableLogModel.findById(table.currentTableLog);
+    const table = await this.tableModel.findById(tableId);
 
     if (start) {
-      if (tableLog) {
-        throw new BadRequestException(VALIDATION_MESSAGES.TableStarted.key);
-      }
+      const session = await this.tableLogModel.startSession();
+      session.startTransaction();
 
-      tableLog = new this.tableLogModel({
-        supplierId: table.supplierId,
-        restaurantId: table.restaurantId,
-        tableId,
-        startingTime: new Date(),
-        waiterId: req.user.userId ?? null,
-      });
-      await tableLog.save();
-      await this.tableService.update(tableId, {
+      tableLog = await this.tableLogModel.findOneAndUpdate(
+        {
+          tableId: tableId,
+          closingTime: null,
+        },
+        {
+          $set: {},
+          $setOnInsert: {
+            supplierId: table.supplierId,
+            restaurantId: table.restaurantId,
+            waiterId: req.user.userId,
+
+            tableId: tableId,
+          },
+        },
+        {
+          upsert: true,
+          sort: { _id: -1 },
+          setDefaultsOnInsert: true,
+          new: true,
+        },
+      );
+
+      await session.commitTransaction();
+
+      await this.tableModel.findByIdAndUpdate(tableId, {
         status: TableStatus.InUse,
         currentTableLog: tableLog._id,
       });
+      session.endSession();
     } else {
-      if (!tableLog) {
+      await table.populate([{ path: 'currentTableLog' }]);
+      if (!table.currentTableLog) {
         throw new BadRequestException(VALIDATION_MESSAGES.TableNotStarted.key);
       }
       if (
@@ -126,21 +141,25 @@ export class TableLogService {
               OrderStatus.CancelledWihPaymentFailed,
             ],
           },
-          tableId: tableLog.tableId,
-          _id: { $in: tableLog.orders },
+          tableId: table.currentTableLog.tableId,
+          _id: { $in: table.currentTableLog.orders },
         })) > 0
       ) {
         throw new BadRequestException(
           VALIDATION_MESSAGES.OrdersPendingToClose.key,
         );
       }
-
-      tableLog.closingTime = new Date();
-      await tableLog.save();
+      const session = await this.tableLogModel.startSession();
+      session.startTransaction();
+      table.currentTableLog.closingTime = new Date();
+      await table.currentTableLog.save();
       await this.tableService.update(tableId, {
         status: TableStatus.Empty,
         currentTableLog: null,
       });
+      tableLog = table.currentTableLog;
+      await session.commitTransaction();
+      session.endSession();
     }
 
     this.socketGateway.emit(

@@ -292,4 +292,4 @@ export class Order {
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.plugin(paginate);
 OrderSchema.plugin(mongooseAggregatePaginate);
-OrderSchema.plugin(auditLogPlugin);
+//OrderSchema.plugin(auditLogPlugin);

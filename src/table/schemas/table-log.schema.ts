@@ -73,4 +73,4 @@ export class TableLog {
 
 export const TableLogSchema = SchemaFactory.createForClass(TableLog);
 TableLogSchema.plugin(paginate);
-TableLogSchema.plugin(auditLogPlugin);
+//TableLogSchema.plugin(auditLogPlugin);

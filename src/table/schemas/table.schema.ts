@@ -78,4 +78,4 @@ export class Table {
 
 export const TableSchema = SchemaFactory.createForClass(Table);
 TableSchema.plugin(mongooseAggregatePaginate);
-TableSchema.plugin(auditLogPlugin);
+//TableSchema.plugin(auditLogPlugin);
