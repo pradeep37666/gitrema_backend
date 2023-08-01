@@ -43,6 +43,7 @@ export class TableHelperService {
                 OrderStatus.Cancelled,
                 OrderStatus.CancelledWihPaymentFailed,
                 OrderStatus.Closed,
+                OrderStatus.CancelledByMerge,
               ],
             },
           },
@@ -153,11 +154,12 @@ export class TableHelperService {
       { upsert: true, sort: { _id: -1 }, setDefaultsOnInsert: true, new: true },
     );
     await session.commitTransaction();
-    
+
     await this.tableModel.findByIdAndUpdate(order.tableId, {
       status: TableStatus.InUse,
       currentTableLog: tableLog._id,
     });
+    this.handlePaymentNeeded(tableLog.tableId.toString(), tableLog);
     session.endSession();
 
     // const table = await this.tableModel.findById(order.tableId);
