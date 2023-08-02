@@ -52,6 +52,7 @@ export enum PermissionSubject {
   SelectedVendor = 'Selected Vendor',
   VendorMaterial = 'VendorMaterial',
   PaymentGateway = 'PaymentGateway',
+  SmsProvider = 'SmsProvider',
   CustomerCondition = 'CustomerCondition',
   Printer = 'Printer',
   Restricted = 'Restricted',
@@ -134,4 +135,8 @@ export enum PaymentPermission {
   CollectPayment = 'Collect Payment',
   Refund = 'Refund',
   Split = 'Split',
+}
+
+export enum SmsPermission {
+  BulkSend = 'BulkSend',
 }

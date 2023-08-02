@@ -17,9 +17,15 @@ export class TaqnyatService {
     private configService: ConfigService,
   ) {}
 
-  async send(phoneNumber, message) {
+  async send(phoneNumber, message, credentials = null) {
+    if (!credentials) {
+      credentials = {
+        sender: this.configService.get('taqnyat.TAQNYAT_SENDER'),
+        token: this.configService.get('taqnyat.TAQNYAT_TOKEN'),
+      };
+    }
     const data = {
-      sender: this.configService.get('taqnyat.TAQNYAT_SENDER'),
+      sender: credentials.sender,
       body: message,
       recipients: phoneNumber,
     };
@@ -29,7 +35,7 @@ export class TaqnyatService {
       uri: this.config.baseApiUrl + '/v1/messages',
       body: data,
       auth: {
-        bearer: this.configService.get('taqnyat.TAQNYAT_TOKEN'),
+        bearer: credentials.token,
       },
       json: true, // Automatically stringifies the body to JSON
     };
