@@ -62,6 +62,44 @@ export class AsmscService {
     console.log(response);
     return response;
   }
+
+  async sendPromotionalMessage(
+    phoneNumber: string,
+    message: string,
+    credentials = null,
+  ) {
+    if (!credentials) {
+      credentials = {
+        apiId: this.configService.get('asmsc.GATEWAY_SMS_API_ID'),
+        apiPassword: this.configService.get('asmsc.GATEWAY_SMS_API_PASSWORD'),
+        brand: this.configService.get('asmsc.GATEWAY_SMS_BRAND'),
+        senderId: this.configService.get('asmsc.GATEWAY_SMS_SENDER_ID'),
+      };
+    }
+    const data = {
+      api_id: credentials.apiId,
+      api_password: credentials.apiPassword,
+      brand: credentials.brand,
+      sender_id: credentials.senderId,
+      phonenumber: phoneNumber,
+      textmessage: message,
+      sms_type: 'P',
+    };
+    console.log(data);
+    const response = await lastValueFrom(
+      this.httpService
+        .post(this.config.baseApiUrl + '/api/SendSMS', data)
+        .pipe(map((resp) => resp.data))
+        .pipe(
+          catchError((e) => {
+            throw new BadRequestException(e);
+          }),
+        ),
+    );
+    console.log(response);
+    return response;
+  }
+
   async verifyOtp(options) {
     const data = {
       api_id: this.configService.get('asmsc.GATEWAY_SMS_API_ID'),

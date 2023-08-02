@@ -92,6 +92,7 @@ import { PrinterModule } from './printer/printer.module';
 import { PublishModule } from './publish/publish.module';
 import { DriverModule } from './driver/driver.module';
 import { LogPayloadModule } from './log-payload/log-payload.module';
+import { SmsProviderModule } from './sms-provider/sms-provider.module';
 
 @Module({
   imports: [
@@ -195,6 +196,7 @@ import { LogPayloadModule } from './log-payload/log-payload.module';
     PublishModule,
     DriverModule,
     LogPayloadModule,
+    SmsProviderModule,
   ],
   controllers: [AppController],
   providers: [
