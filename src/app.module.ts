@@ -120,7 +120,7 @@ import { SmsProviderModule } from './sms-provider/sms-provider.module';
     }),
     PuppeteerModule.forRoot({
       isGlobal: true,
-      executablePath: '/usr/bin/google-chrome',
+      executablePath: process.env.CHROME_PATH,
     }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
