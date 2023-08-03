@@ -213,9 +213,11 @@ export class InvoiceHelperService {
     printerDetails: { printers: string[]; printerItems: string[] },
     print = true,
   ): Promise<Receipts[]> {
-    await order.populate([{
-      path:'supplierId'
-    }]);;
+    await order.populate([
+      {
+        path: 'supplierId',
+      },
+    ]);
     await order.populate([
       { path: 'restaurantId' },
       { path: 'tableId' },
@@ -413,7 +415,7 @@ export class InvoiceHelperService {
   async uploadDocument(html: string, directory: string, onlyImage = false) {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: '/usr/bin/google-chrome',
+      executablePath: process.env.CHROME_PATH,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
