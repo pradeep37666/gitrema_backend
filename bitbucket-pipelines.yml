@@ -3,7 +3,7 @@ pipelines:
       release/dev:
         - step:
             name: Build Docker Image
-            deployment: Prod
+            deployment: Development
             image: python:3.7.4-alpine3.10
             services:
               - docker
@@ -15,51 +15,51 @@ pipelines:
               - TAG=latest
               - touch .env
               
-          - echo "APP_ENV="$APP_ENV"" >> .env
-          - echo "APP_NAME="$APP_NAME"" >> .env
-          - echo "APP_URL="$APP_URL"" >> .env
-          - echo "APP_PORT="$APP_PORT"" >> .env
-          - echo "BASE_URL="$BASE_URL"" >> .env
-          - echo "FRONTEND_BASE_URL="$FRONTEND_BASE_URL"" >> .env
-          - echo "WHATSAPP_BASE_URL="$WHATSAPP_BASE_URL"" >> .env
-          - echo "MONGO_URL="$MONGO_URL"" >> .env
-          - echo "DB_NAME="$DB_NAME"" >> .env
-          - echo "LOG_CONTAINER_NAME="$LOG_CONTAINER_NAME"" >> .env
-          - echo "LOG_LEVEL="$LOG_LEVEL"" >> .env
-          - echo "AWS_S3_ACCESS_KEY="$AWS_S3_ACCESS_KEY"" >> .env
-          - echo "AWS_S3_KEY_SECRET="$AWS_S3_KEY_SECRET"" >> .env
-          - echo "AWS_S3_BUCKET="$AWS_S3_BUCKET"" >> .env
-          - echo "AWS_S3_URL="$AWS_S3_URL"" >> .env
-          - echo "AWS_S3_CF_URL="$AWS_S3_CF_URL"" >> .env
-          - echo "AWS_REDIS_HOST="$AWS_REDIS_HOST"" >> .env
-          - echo "AWS_REDIS_PORT="$AWS_REDIS_PORT"" >> .env
-          - echo "CHROME_PATH="$CHROME_PATH"" >> .env
-          - echo "ARB_PG_TERMINAL_ID="$ARB_PG_TERMINAL_ID"" >> .env
-          - echo "ARB_PG_TRANSPORTAL_ID="$ARB_PG_TRANSPORTAL_ID"" >> .env
-          - echo "ARB_PG_TRANSPORTAL_PASSWORD="$ARB_PG_TRANSPORTAL_PASSWORD"" >> .env
-          - echo "ARB_PG_CURRENCY_CODE="$ARB_PG_CURRENCY_CODE"" >> .env
-          - echo "ARB_PG_RESOURCE_KEY="$ARB_PG_RESOURCE_KEY"" >> .env
-          - echo "ARB_PG_API_URL="$ARB_PG_API_URL"" >> .env
-          - echo "MAIL_HOST="$MAIL_HOST"" >> .env
-          - echo "MAIL_PORT="$MAIL_PORT"" >> .env
-          - echo "MAIL_SECURE="$MAIL_SECURE"" >> .env
-          - echo "MAIL_USER="$MAIL_USER"" >> .env
-          - echo "MAIL_PASSWORD="$MAIL_PASSWORD"" >> .env
-          - echo "MAIL_FROM="$MAIL_FROM"" >> .env
-          - echo "MAIL_FROM_NAME="$MAIL_FROM_NAME"" >> .env
-          - echo "GATEWAY_SMS_API_ID="$GATEWAY_SMS_API_ID"" >> .env
-          - echo "GATEWAY_SMS_API_PASSWORD="$GATEWAY_SMS_API_PASSWORD"" >> .env
-          - echo "GATEWAY_SMS_SENDER_ID="$GATEWAY_SMS_SENDER_ID"" >> .env
-          - echo "GATEWAY_SMS_BRAND="$GATEWAY_SMS_BRAND"" >> .env
-          - echo "TAQNYAT_TOKEN="$TAQNYAT_TOKEN"" >> .env
-          - echo "TAQNYAT_SENDER="$TAQNYAT_SENDER"" >> .env
-          - echo "YALLOW_API_BASE_URL="$YALLOW_API_BASE_URL"" >> .env
-          - echo "YALLOW_TOKEN="$YALLOW_TOKEN"" >> .env
-          - echo "EXPO_ACCESS_TOKEN="$EXPO_ACCESS_TOKEN"" >> .env
-          - echo "PROD_SUPER_ADMIN_TOKEN="$PROD_SUPER_ADMIN_TOKEN"" >> .env
-          - echo "CLICKPAY_PROFILE_ID="$CLICKPAY_PROFILE_ID"" >> .env
-          - echo "CLICKPAY_SERVER_KEY="$CLICKPAY_SERVER_KEY"" >> .env
-          - echo "CLICKPAY_API_URL="$CLICKPAY_API_URL"" >> .env
+                - echo "APP_ENV="$APP_ENV"" >> .env
+                - echo "APP_NAME="$APP_NAME"" >> .env
+                - echo "APP_URL="$APP_URL"" >> .env
+                - echo "APP_PORT="$APP_PORT"" >> .env
+                - echo "BASE_URL="$BASE_URL"" >> .env
+                - echo "FRONTEND_BASE_URL="$FRONTEND_BASE_URL"" >> .env
+                - echo "WHATSAPP_BASE_URL="$WHATSAPP_BASE_URL"" >> .env
+                - echo "MONGO_URL="$MONGO_URL"" >> .env
+                - echo "DB_NAME="$DB_NAME"" >> .env
+                - echo "LOG_CONTAINER_NAME="$LOG_CONTAINER_NAME"" >> .env
+                - echo "LOG_LEVEL="$LOG_LEVEL"" >> .env
+                - echo "AWS_S3_ACCESS_KEY="$AWS_S3_ACCESS_KEY"" >> .env
+                - echo "AWS_S3_KEY_SECRET="$AWS_S3_KEY_SECRET"" >> .env
+                - echo "AWS_S3_BUCKET="$AWS_S3_BUCKET"" >> .env
+                - echo "AWS_S3_URL="$AWS_S3_URL"" >> .env
+                - echo "AWS_S3_CF_URL="$AWS_S3_CF_URL"" >> .env
+                - echo "AWS_REDIS_HOST="$AWS_REDIS_HOST"" >> .env
+                - echo "AWS_REDIS_PORT="$AWS_REDIS_PORT"" >> .env
+                - echo "CHROME_PATH="$CHROME_PATH"" >> .env
+                - echo "ARB_PG_TERMINAL_ID="$ARB_PG_TERMINAL_ID"" >> .env
+                - echo "ARB_PG_TRANSPORTAL_ID="$ARB_PG_TRANSPORTAL_ID"" >> .env
+                - echo "ARB_PG_TRANSPORTAL_PASSWORD="$ARB_PG_TRANSPORTAL_PASSWORD"" >> .env
+                - echo "ARB_PG_CURRENCY_CODE="$ARB_PG_CURRENCY_CODE"" >> .env
+                - echo "ARB_PG_RESOURCE_KEY="$ARB_PG_RESOURCE_KEY"" >> .env
+                - echo "ARB_PG_API_URL="$ARB_PG_API_URL"" >> .env
+                - echo "MAIL_HOST="$MAIL_HOST"" >> .env
+                - echo "MAIL_PORT="$MAIL_PORT"" >> .env
+                - echo "MAIL_SECURE="$MAIL_SECURE"" >> .env
+                - echo "MAIL_USER="$MAIL_USER"" >> .env
+                - echo "MAIL_PASSWORD="$MAIL_PASSWORD"" >> .env
+                - echo "MAIL_FROM="$MAIL_FROM"" >> .env
+                - echo "MAIL_FROM_NAME="$MAIL_FROM_NAME"" >> .env
+                - echo "GATEWAY_SMS_API_ID="$GATEWAY_SMS_API_ID"" >> .env
+                - echo "GATEWAY_SMS_API_PASSWORD="$GATEWAY_SMS_API_PASSWORD"" >> .env
+                - echo "GATEWAY_SMS_SENDER_ID="$GATEWAY_SMS_SENDER_ID"" >> .env
+                - echo "GATEWAY_SMS_BRAND="$GATEWAY_SMS_BRAND"" >> .env
+                - echo "TAQNYAT_TOKEN="$TAQNYAT_TOKEN"" >> .env
+                - echo "TAQNYAT_SENDER="$TAQNYAT_SENDER"" >> .env
+                - echo "YALLOW_API_BASE_URL="$YALLOW_API_BASE_URL"" >> .env
+                - echo "YALLOW_TOKEN="$YALLOW_TOKEN"" >> .env
+                - echo "EXPO_ACCESS_TOKEN="$EXPO_ACCESS_TOKEN"" >> .env
+                - echo "PROD_SUPER_ADMIN_TOKEN="$PROD_SUPER_ADMIN_TOKEN"" >> .env
+                - echo "CLICKPAY_PROFILE_ID="$CLICKPAY_PROFILE_ID"" >> .env
+                - echo "CLICKPAY_SERVER_KEY="$CLICKPAY_SERVER_KEY"" >> .env
+                - echo "CLICKPAY_API_URL="$CLICKPAY_API_URL"" >> .env
 
               - cat .env
               - aws configure set aws_access_key_id "${AWS_KEY}"
@@ -74,7 +74,7 @@ pipelines:
                 variables:
                   AWS_ACCESS_KEY_ID: $AWS_KEY
                   AWS_SECRET_ACCESS_KEY: $AWS_SECRET
-                  AWS_DEFAULT_REGION: $DEFAULT_REGION
+                  AWS_DEFAULT_REGION: "us-east-1"
                   CLUSTER_NAME: 'TalabatMenu'
                   SERVICE_NAME: 'TalabatMenuDev'
                   TASK_DEFINITION: 'task-definition.json'
