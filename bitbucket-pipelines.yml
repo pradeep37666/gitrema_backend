@@ -3,7 +3,6 @@ pipelines:
       release/dev:
         - step:
             name: Build Docker Image
-            deployment: Development
             image: python:3.7.4-alpine3.10
             services:
               - docker
