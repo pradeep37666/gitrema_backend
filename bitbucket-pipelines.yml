@@ -15,6 +15,7 @@ pipelines:
               - aws configure set aws_access_key_id "${AWS_KEY}"
               - aws configure set aws_secret_access_key "${AWS_SECRET}"
               - eval $(aws ecr get-login --no-include-email --region us-east-1 | sed 's;https://;;g')
+              - aws s3 cp s3://envionementvars/.env .
               - docker build -f Dockerfile -t $IMAGE:$TAG .
               - docker push $IMAGE:$TAG
         - step:
