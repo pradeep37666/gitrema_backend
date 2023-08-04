@@ -26,8 +26,6 @@ ENV NODE_ENV production
 # Install production dependencies and clean npm cache
 RUN npm ci --only=production && npm cache clean --force
 
-# Use the node user from the image
-USER node
 
 ###################
 # PRODUCTION
