@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Inject,
@@ -115,152 +116,83 @@ export class OrderService {
     private readonly invoiceModel: Model<InvoiceDocument>,
     private readonly tableHelperService: TableHelperService,
     private readonly cashierHelperService: CashierHelperService,
-  ) {}
+  ) { }
 
   async create(
     req: any,
     dto: CreateOrderDto,
     isDryRun = false,
   ): Promise<OrderDocument> {
+    const _startinTime = moment();
+    console.log("Hello1 starting....", _startinTime);
     const orderData: any = { ...dto, isDryRun };
-
     const supplier = await this.supplierModel
       .findById(req.user.supplierId)
       .lean();
 
     if ([OrderType.Delivery, OrderType.Pickup].includes(dto.orderType)) {
-      console.log(supplier);
-      let workingHours = [supplier.defaultWorkingHours];
-      console.log(workingHours);
-      if (supplier.overrideWorkingHours?.length > 0) {
-        workingHours = supplier.overrideWorkingHours.filter((workingHour) => {
-          return (
-            workingHour.day ==
-            moment()
-              .tz(supplier.timezone ?? TIMEZONE)
-              .format('dddd')
-          );
-        });
-        console.log(workingHours);
-        if (workingHours.length == 0) {
-          workingHours = [supplier.defaultWorkingHours];
-        }
-      }
-      console.log(workingHours);
-      if (workingHours.length > 0) {
-        const matchedPeriod = workingHours.find((workingHour) => {
-          const startArr = workingHour.start.split(':');
-          const endArr = workingHour.end.split(':');
-          if (
-            startArr.length == 2 &&
-            endArr.length == 2 &&
-            parseInt(startArr[0]) == parseInt(endArr[0]) &&
-            parseInt(startArr[1]) == parseInt(endArr[1])
-          ) {
-            return true;
-          }
+      const workingHours = supplier.overrideWorkingHours?.filter(workingHour =>
+        workingHour.day === moment().tz(supplier.timezone ?? TIMEZONE).format('dddd')
+      ) || [supplier.defaultWorkingHours];
 
-          const startDate = moment()
-            .tz(supplier.timezone ?? TIMEZONE)
-            .set({
-              hour: startArr.length == 2 ? parseInt(startArr[0]) : 0,
-              minute: startArr.length == 2 ? parseInt(startArr[1]) : 0,
-            });
+      const currentDate = moment().tz(supplier.timezone ?? TIMEZONE);
 
-          const endDate = moment()
-            .tz(supplier.timezone ?? TIMEZONE)
-            .set({
-              hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
-              minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
-            });
-          // if (
-          //   parseInt(endArr[0]) < parseInt(startArr[0]) ||
-          //   (parseInt(endArr[0]) == parseInt(startArr[0]) &&
-          //     parseInt(endArr[1]) <= parseInt(startArr[1]))
-          // ) {
-          //   startDate.subtract(24, 'hours'); // problem is here
-          // }
-          const currentDate = moment().tz(supplier.timezone ?? TIMEZONE);
-          if (endDate.isBefore(startDate)) {
-            // special case where end date is less than start date so we need to  adjust the date
-            if (currentDate.isBefore(startDate)) {
-              // after 00:00
-              startDate.subtract(24, 'hours'); // we need to subtract because startdate is becoming bext date after 00:00
-            } else {
-              // before 00:00
-              endDate.add(24, 'hours'); // we need to add because end hours / mins are less than start hours and / mins
-            }
+      const matchedPeriod = workingHours.find(workingHour => {
+        const startArr = workingHour.start.split(':');
+        const endArr = workingHour.end.split(':');
+        const startDate = moment().tz(supplier.timezone ?? TIMEZONE)
+          .set({ hour: startArr.length === 2 ? parseInt(startArr[0]) : 0, minute: startArr.length === 2 ? parseInt(startArr[1]) : 0 });
+        const endDate = moment().tz(supplier.timezone ?? TIMEZONE)
+          .set({ hour: endArr.length === 2 ? parseInt(endArr[0]) : 0, minute: endArr.length === 2 ? parseInt(endArr[1]) : 0 });
+
+        if (endDate.isBefore(startDate)) {
+          if (currentDate.isBefore(startDate)) {
+            startDate.subtract(24, 'hours');
+          } else {
+            endDate.add(24, 'hours');
           }
-          console.log(currentDate, startDate, endDate);
-          if (
-            currentDate.isSameOrAfter(startDate) &&
-            currentDate.isSameOrBefore(endDate)
-          ) {
-            return true;
-          }
-          // const currentHour = moment()
-          //   .tz(supplier.timezone ?? TIMEZONE)
-          //   .hour();
-          // const currentMin = moment()
-          //   .tz(supplier.timezone ?? TIMEZONE)
-          //   .minute();
-          // if (
-          //   parseInt(endArr[0]) < parseInt(startArr[0]) &&
-          //   currentHour < parseInt(endArr[0]) && currentMin
-          // ) {
-          //   return true;
-          // } else if (
-          //   parseInt(endArr[0]) > parseInt(startArr[0]) &&
-          //   currentHour < parseInt(endArr[0]) &&
-          //   currentHour >= parseInt(startArr[0])
-          // ) {
-          //   return true;
-          // }
-        });
-        if (!matchedPeriod) {
-          throw new BadRequestException(
-            VALIDATION_MESSAGES.RestaurantClosed.key,
-          );
         }
+
+        return currentDate.isSameOrAfter(startDate) && currentDate.isSameOrBefore(endDate);
+      });
+
+      if (!matchedPeriod) {
+        throw new BadRequestException(VALIDATION_MESSAGES.RestaurantClosed.key);
       }
     }
-    if (dto.orderType == OrderType.DineIn) {
-      if (!req.user.isCustomer) orderData.waiterId = req.user.userId;
+    console.log("Hello2", moment());
+    if (dto.orderType === OrderType.DineIn && !req.user.isCustomer) {
+      orderData.waiterId = req.user.userId;
     }
+
     orderData.taxRate = supplier.taxRate ?? 15;
-
     orderData.feeRate = supplier.feeRate ?? 0;
 
-    if (orderData.isScheduled != true) {
+    if (!orderData.isScheduled) {
       delete orderData.scheduledDateTime;
     }
-
-    // check for kitchen queue
+    console.log("Hello3", moment());
     if (!orderData.kitchenQueueId) {
       const kitchenQueue = await this.kitchenQueueModel.findOne({
         restaurantId: orderData.restaurantId,
         default: true,
       });
-      if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
+      if (kitchenQueue) {
+        orderData.kitchenQueueId = kitchenQueue._id;
+      }
     }
-    console.log('Kitchen Queue', orderData.kitchenQueueId);
+    console.log("Hello4", moment());
+    orderData.items = await this.orderHelperService.prepareOrderItems(orderData);
 
-    // prepare the order items
-    orderData.items = await this.orderHelperService.prepareOrderItems(
-      orderData,
-    );
-    console.log(orderData.items);
-    orderData.tableFee = {
-      fee: 0,
-      netBeforeTax: 0,
-      tax: 0,
-    };
+    orderData.tableFee = { fee: 0, netBeforeTax: 0, tax: 0 };
 
-    if (orderData.orderType == OrderType.DineIn) {
+    if (orderData.orderType === OrderType.DineIn) {
       const table = await this.tableModel.findById(orderData.tableId);
 
-      if (!table)
+      if (!table) {
         throw new NotFoundException(VALIDATION_MESSAGES.TableNotFound.key);
+      }
+
       const tableFee = table.fees ?? 0;
       const netBeforeTax = supplier.taxEnabledOnTableFee
         ? tableFee / (1 + orderData.taxRate / 100)
@@ -268,43 +200,43 @@ export class OrderService {
       const tax = supplier.taxEnabledOnTableFee
         ? (netBeforeTax * orderData.taxRate) / 100
         : 0;
+
       orderData.tableFee = {
         fee: roundOffNumber(tableFee),
         netBeforeTax: roundOffNumber(netBeforeTax),
         tax: roundOffNumber(tax),
       };
+
       orderData.sittingStartTime = dto.menuQrCodeScannedTime ?? null;
     }
-
-    // calculate summary
-    orderData.summary = await this.calculationService.calculateSummery(
-      orderData,
-    );
+    console.log("Hello5", moment());
+    orderData.summary = await this.calculationService.calculateSummery(orderData);
 
     if (orderData.scheduledDateTime == null) {
       delete orderData.scheduledDateTime;
     }
-
-    orderData.preparationDetails =
-      await this.calculationService.calculateOrderPreparationTiming(orderData);
-
+    console.log("Hello6", moment());
+    orderData.preparationDetails = await this.calculationService.calculateOrderPreparationTiming(orderData);
+    console.log("Hello7", moment());
     if (isDryRun) {
+      console.log("Hello8....", moment());
+      const _EndTime = moment();
+     
       this.orderHelperService.storeCart(orderData);
+      
+      const duration = moment.duration(_EndTime.diff(_startinTime));
+      const diff = duration.asMilliseconds();
+      console.log("Hello9 time diff.", diff);
       return orderData;
     }
+    orderData.orderNumber = await this.orderHelperService.generateOrderNumber(supplier._id);
 
-    orderData.orderNumber = await this.orderHelperService.generateOrderNumber(
-      supplier._id,
-    );
-
-    // create order
     const order = await this.orderModel.create({
       ...orderData,
       supplierId: req.user.supplierId,
       addedBy: req.user.userId ?? null,
     });
 
-    // post order create
     this.orderHelperService.postOrderCreate(req, order);
     return order;
   }
@@ -409,10 +341,10 @@ export class OrderService {
       {
         sort: paginateOptions.sortBy
           ? {
-              [paginateOptions.sortBy]: paginateOptions.sortDirection
-                ? paginateOptions.sortDirection
-                : -1,
-            }
+            [paginateOptions.sortBy]: paginateOptions.sortDirection
+              ? paginateOptions.sortDirection
+              : -1,
+          }
           : DefaultSort,
         lean: true,
         ...paginateOptions,
@@ -552,10 +484,10 @@ export class OrderService {
       {
         sort: paginateOptions.sortBy
           ? {
-              [paginateOptions.sortBy]: paginateOptions.sortDirection
-                ? paginateOptions.sortDirection
-                : -1,
-            }
+            [paginateOptions.sortBy]: paginateOptions.sortDirection
+              ? paginateOptions.sortDirection
+              : -1,
+          }
           : DefaultSort,
         lean: true,
         ...paginateOptions,
