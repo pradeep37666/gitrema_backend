@@ -56,6 +56,14 @@ async function bootstrap() {
       logger: winstonLoggerInstance,
     },
   );
+  
+  app.enableCors({
+  origin: '*',
+  methods: 'GET,HEAD,PUT,POST,DELETE,OPTIONS,PATCH',
+  credentials: true,
+  preflightContinue: true,
+});
+
 
   const httpAdapter = app.get(HttpAdapterHost);
 
@@ -95,12 +103,7 @@ async function bootstrap() {
     }),
   );
   await app.register(contentParser);
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,POST,DELETE,OPTIONS,PATCH',
-    credentials: true,
-    preflightContinue: true
-  });
+
 
   app.useWebSocketAdapter(new SocketAdapter(app));
 
