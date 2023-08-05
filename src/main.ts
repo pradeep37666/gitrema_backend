@@ -97,7 +97,7 @@ async function bootstrap() {
   await app.register(contentParser);
   app.enableCors({
     origin: '*',
-    methods: 'GET,HEAD,PUT,POST,DELETE,OPTIONS',
+    methods: 'GET,HEAD,PUT,POST,DELETE,OPTIONS,PATCH',
     credentials: true,
   });
 
