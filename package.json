@@ -29,6 +29,7 @@
     "@googlemaps/google-maps-services-js": "^3.3.29",
     "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/axios": "^1.0.1",
+    "@nestjs/cache-manager": "^2.1.0",
     "@nestjs/common": "^9.3.9",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.3.9",
