@@ -1,61 +1,27 @@
-###################
-# BUILD FOR LOCAL DEVELOPMENT
-###################
-
-FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS development
+# Builder Stage
+FROM baseimage AS builder
 
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy package files and .env
-COPY --chown=node:node package*.json ./
-COPY .env .
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm i
 
-# Install app dependencies using the `npm ci` command
-RUN npm ci
+# Copy the rest of the app
+COPY . .
 
-# Bundle app source
-COPY --chown=node:node . .
+# Build the app
+RUN npm run build
 
-# Use the node user from the image
-USER node
-
-
-###################
-# BUILD FOR PRODUCTION
-###################
-
-FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS build
+# Final Stage
+FROM baseimage AS production
 
 WORKDIR /usr/src/app
 
-# Copy package files
-COPY --chown=node:node package*.json ./
-COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
-COPY --chown=node:node . .
-COPY .env .
-
-# Run the build command to create the production bundle
-RUN npm run build
-
-# Set NODE_ENV environment variable
-ENV NODE_ENV production
-
-# Install production dependencies and clean npm cache
-RUN npm ci --only=production && npm cache clean --force
-
-USER node
-
-
-###################
-# PRODUCTION
-###################
-
-FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS production
-
-# Copy the bundled code from the build stage
-COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
-COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+# Copy only the built artifacts and necessary files from builder stage
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY .env .
 
 # Expose the port your server is running on
