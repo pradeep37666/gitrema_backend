@@ -8,6 +8,7 @@ pipelines:
               - docker
             caches:
               - pip
+              - node
             script:
               - pip3 install awscli
               - IMAGE="323230034331.dkr.ecr.us-east-1.amazonaws.com/talabatmenu"
