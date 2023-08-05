@@ -1,5 +1,5 @@
 # Builder Stage
-FROM baseimage AS builder
+FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS builder
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -15,7 +15,7 @@ COPY . .
 RUN npm run build
 
 # Final Stage
-FROM baseimage AS production
+FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS production
 
 WORKDIR /usr/src/app
 
