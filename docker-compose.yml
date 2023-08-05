@@ -1,0 +1,19 @@
+version: '3.4'
+services:
+  api_backend:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      # Only will build development stage from our dockerfile
+      target: development
+    volumes:
+      - ./:/usr/src/app/
+      # - /usr/src/app/node_modules/
+    env_file:
+      - .env
+    # Run a command against the development stage of the image
+    command: npm run start
+    ports:
+      - 3000:3000
+    cap_add:
+      - SYS_ADMIN
