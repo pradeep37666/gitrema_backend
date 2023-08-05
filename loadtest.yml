@@ -1,0 +1,36 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 1
+      arrivalRate: 10
+      name: Warm up
+
+scenarios:
+  # - name: 'Place order with table auto start'
+  #   flow:
+  #     - post:
+  #         url: '/order'
+  #         json:
+  #           restaurantId: '63f3021acafc472f2238e4c6'
+  #           source: 'App'
+  #           orderType: 'Dine In'
+  #           tableId: '64a00b78acb43ab6700fff1b'
+  #           items:
+  #             - menuItem:
+  #                 menuItemId: '63e260d99f567e88770f1694'
+  #               notes: 'Test'
+  #               quantity: 1
+  #         headers:
+  #           authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFhbG11d2FsbGFkQGdtYWlsLmNvbSIsInVzZXJJZCI6IjYzZDMyNWU4MDcwYzY4ODNmOGQzYjgwYyIsInN1cHBsaWVySWQiOiI2M2QzMjVlNzA3MGM2ODgzZjhkM2I4MDgiLCJyb2xlSWQiOiI2M2QyYzc5NWI2MmI5YzM2MzBkNGNmZTkiLCJpYXQiOjE2ODc3MTk3MTZ9.caPDmvB2fVLx580oRK3zDMZTcejOAUuUbnaB45tUU3I'
+  #         expect:
+  #           - statusCode: 200
+
+  - name: 'Start Table'
+    flow:
+      # - log: "Scenario 1"
+      - patch:
+          url: '/table/64a00b78acb43ab6700fff1b/start-table'
+          headers:
+            authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFhbG11d2FsbGFkQGdtYWlsLmNvbSIsInVzZXJJZCI6IjYzZDMyNWU4MDcwYzY4ODNmOGQzYjgwYyIsInN1cHBsaWVySWQiOiI2M2QzMjVlNzA3MGM2ODgzZjhkM2I4MDgiLCJyb2xlSWQiOiI2M2QyYzc5NWI2MmI5YzM2MzBkNGNmZTkiLCJpYXQiOjE2ODc3MTk3MTZ9.caPDmvB2fVLx580oRK3zDMZTcejOAUuUbnaB45tUU3I'
+          expect:
+            - statusCode: 200
