@@ -22,6 +22,7 @@ WORKDIR /usr/src/app
 # Copy only the built artifacts and necessary files from builder stage
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/src ./src
 COPY .env .
 
 # Expose the port your server is running on
