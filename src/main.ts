@@ -95,7 +95,12 @@ async function bootstrap() {
     }),
   );
   await app.register(contentParser);
-  app.enableCors();
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   app.useWebSocketAdapter(new SocketAdapter(app));
 
   await app.listen(appConfig.get('app.port'));
