@@ -260,6 +260,7 @@ export class TableLogService {
       SocketEvents.TableLog,
       tableLog.toObject(),
     );
+    //demo
 
     return tableLog;
   }
