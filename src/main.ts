@@ -98,7 +98,7 @@ async function bootstrap() {
   app.enableCors();
   app.useWebSocketAdapter(new SocketAdapter(app));
 
-  await app.listen(appConfig.get('app.port'));
+  await app.listen(appConfig.get('app.port'),'0.0.0.0');
   if (module.hot) {
     module.hot.accept();
     module.hot.dispose(() => app.close());

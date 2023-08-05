@@ -1,0 +1,35 @@
+pipelines:
+    branches:
+      release/dev:
+        - step:
+            name: Build Docker Image
+            image: python:3.7.4-alpine3.10
+            services:
+              - docker
+            caches:
+              - pip
+            script:
+              - pip3 install awscli
+              - IMAGE="323230034331.dkr.ecr.us-east-1.amazonaws.com/talabatmenu"
+              - TAG=latest
+              - aws configure set aws_access_key_id "${AWS_KEY}"
+              - aws configure set aws_secret_access_key "${AWS_SECRET}"
+              - eval $(aws ecr get-login --no-include-email --region us-east-1 | sed 's;https://;;g')
+              - aws s3 cp s3://envionementvars/.env .
+              - docker build -f Dockerfile -t $IMAGE:$TAG .
+              - aws configure set aws_access_key_id "${AWS_KEY}"
+              - aws configure set aws_secret_access_key "${AWS_SECRET}"
+              - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 323230034331.dkr.ecr.us-east-1.amazonaws.com
+              
+              - docker push $IMAGE:$TAG
+        - step:
+            name: Deploy ECS Container
+            script:
+              - pipe: atlassian/aws-ecs-deploy:1.0.0
+                variables:
+                  AWS_ACCESS_KEY_ID: $AWS_KEY
+                  AWS_SECRET_ACCESS_KEY: $AWS_SECRET
+                  AWS_DEFAULT_REGION: "us-east-1"
+                  CLUSTER_NAME: 'TalabatMenu'
+                  SERVICE_NAME: 'TalabatMenuDev'
+                  TASK_DEFINITION: 'task-definition.json'

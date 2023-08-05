@@ -2,79 +2,64 @@
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
 
-FROM node:18 As development
-
-# We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
-
-# Install Google Chrome Stable and fonts
-# Note: this installs the necessary libs to make the browser work with Puppeteer.
-RUN apt-get update && apt-get install gnupg wget -y && \
-    wget --quiet --output-document=- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/google-archive.gpg && \
-    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
-    apt-get update && \
-    apt-get install google-chrome-stable -y --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS development
 
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy application dependency manifests to the container image.
-# A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
-# Copying this first prevents re-running npm install on every code change.
+# Copy package files and .env
 COPY --chown=node:node package*.json ./
+COPY .env .
 
-# Install app dependencies using the `npm ci` command instead of `npm install`
+# Install app dependencies using the `npm ci` command
 RUN npm ci
 
 # Bundle app source
 COPY --chown=node:node . .
 
-# Use the node user from the image (instead of the root user)
+# Use the node user from the image
 USER node
+
 
 ###################
 # BUILD FOR PRODUCTION
 ###################
 
-FROM node:18-alpine As build
+FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS build
 
 WORKDIR /usr/src/app
 
+# Copy package files
 COPY --chown=node:node package*.json ./
-
-# In order to run `npm run build` we need access to the Nest CLI.
-# The Nest CLI is a dev dependency,
-# In the previous development stage we ran `npm ci` which installed all dependencies.
-# So we can copy over the node_modules directory from the development image into this build image.
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
-
 COPY --chown=node:node . .
+COPY .env .
 
-# Run the build command which creates the production bundle
+# Run the build command to create the production bundle
 RUN npm run build
 
 # Set NODE_ENV environment variable
 ENV NODE_ENV production
 
-# Running `npm ci` removes the existing node_modules directory.
-# Passing in --only=production ensures that only the production dependencies are installed.
-# This ensures that the node_modules directory is as optimized as possible.
+# Install production dependencies and clean npm cache
 RUN npm ci --only=production && npm cache clean --force
 
 USER node
-
 
 
 ###################
 # PRODUCTION
 ###################
 
-FROM node:18-alpine As production
+FROM 323230034331.dkr.ecr.us-east-1.amazonaws.com/nodebaseimage:latest AS production
 
-# Copy the bundled code from the build stage to the production image
+# Copy the bundled code from the build stage
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+COPY .env .
+
+# Expose the port your server is running on
+EXPOSE 3000
 
 # Start the server using the production build
-CMD [ "node", "dist/main.js" ]
+CMD ["node", "dist/main.js"]
