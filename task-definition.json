@@ -16,6 +16,11 @@
             "containerPort": 80
           },
           {
+            "hostPort": 8181,
+            "protocol": "tcp",
+            "containerPort": 8181
+          },
+          {
             "protocol": "tcp",
             "containerPort": 443,
             "hostPort": 443
