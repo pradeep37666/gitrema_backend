@@ -80,7 +80,6 @@ import { Workbook } from 'exceljs';
 import * as tmp from 'tmp';
 import * as fs from 'fs';
 import { CacheService } from 'src/cache/cache.service';
-import { tableId } from '../../test/constants/test.constant';
 
 @Injectable()
 export class OrderService {
