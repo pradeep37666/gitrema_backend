@@ -149,8 +149,10 @@ export class OrderService {
       console.log(workingHours);
       if (workingHours.length > 0) {
         const matchedPeriod = workingHours.find((workingHour) => {
+          if (workingHour.start == workingHour.end) return true;
           const startArr = workingHour.start.split(':');
           const endArr = workingHour.end.split(':');
+
           if (
             startArr.length == 2 &&
             endArr.length == 2 &&
@@ -285,8 +287,8 @@ export class OrderService {
       delete orderData.scheduledDateTime;
     }
 
-    orderData.preparationDetails =
-      await this.calculationService.calculateOrderPreparationTiming(orderData);
+    // orderData.preparationDetails =
+    //   await this.calculationService.calculateOrderPreparationTiming(orderData);
 
     if (isDryRun) {
       this.orderHelperService.storeCart(orderData);
