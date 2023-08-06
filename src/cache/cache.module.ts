@@ -27,6 +27,7 @@ import {
   KitchenQueueSchema,
 } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { Order, OrderSchema } from 'src/order/schemas/order.schema';
+import { Table, TableSchema } from 'src/table/schemas/table.schema';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { Order, OrderSchema } from 'src/order/schemas/order.schema';
       { name: Restaurant.name, schema: RestaurantSchema },
       { name: KitchenQueue.name, schema: KitchenQueueSchema },
       { name: Order.name, schema: OrderSchema },
+      { name: Table.name, schema: TableSchema },
     ]),
   ],
   controllers: [CacheController],
