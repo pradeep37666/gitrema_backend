@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -94,7 +93,7 @@ import { PublishModule } from './publish/publish.module';
 import { DriverModule } from './driver/driver.module';
 import { LogPayloadModule } from './log-payload/log-payload.module';
 import { SmsProviderModule } from './sms-provider/sms-provider.module';
-import { CacheModule } from '@nestjs/cache-manager';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -198,7 +197,6 @@ import { CacheModule } from '@nestjs/cache-manager';
     DriverModule,
     LogPayloadModule,
     SmsProviderModule,
-    CacheModule.register()
   ],
   controllers: [AppController],
   providers: [
