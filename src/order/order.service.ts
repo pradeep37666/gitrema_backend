@@ -149,6 +149,7 @@ export class OrderService {
       console.log(workingHours);
       if (workingHours.length > 0) {
         const matchedPeriod = workingHours.find((workingHour) => {
+          if (workingHour.start == workingHour.end) return true;
           const startArr = workingHour.start.split(':');
           const endArr = workingHour.end.split(':');
           if (
@@ -173,13 +174,7 @@ export class OrderService {
               hour: endArr.length == 2 ? parseInt(endArr[0]) : 0,
               minute: endArr.length == 2 ? parseInt(endArr[1]) : 0,
             });
-          // if (
-          //   parseInt(endArr[0]) < parseInt(startArr[0]) ||
-          //   (parseInt(endArr[0]) == parseInt(startArr[0]) &&
-          //     parseInt(endArr[1]) <= parseInt(startArr[1]))
-          // ) {
-          //   startDate.subtract(24, 'hours'); // problem is here
-          // }
+
           const currentDate = moment().tz(supplier.timezone ?? TIMEZONE);
           if (endDate.isBefore(startDate)) {
             // special case where end date is less than start date so we need to  adjust the date
@@ -198,24 +193,6 @@ export class OrderService {
           ) {
             return true;
           }
-          // const currentHour = moment()
-          //   .tz(supplier.timezone ?? TIMEZONE)
-          //   .hour();
-          // const currentMin = moment()
-          //   .tz(supplier.timezone ?? TIMEZONE)
-          //   .minute();
-          // if (
-          //   parseInt(endArr[0]) < parseInt(startArr[0]) &&
-          //   currentHour < parseInt(endArr[0]) && currentMin
-          // ) {
-          //   return true;
-          // } else if (
-          //   parseInt(endArr[0]) > parseInt(startArr[0]) &&
-          //   currentHour < parseInt(endArr[0]) &&
-          //   currentHour >= parseInt(startArr[0])
-          // ) {
-          //   return true;
-          // }
         });
         if (!matchedPeriod) {
           throw new BadRequestException(
@@ -285,8 +262,8 @@ export class OrderService {
       delete orderData.scheduledDateTime;
     }
 
-    orderData.preparationDetails =
-      await this.calculationService.calculateOrderPreparationTiming(orderData);
+    // orderData.preparationDetails =
+    //   await this.calculationService.calculateOrderPreparationTiming(orderData);
 
     if (isDryRun) {
       this.orderHelperService.storeCart(orderData);
