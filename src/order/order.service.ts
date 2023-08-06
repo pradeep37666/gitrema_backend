@@ -152,6 +152,7 @@ export class OrderService {
           if (workingHour.start == workingHour.end) return true;
           const startArr = workingHour.start.split(':');
           const endArr = workingHour.end.split(':');
+
           if (
             startArr.length == 2 &&
             endArr.length == 2 &&
