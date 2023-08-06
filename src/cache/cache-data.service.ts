@@ -46,6 +46,8 @@ export class CacheDataService {
     private readonly kitchenQueueModel: Model<KitchenQueueDocument>,
     @InjectModel(Order.name)
     private readonly orderModel: Model<OrderDocument>,
+    @InjectModel(Table.name)
+    private readonly tableModel: Model<TableDocument>,
     private readonly cacheService: CacheService,
   ) {}
 
@@ -94,6 +96,16 @@ export class CacheDataService {
         restaurants[i]._id.toString(),
         restaurants[i],
       );
+    }
+
+    // cache tables
+    const tables = await this.tableModel
+      .find({
+        supplierId: dto.supplierId,
+      })
+      .lean();
+    for (const i in tables) {
+      await this.cacheService.set(tables[i]._id.toString(), tables[i]);
     }
 
     // cache kitchenqueue
