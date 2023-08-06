@@ -113,7 +113,7 @@ export class OrderHelperService {
         active: true,
         deletedAt: null,
       })
-      .populate([{ path: 'categoryId' }])
+      //.populate([{ path: 'categoryId' }])
       .lean();
 
     //fetch all menu additions
@@ -361,7 +361,7 @@ export class OrderHelperService {
         preparedItems[i].menuItem.preparationTime * preparedItems[i].quantity,
       );
       preparedItems[i].kitchenQueueId =
-        menuItem.categoryId.kitchenQueueId ?? dto.kitchenQueueId ?? null;
+        menuItem.categoryId?.kitchenQueueId ?? dto.kitchenQueueId ?? null;
     }
 
     return preparedItems;
@@ -710,6 +710,4 @@ export class OrderHelperService {
       }
     }
   }
-
-  
 }

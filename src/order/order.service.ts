@@ -123,11 +123,12 @@ export class OrderService {
     isDryRun = false,
   ): Promise<OrderDocument> {
     const orderData: any = { ...dto, isDryRun };
-
+    console.log(`0 -- ${new Date()}`);
+    console.log(`1 -- ${new Date().getMilliseconds()}`);
     const supplier = await this.supplierModel
       .findById(req.user.supplierId)
       .lean();
-
+    console.log(`2 -- ${new Date().getMilliseconds()}`);
     if ([OrderType.Delivery, OrderType.Pickup].includes(dto.orderType)) {
       console.log(supplier);
       let workingHours = [supplier.defaultWorkingHours];
@@ -202,6 +203,7 @@ export class OrderService {
         }
       }
     }
+
     if (dto.orderType == OrderType.DineIn) {
       if (!req.user.isCustomer) orderData.waiterId = req.user.userId;
     }
@@ -212,7 +214,7 @@ export class OrderService {
     if (orderData.isScheduled != true) {
       delete orderData.scheduledDateTime;
     }
-
+    console.log(`3 -- ${new Date().getMilliseconds()}`);
     // check for kitchen queue
     if (!orderData.kitchenQueueId) {
       const kitchenQueue = await this.kitchenQueueModel.findOne({
@@ -221,12 +223,14 @@ export class OrderService {
       });
       if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
     }
+    console.log(`4 -- ${new Date().getMilliseconds()}`);
     console.log('Kitchen Queue', orderData.kitchenQueueId);
 
     // prepare the order items
     orderData.items = await this.orderHelperService.prepareOrderItems(
       orderData,
     );
+    console.log(`5 -- ${new Date().getMilliseconds()}`);
     console.log(orderData.items);
     orderData.tableFee = {
       fee: 0,
@@ -253,11 +257,13 @@ export class OrderService {
       };
       orderData.sittingStartTime = dto.menuQrCodeScannedTime ?? null;
     }
+    console.log(`6 -- ${new Date().getMilliseconds()}`);
 
     // calculate summary
     orderData.summary = await this.calculationService.calculateSummery(
       orderData,
     );
+    console.log(`7 -- ${new Date().getMilliseconds()}`);
 
     if (orderData.scheduledDateTime == null) {
       delete orderData.scheduledDateTime;
@@ -268,6 +274,7 @@ export class OrderService {
 
     if (isDryRun) {
       this.orderHelperService.storeCart(orderData);
+      console.log(`8 -- ${new Date()}`);
       return orderData;
     }
 
