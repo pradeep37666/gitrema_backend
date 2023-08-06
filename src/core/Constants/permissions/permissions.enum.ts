@@ -129,6 +129,7 @@ export enum SupplierPermission {
 
 export enum RestrictedPermission {
   Publish = 'Publish',
+  InvalidateCache = 'InvalidateCache',
 }
 
 export enum PaymentPermission {
