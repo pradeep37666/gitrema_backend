@@ -62,6 +62,7 @@ import { PrinterType } from 'src/printer/enum/en';
 import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
 import { TableLogService } from 'src/table/table-log.service';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class OrderHelperService {
@@ -96,6 +97,7 @@ export class OrderHelperService {
     private readonly orderService: OrderService,
     @Inject(forwardRef(() => InvoiceHelperService))
     private readonly invoiceHelperService: InvoiceHelperService,
+    private readonly cacheService: CacheService,
   ) {}
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
@@ -107,6 +109,7 @@ export class OrderHelperService {
 
     //fetch all menu items
     const menuItemIds = items.map((oi) => oi.menuItem.menuItemId);
+    console.log(`** -- ${new Date()} -- ${new Date().getMilliseconds()}`);
     const menuItems = await this.menuItemModel
       .find({
         _id: { $in: menuItemIds },
@@ -115,19 +118,20 @@ export class OrderHelperService {
       })
       //.populate([{ path: 'categoryId' }])
       .lean();
+    console.log(`** -- ${new Date()} -- ${new Date().getMilliseconds()}`);
 
     //fetch all menu additions
     const menuAdditionArr = items.map((oi) => oi?.additions).flat();
     const menuAdditionIds = menuAdditionArr.map((ma) => ma?.menuAdditionId);
 
-    let menuAdditions = [];
-    if (menuAdditionIds.length > 0) {
-      menuAdditions = await this.menuAdditionModel
-        .find({
-          _id: { $in: menuAdditionIds },
-        })
-        .lean();
-    }
+    // let menuAdditions = [];
+    // if (menuAdditionIds.length > 0) {
+    //   menuAdditions = await this.menuAdditionModel
+    //     .find({
+    //       _id: { $in: menuAdditionIds },
+    //     })
+    //     .lean();
+    // }
 
     for (const i in items) {
       let discount = 0,
@@ -275,9 +279,12 @@ export class OrderHelperService {
       const additions = items[i].additions ?? [];
       // copy menu addition attributes needed in order schema
       for (const j in additions) {
-        const menuAddition = menuAdditions.find((ma) => {
-          return ma._id.toString() == additions[j].menuAdditionId.toString();
-        });
+        // const menuAddition = menuAdditions.find((ma) => {
+        //   return ma._id.toString() == additions[j].menuAdditionId.toString();
+        // });
+        const menuAddition = await this.cacheService.get(
+          additions[j].menuAdditionId.toString(),
+        );
         preparedAdditions[j] = {
           ...additions[j],
           ...menuAddition,
@@ -359,6 +366,9 @@ export class OrderHelperService {
 
       preparedItems[i].preparationTime = roundOffNumber(
         preparedItems[i].menuItem.preparationTime * preparedItems[i].quantity,
+      );
+      menuItem.categoryId = await this.cacheService.get(
+        menuItem.categoryId.toString(),
       );
       preparedItems[i].kitchenQueueId =
         menuItem.categoryId?.kitchenQueueId ?? dto.kitchenQueueId ?? null;
@@ -590,14 +600,17 @@ export class OrderHelperService {
   }
 
   async generateOrderNumber(supplierId: string): Promise<string> {
-    const order = await this.orderModel.findOne(
-      { supplierId },
-      {},
-      { sort: { _id: -1 } },
+    // const order = await this.orderModel.findOne(
+    //   { supplierId },
+    //   {},
+    //   { sort: { _id: -1 } },
+    // );
+    const orderNumber = await this.cacheService.get(
+      supplierId + '_lastOrderNumber',
     );
     let n = 1;
-    if (order) {
-      n = parseInt(order.orderNumber) + 1;
+    if (orderNumber) {
+      n = parseInt(orderNumber) + 1;
     }
 
     //return String(n).padStart(7, '0');

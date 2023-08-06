@@ -59,6 +59,7 @@ import {
   Transaction,
   TransactionSchema,
 } from 'src/transaction/schemas/transactions.schema';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   imports: [
@@ -97,6 +98,7 @@ import {
     NotificationModule,
     CashierModule,
     PermissionModule,
+    CacheModule,
   ],
   controllers: [OrderController],
   providers: [
