@@ -843,7 +843,8 @@ export class OrderService {
     let supplier = await this.cacheService.get(orders[0].supplierId.toString());
     if (!supplier) {
       supplier = await this.supplierModel.findById(orders[0].supplierId).lean();
-      await this.cacheService.set(supplier._id.toString(), supplier);
+      if (supplier)
+        await this.cacheService.set(supplier._id.toString(), supplier);
     }
 
     const groupOrder = orders[0];
