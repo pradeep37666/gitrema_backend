@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { AutoCachePlugin } from 'src/cache/plugin/auto-cache.plugin';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
@@ -86,3 +87,4 @@ export class MenuAddition {
 
 export const MenuAdditionSchema = SchemaFactory.createForClass(MenuAddition);
 MenuAdditionSchema.plugin(paginate);
+MenuAdditionSchema.plugin(AutoCachePlugin);
