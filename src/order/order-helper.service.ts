@@ -289,7 +289,7 @@ export class OrderHelperService {
         //   return ma._id.toString() == additions[j].menuAdditionId.toString();
         // });
         const menuAddition = await this.cacheService.get(
-          additions[j].menuAdditionId.toString(),
+          additions[j].menuAdditionId?.toString(),
         );
         preparedAdditions[j] = {
           ...additions[j],
@@ -298,10 +298,10 @@ export class OrderHelperService {
         if (additions[j].options) {
           // only set the selected options
           const additionOptionIds = additions[j].options.map((ao) =>
-            ao.optionId.toString(),
+            ao.optionId?.toString(),
           );
           preparedAdditions[j].options = menuAddition.options.filter((mao) => {
-            return additionOptionIds.includes(mao._id.toString());
+            return additionOptionIds.includes(mao._id?.toString());
           });
 
           // storing tax,price details for each option and calculating net price
@@ -374,11 +374,11 @@ export class OrderHelperService {
         preparedItems[i].menuItem.preparationTime * preparedItems[i].quantity,
       );
       menuItem.categoryId = await this.cacheService.get(
-        menuItem.categoryId.toString(),
+        menuItem.categoryId?.toString(),
       );
       if (!menuItem.categoryId) {
         menuItem.categoryId = await this.menuCategoryModel
-          .findById(menuItem.categoryId.toString())
+          .findById(menuItem.categoryId?.toString())
           .lean();
         if (menuItem.categoryId) {
           await this.cacheService.set(
