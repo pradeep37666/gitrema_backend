@@ -270,6 +270,7 @@ export class AuthService {
 
     let customer = await this.customerModel.findOne({
       phoneNumber: verificationOtpDetails.phoneNumber,
+      supplierId: verificationOtpDetails.supplierId,
     });
 
     if (!customer) {
@@ -281,6 +282,7 @@ export class AuthService {
       customer = await this.customerModel.create({
         phoneNumber: verificationOtpDetails.phoneNumber,
         role: customerRole._id,
+        supplierId: verificationOtpDetails.supplierId,
       });
     }
     if (customer) {

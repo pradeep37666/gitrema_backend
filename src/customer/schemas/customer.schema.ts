@@ -4,6 +4,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 
 import { RoleDocument } from 'src/role/schemas/roles.schema';
+import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 
 import { UserDocument } from 'src/users/schemas/users.schema';
 
@@ -11,6 +12,13 @@ export type CustomerDocument = Customer & Document;
 
 @Schema({ timestamps: true })
 export class Customer {
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    index: true,
+    ref: 'Supplier',
+  })
+  supplierId: SupplierDocument;
+
   @Prop({ default: null })
   name: string;
 
