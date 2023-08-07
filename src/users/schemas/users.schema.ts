@@ -11,6 +11,7 @@ import { TableDocument } from 'src/table/schemas/table.schema';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
 import { ListDocument } from 'src/list/schemas/list.schema';
+import { AutoCachePlugin } from 'src/cache/plugin/auto-cache.plugin';
 
 export type UserDocument = User & Document;
 
@@ -113,3 +114,4 @@ UserSchema.pre('save', async function save(next) {
 });
 
 UserSchema.plugin(paginate);
+UserSchema.plugin(AutoCachePlugin);

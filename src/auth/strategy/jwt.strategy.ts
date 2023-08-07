@@ -21,6 +21,7 @@ import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
 import * as moment from 'moment';
 import { NO_AUTH_EXPIRE_MIN } from 'src/core/Constants/system.constant';
 import { User, UserDocument } from 'src/users/schemas/users.schema';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -31,6 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private userModel: Model<UserDocument>,
     @InjectModel(SupplierPackage.name)
     private supplierPackageModel: Model<SupplierPackageDocument>,
+    private readonly cacheService: CacheService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -42,19 +44,30 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: LoggedInUserPayload) {
     if (payload.supplierId) {
       if (payload.userId && !payload.isCustomer) {
-        const user = await this.userModel.findOne({
-          _id: payload.userId,
-          isBlocked: false,
-        });
+        let user = await this.cacheService.get(payload.userId);
         if (!user) {
+          user = await this.userModel.findOne({
+            _id: payload.userId,
+          });
+          if (user) {
+            await this.cacheService.set(payload.userId, user.toObject());
+          }
+        }
+
+        if (!user || user.isBlocked) {
           throw new UnauthorizedException(`Token is expired`);
         }
       }
-      const supplier = await this.supplierModel.findOne({
-        _id: payload.supplierId,
-        active: true,
-      });
+      let supplier = await this.cacheService.get(payload.supplierId);
       if (!supplier) {
+        supplier = await this.supplierModel.findOne({
+          _id: payload.supplierId,
+        });
+        if (supplier)
+          await this.cacheService.set(payload.supplierId, supplier.toObject());
+      }
+
+      if (!supplier || !supplier.active) {
         throw new BadRequestException(VALIDATION_MESSAGES.SupplierInactive.key);
       }
       if (payload.time) {
