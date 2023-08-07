@@ -127,9 +127,7 @@ export class OrderService {
     const orderData: any = { ...dto, isDryRun };
 
     console.log(`1 -- ${new Date()} -- ${new Date().getMilliseconds()}`);
-    // const supplier = await this.supplierModel
-    //   .findById(req.user.supplierId)
-    //   .lean();
+
     let supplier = await this.cacheService.get(req.user.supplierId.toString());
     if (!supplier) {
       supplier = await this.supplierModel.findById(req.user.supplierId).lean();
@@ -224,13 +222,22 @@ export class OrderService {
     console.log(`3 -- ${new Date()} -- ${new Date().getMilliseconds()}`);
     // check for kitchen queue
     if (!orderData.kitchenQueueId) {
-      // const kitchenQueue = await this.kitchenQueueModel.findOne({
-      //   restaurantId: orderData.restaurantId,
-      //   default: true,
-      // });
-      const kitchenQueue = await this.cacheService.get(
+      let kitchenQueue = await this.cacheService.get(
         orderData.restaurantId.toString() + '_defaultKitchenQueue',
       );
+      if (!kitchenQueue) {
+        kitchenQueue = await this.kitchenQueueModel
+          .findOne({
+            restaurantId: orderData.restaurantId,
+            default: true,
+          })
+          .lean();
+        if (kitchenQueue)
+          await this.cacheService.set(
+            orderData.restaurantId.toString() + '_defaultKitchenQueue',
+            kitchenQueue,
+          );
+      }
       if (kitchenQueue) orderData.kitchenQueueId = kitchenQueue._id;
     }
     console.log(`4 -- ${new Date()} -- ${new Date().getMilliseconds()}`);
@@ -249,8 +256,11 @@ export class OrderService {
     };
 
     if (orderData.orderType == OrderType.DineIn) {
-      // const table = await this.tableModel.findById(orderData.tableId);
-      const table = await this.cacheService.get(orderData.tableId);
+      let table = await this.cacheService.get(orderData.tableId);
+      if (!table) {
+        table = await this.tableModel.findById(orderData.tableId).lean();
+        if (table) await this.cacheService.set(orderData.tableId, table);
+      }
       if (!table)
         throw new NotFoundException(VALIDATION_MESSAGES.TableNotFound.key);
       const tableFee = table.fees ?? 0;

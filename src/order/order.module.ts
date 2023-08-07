@@ -60,6 +60,10 @@ import {
   TransactionSchema,
 } from 'src/transaction/schemas/transactions.schema';
 import { CacheModule } from 'src/cache/cache.module';
+import {
+  MenuCategory,
+  MenuCategorySchema,
+} from 'src/menu/schemas/menu-category.schema';
 
 @Module({
   imports: [
@@ -84,6 +88,7 @@ import { CacheModule } from 'src/cache/cache.module';
       { name: Cashier.name, schema: CashierSchema },
       { name: DeferredTransaction.name, schema: DeferredTransactionSchema },
       { name: Transaction.name, schema: TransactionSchema },
+      { name: MenuCategory.name, schema: MenuCategorySchema },
     ]),
     SocketIoModule,
     TableModule,

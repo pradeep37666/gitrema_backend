@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
+import { AutoCachePlugin } from 'src/cache/plugin/auto-cache.plugin';
 import { ImportDocument } from 'src/import/schemas/import.schema';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { PrinterDocument } from 'src/printer/schema/printer.schema';
@@ -68,3 +69,4 @@ export class MenuCategory {
 
 export const MenuCategorySchema = SchemaFactory.createForClass(MenuCategory);
 MenuCategorySchema.plugin(paginate);
+MenuCategorySchema.plugin(AutoCachePlugin);

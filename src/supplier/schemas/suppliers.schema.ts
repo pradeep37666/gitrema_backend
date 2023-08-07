@@ -10,6 +10,7 @@ import {
 } from 'src/restaurant/schemas/restaurant.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { SupplierType } from '../enum/en';
+import { AutoCachePlugin } from 'src/cache/plugin/auto-cache.plugin';
 
 export type SupplierDocument = Supplier & Document;
 
@@ -199,3 +200,4 @@ export class Supplier {
 
 export const SupplierSchema = SchemaFactory.createForClass(Supplier);
 SupplierSchema.plugin(paginate);
+SupplierSchema.plugin(AutoCachePlugin);

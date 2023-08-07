@@ -8,6 +8,7 @@ import { ListDocument } from 'src/list/schemas/list.schema';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { TableLogDocument, TableLogSchema } from './table-log.schema';
 import { auditLogPlugin } from 'src/log-payload/plugin/audit-log.plugin';
+import { AutoCachePlugin } from 'src/cache/plugin/auto-cache.plugin';
 
 export type TableDocument = Table & Document;
 
@@ -78,4 +79,4 @@ export class Table {
 
 export const TableSchema = SchemaFactory.createForClass(Table);
 TableSchema.plugin(mongooseAggregatePaginate);
-//TableSchema.plugin(auditLogPlugin);
+TableSchema.plugin(AutoCachePlugin);

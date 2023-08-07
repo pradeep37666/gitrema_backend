@@ -63,6 +63,10 @@ import { InvoiceHelperService } from 'src/invoice/invoice-helper.service';
 import { KitchenQueueProcessDto } from './dto/kitchen-queue-process.dto';
 import { TableLogService } from 'src/table/table-log.service';
 import { CacheService } from 'src/cache/cache.service';
+import {
+  MenuCategory,
+  MenuCategoryDocument,
+} from 'src/menu/schemas/menu-category.schema';
 
 @Injectable()
 export class OrderHelperService {
@@ -71,6 +75,8 @@ export class OrderHelperService {
     private readonly orderModel: Model<OrderDocument>,
     @InjectModel(MenuItem.name)
     private readonly menuItemModel: Model<MenuItemDocument>,
+    @InjectModel(MenuCategory.name)
+    private readonly menuCategoryModel: Model<MenuCategoryDocument>,
     @InjectModel(MenuAddition.name)
     private readonly menuAdditionModel: Model<MenuAdditionDocument>,
     @InjectModel(Offer.name)
@@ -370,6 +376,17 @@ export class OrderHelperService {
       menuItem.categoryId = await this.cacheService.get(
         menuItem.categoryId.toString(),
       );
+      if (!menuItem.categoryId) {
+        menuItem.categoryId = await this.menuCategoryModel
+          .findById(menuItem.categoryId.toString())
+          .lean();
+        if (menuItem.categoryId) {
+          await this.cacheService.set(
+            menuItem.categoryId._id.toString(),
+            menuItem.categoryId,
+          );
+        }
+      }
       preparedItems[i].kitchenQueueId =
         menuItem.categoryId?.kitchenQueueId ?? dto.kitchenQueueId ?? null;
     }
@@ -600,14 +617,19 @@ export class OrderHelperService {
   }
 
   async generateOrderNumber(supplierId: string): Promise<string> {
-    // const order = await this.orderModel.findOne(
-    //   { supplierId },
-    //   {},
-    //   { sort: { _id: -1 } },
-    // );
-    const orderNumber = await this.cacheService.get(
+    let orderNumber = await this.cacheService.get(
       supplierId + '_lastOrderNumber',
     );
+    if (!orderNumber) {
+      const order = await this.orderModel.findOne(
+        { supplierId },
+        {},
+        { sort: { _id: -1 } },
+      );
+      if (order) {
+        orderNumber = order.orderNumber;
+      }
+    }
     let n = 1;
     if (orderNumber) {
       n = parseInt(orderNumber) + 1;
