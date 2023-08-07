@@ -7,6 +7,7 @@ import { Role, RoleSchema } from 'src/role/schemas/roles.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/core/Constants/auth.constants';
 import { MailModule } from 'src/notification/mail/mail.module';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { MailModule } from 'src/notification/mail/mail.module';
       }),
     }),
     MailModule,
+    CacheModule,
   ],
   controllers: [UserController],
   providers: [UserService],

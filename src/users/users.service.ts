@@ -26,6 +26,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ChangeUserPasswordDto } from './dto/change-user-password.dto';
 import { MailService } from 'src/notification/mail/mail.service';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class UserService {
@@ -35,6 +36,7 @@ export class UserService {
     @InjectModel(User.name) private userModelPag: PaginateModel<UserDocument>,
     private jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly cacheService: CacheService,
   ) {}
 
   async create(req: any, userRequest: any): Promise<UserDocument> {
@@ -161,7 +163,18 @@ export class UserService {
   }
 
   async fetch(userId: string): Promise<LeanDocument<User>> {
-    const user = await this.userModel.findById(userId, { password: 0 }).lean();
+    let user = await this.cacheService.get(userId);
+    if (!user) {
+      user = await this.userModel
+        .findOne({
+          _id: userId,
+        })
+        .lean();
+      if (user) {
+        await this.cacheService.set(userId, user);
+      }
+    }
+
     if (!user) {
       throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound.key);
     }

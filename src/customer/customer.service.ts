@@ -74,6 +74,7 @@ export class CustomerService {
     const customers = await this.customerModelPag.paginate(
       {
         ...queryObj,
+        supplierId: req.user.supplierId,
         isBlocked: false,
       },
       {

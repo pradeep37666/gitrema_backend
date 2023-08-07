@@ -35,6 +35,7 @@ import * as moment from 'moment';
 import { SupplierAggregated } from './interfaces/suppliers.interface';
 import { TestDataService } from 'src/test-data/test-data.service';
 import { VALIDATION_MESSAGES } from 'src/core/Constants/validation-message';
+import { CacheService } from 'src/cache/cache.service';
 
 @Injectable()
 export class SupplierService {
@@ -53,6 +54,7 @@ export class SupplierService {
     private supplierPackagemodel: Model<SupplierPackageDocument>,
     @Inject(forwardRef(() => TestDataService))
     private readonly testDataService: TestDataService,
+    private readonly cacheService: CacheService,
   ) {}
 
   async createSupplier(
@@ -164,7 +166,13 @@ export class SupplierService {
   }
 
   async getOne(supplierId: string): Promise<SupplierDocument> {
-    return await this.supplierModel.findOne({ _id: supplierId });
+    let supplier = await this.cacheService.get(supplierId);
+    if (!supplier) {
+      supplier = await this.supplierModel.findOne({ _id: supplierId });
+      if (supplier)
+        await this.cacheService.set(supplierId, supplier.toObject());
+    }
+    return supplier;
   }
 
   async getAggregatedOne(
@@ -262,9 +270,14 @@ export class SupplierService {
   }
 
   async getByDomain(domain: string): Promise<SupplierDocument> {
-    return await this.supplierModel
-      .findOne({ domain }, { bankDetais: 0, subscriptionDetails: 0 })
-      .lean();
+    let supplier = await this.cacheService.get(domain);
+    if (!supplier) {
+      supplier = await this.supplierModel
+        .findOne({ domain }, { bankDetais: 0, subscriptionDetails: 0 })
+        .lean();
+      if (supplier) await this.cacheService.set(domain, supplier);
+    }
+    return supplier;
   }
 
   async isDomainAvailableToUse(domain: string): Promise<boolean> {
@@ -311,6 +324,7 @@ export class SupplierService {
         { taxEnabled: supplierDetails.taxEnabled },
       );
     }
+    await this.cacheService.set(supplier.domain, supplier.toObject());
     return supplier;
   }
 

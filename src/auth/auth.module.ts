@@ -32,6 +32,7 @@ import { TestDataModule } from 'src/test-data/test-data.module';
 import { Admin, AdminSchema } from 'src/admin/schemas/admin.schema';
 import { HttpCallerModule } from 'src/core/Providers/http-caller/http-caller.module';
 import { LogPayloadModule } from 'src/log-payload/log-payload.module';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { LogPayloadModule } from 'src/log-payload/log-payload.module';
     TestDataModule,
     HttpCallerModule,
     LogPayloadModule,
+    CacheModule,
   ],
   controllers: [AuthController, ProfileController, ChangePasswordController],
   providers: [AuthService, LocalStrategy, JwtStrategy, RecoverPasswordService],

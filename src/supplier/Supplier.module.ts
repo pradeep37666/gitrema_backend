@@ -15,6 +15,7 @@ import {
   SupplierPackageSchema,
 } from './schemas/supplier-package.schema';
 import { TestDataModule } from 'src/test-data/test-data.module';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TestDataModule } from 'src/test-data/test-data.module';
       { name: SupplierPackage.name, schema: SupplierPackageSchema },
     ]),
     forwardRef(() => TestDataModule),
+    CacheModule,
   ],
   controllers: [SupplierController],
   providers: [SupplierService],
