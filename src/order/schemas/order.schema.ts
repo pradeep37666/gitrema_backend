@@ -16,6 +16,7 @@ import {
   OrderPaymentStatus,
   Source,
   DeliveryStatus,
+  MarketType
 } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';
@@ -30,6 +31,7 @@ import { CustomerDocument } from 'src/customer/schemas/customer.schema';
 import { PrinterDocument } from 'src/printer/schema/printer.schema';
 import { DriverDocument } from 'src/driver/schema/driver.schema';
 import { auditLogPlugin } from 'src/log-payload/plugin/audit-log.plugin';
+
 
 export type OrderDocument = Order & Document & SchemaTimestampsConfig;
 
@@ -136,6 +138,9 @@ export class Order {
 
   @Prop({ type: String, enum: Source })
   source: Source;
+
+  @Prop({ default: null })
+  marketPlaceType: string;
 
   @Prop({ type: String, enum: OrderType })
   orderType: OrderType;

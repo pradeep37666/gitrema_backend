@@ -12,7 +12,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { OrderType, Source } from '../enum/en.enum';
+import { OrderType, Source ,MarketType } from '../enum/en.enum';
 import { Transform, Type } from 'class-transformer';
 import * as moment from 'moment';
 import { OrderItemDto } from './order-item.dto';
@@ -61,6 +61,11 @@ export class CreateOrderDto {
   @IsEnum(Source)
   @IsNotEmpty()
   source: Source;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  marketPlaceType?: string;
 
   @ApiProperty({ type: String, enum: OrderType, enumName: 'OrderType' })
   @IsEnum(OrderType)

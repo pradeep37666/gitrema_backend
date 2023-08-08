@@ -16,6 +16,7 @@ import {
   AssignPackageDto,
   SupplierQueryDto,
   UpdateSupplierDto,
+  UpdateSupplierMarketPlacesDto,
   VendoryQueryDto,
 } from './Supplier.dto';
 import { SupplierService } from './Supplier.service';
@@ -37,7 +38,7 @@ export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 
   @Post()
-  @PermissionGuard(PermissionSubject.Supplier, Permission.Common.CREATE)
+  // @PermissionGuard(PermissionSubject.Supplier, Permission.Common.CREATE)
   addSupplier(
     @Req() req,
     @Body() supplierDetails: AddSupplierDto,
@@ -99,6 +100,15 @@ export class SupplierController {
     @Body() supplierDetails: UpdateSupplierDto,
   ): Promise<Supplier> {
     return this.supplierService.update(supplierId, supplierDetails);
+  }
+
+  @Put(':supplierId/market-places')
+  // @PermissionGuard(PermissionSubject.Admin, Permission.Common.UPDATE) 
+  updateSupplierMarketPlaces(
+    @Param('supplierId') supplierId: string,
+    @Body() supplierDetails: UpdateSupplierMarketPlacesDto,
+  ): Promise<Supplier> {
+    return this.supplierService.updateMarketPlaces(supplierId, supplierDetails);
   }
 
   @Post(':supplierId/assign-package')

@@ -409,7 +409,7 @@ export class CashierLogService {
   async orderReport(req, query: CashierReportDto, isFile = false) {
     const supplier = await this.supplierModel.findById(req.user.supplierId);
     const timezone = supplier?.timezone ?? TIMEZONE;
-    let queryToApply: any = {};
+    const queryToApply: any = {};
     if (query.startDate && query.endDate) {
       query.startDate.setUTCHours(query.startDate.getHours());
       query.startDate.setUTCMinutes(query.startDate.getMinutes());
@@ -538,9 +538,7 @@ export class CashierLogService {
             time: moment(date).format('hh:mm A'),
             totalPaid: roundOffNumber(
               cashierLogs[i].transactions[j].amount *
-                cashierLogs[i].transactions[j].isRefund
-                ? -1
-                : 1,
+                (cashierLogs[i].transactions[j].isRefund ? -1 : 1),
             ),
             paymentMethod: cashierLogs[i].transactions[j].paymentMethod,
             invoiceLinks: invoices.map((i) => i.imageUrl).join(','),
@@ -672,8 +670,8 @@ export class CashierLogService {
   async cashierReport(req, query: CashierReportDto, isFile = false) {
     const supplier = await this.supplierModel.findById(req.user.supplierId);
     const timezone = supplier?.timezone ?? TIMEZONE;
-    let queryToApply: any = {};
-    let createdAtQuery: any = {};
+    const queryToApply: any = {};
+    const createdAtQuery: any = {};
     if (query.startDate && query.endDate) {
       query.startDate.setUTCHours(query.startDate.getHours());
       query.startDate.setUTCMinutes(query.startDate.getMinutes());

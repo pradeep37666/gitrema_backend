@@ -44,6 +44,17 @@ class AdditionOptionDto {
   default: boolean;
 }
 
+
+export class AdditionMarketPriceDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: string;
+  
+  @ApiProperty()
+  @IsNotEmpty()
+  price: number;
+}
+
 export class CreateMenuAdditionDTO {
   @ApiProperty()
   @IsNotEmpty()
@@ -81,6 +92,12 @@ export class CreateMenuAdditionDTO {
   @Type(() => AdditionOptionDto)
   @IsNotEmpty()
   options: AdditionOptionDto[];
+
+  @ApiProperty({ type: [AdditionMarketPriceDto] })
+  @ValidateNested({ each: true })
+  @Type(() => AdditionMarketPriceDto)
+  @IsNotEmpty()
+  marketPrices?: AdditionMarketPriceDto[];
 
   @ApiProperty({ required: false })
   @IsOptional()
