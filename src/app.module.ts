@@ -93,6 +93,8 @@ import { PublishModule } from './publish/publish.module';
 import { DriverModule } from './driver/driver.module';
 import { LogPayloadModule } from './log-payload/log-payload.module';
 import { SmsProviderModule } from './sms-provider/sms-provider.module';
+import { MarketPlaceModule } from './market-place/market-place.module';
+
 
 @Module({
   imports: [
@@ -197,6 +199,7 @@ import { SmsProviderModule } from './sms-provider/sms-provider.module';
     DriverModule,
     LogPayloadModule,
     SmsProviderModule,
+    MarketPlaceModule,
   ],
   controllers: [AppController],
   providers: [

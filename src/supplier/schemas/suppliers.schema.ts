@@ -10,6 +10,10 @@ import {
 } from 'src/restaurant/schemas/restaurant.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { SupplierType } from '../enum/en';
+import { MarketPlace, MarketPlaceSchema } from 'src/market-place/shemas/market-place.schem';
+import { marketPlaceDefaultValues } from 'src/core/Constants/market.contants';
+
+
 
 export type SupplierDocument = Supplier & Document;
 
@@ -195,6 +199,10 @@ export class Supplier {
     default: null,
   })
   importId: ImportDocument;
+
+
+  @Prop({ default: marketPlaceDefaultValues, type: [{type:MarketPlaceSchema}] })
+  marketPlaces: MarketPlace[];
 }
 
 export const SupplierSchema = SchemaFactory.createForClass(Supplier);

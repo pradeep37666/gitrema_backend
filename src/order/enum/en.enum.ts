@@ -2,6 +2,14 @@ export enum Source {
   App = 'App',
   Website = 'Website',
   DineIn = 'Dine In',
+  MarketPlace = 'MarketPlace'
+}
+
+export enum MarketType {
+  Hungerstation = 'Hungerstation',
+  Toyou = 'Toyou',
+  Marsool = 'Marsool',
+  Jahez = 'Jahez',
 }
 
 export enum OrderType {

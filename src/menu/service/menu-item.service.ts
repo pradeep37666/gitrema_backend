@@ -8,8 +8,8 @@ import {
   PaginationDto,
   pagination,
 } from 'src/core/Constants/pagination';
-import { MenuItem, MenuItemDocument } from '../schemas/menu-item.schema';
-import { CreateMenuItemDTO, UpdateMenuItemDTO } from '../dto/menu-item.dto';
+import { HideFromMarket, MenuItem, MenuItemDocument } from '../schemas/menu-item.schema';
+import { CreateMenuItemDTO, HideFromMarketDto, UpdateMenuItemDTO } from '../dto/menu-item.dto';
 import { QueryMenuItemDto } from '../dto/query-menu-item.dto';
 import {
   Supplier,

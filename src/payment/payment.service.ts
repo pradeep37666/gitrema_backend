@@ -284,6 +284,7 @@ export class PaymentService {
       status: PaymentStatus.Success,
       isRefund: true,
       cashierId,
+      addedBy: req ? req.user.userId : null,
     });
 
     // save transaction to cashier

@@ -16,8 +16,8 @@ import { Permission } from 'src/core/Constants/permission.type';
 import { PaginationDto } from 'src/core/Constants/pagination';
 import { PaginateResult } from 'mongoose';
 import { MenuItemService } from '../service/menu-item.service';
-import { CreateMenuItemDTO, UpdateMenuItemDTO } from '../dto/menu-item.dto';
-import { MenuItemDocument } from '../schemas/menu-item.schema';
+import { CreateMenuItemDTO, HideFromMarketDto, UpdateMenuItemDTO } from '../dto/menu-item.dto';
+import { HideFromMarket, MenuItemDocument } from '../schemas/menu-item.schema';
 import { QueryMenuItemDto } from '../dto/query-menu-item.dto';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 

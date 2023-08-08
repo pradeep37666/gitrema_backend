@@ -39,6 +39,36 @@ class DiscountDto {
   value: number;
 }
 
+export class HideFromMarketDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: string;
+  
+  @ApiProperty()
+  @IsNotEmpty()
+  value: boolean;
+}
+
+export class SoldOutFromMarketDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: string;
+  
+  @ApiProperty()
+  @IsNotEmpty()
+  value: boolean;
+}
+
+export class PricesForMarketsDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: string;
+  
+  @ApiProperty()
+  @IsNotEmpty()
+  price: number;
+}
+
 export class CreateMenuItemDTO {
   @ApiProperty({ required: false })
   @IsMongoId()
@@ -198,11 +228,34 @@ export class CreateMenuItemDTO {
   preparationTime: number;
 
   importId?: string;
+
+
+  @ApiProperty({ required: false, type: [HideFromMarketDto] })
+  @ValidateNested({ each: true })
+  @Type(() => HideFromMarketDto)
+  @IsNotEmpty()
+  hideFromMarkets?: HideFromMarketDto[];
+
+  @ApiProperty({ required: false, type: [SoldOutFromMarketDto] })
+  
+  @ValidateNested({ each: true })
+  @Type(() => SoldOutFromMarketDto)
+  @IsNotEmpty()
+  soldOutFromMarkets?: SoldOutFromMarketDto[];
+
+  @ApiProperty({ required: false, type: [PricesForMarketsDto] })
+  @ValidateNested({ each: true })
+  @Type(() => PricesForMarketsDto)
+  @IsNotEmpty()
+  pricesForMarkets?: PricesForMarketsDto[];
 }
+
+
 
 export class UpdateMenuItemDTO extends PartialType(CreateMenuItemDTO) {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
   active: boolean;
+
 }
