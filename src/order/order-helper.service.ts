@@ -106,26 +106,31 @@ export class OrderHelperService {
     private readonly invoiceHelperService: InvoiceHelperService,
     private readonly cacheService: CacheService,
   ) {}
-  
 
   getMarketPrice(menuItems, dto) {
     if (dto.source === Source.App || dto.source === Source.Website) {
-      const updatedMenuItem = menuItems.map(item => {
-        const price = item?.pricesForMarkets ? item?.pricesForMarkets.find(market => market.name === dto?.source).price : item.price
-        return { ...item, price: price }
-      })
-      return updatedMenuItem
+      const updatedMenuItem = menuItems.map((item) => {
+        const price = item?.pricesForMarkets
+          ? item?.pricesForMarkets.find((market) => market.name === dto?.source)
+              .price
+          : item.price;
+        return { ...item, price: price };
+      });
+      return updatedMenuItem;
     }
     if (dto.source === Source.MarketPlace && dto.marketPlaceType) {
-      const updatedMenuItem = menuItems.map(item => {
-        const price = item?.pricesForMarkets ? item?.pricesForMarkets.find(market => market.name === dto.marketPlaceType).price : item.price
-        return { ...item, price: price }
-      })
-      return updatedMenuItem
+      const updatedMenuItem = menuItems.map((item) => {
+        const price = item?.pricesForMarkets
+          ? item?.pricesForMarkets.find(
+              (market) => market.name === dto.marketPlaceType,
+            ).price
+          : item.price;
+        return { ...item, price: price };
+      });
+      return updatedMenuItem;
     }
-    return menuItems
+    return menuItems;
   }
-
 
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
     const preparedItems = [];
@@ -149,7 +154,7 @@ export class OrderHelperService {
     console.log(`** -- ${new Date()} -- ${new Date().getMilliseconds()}`);
 
     // update price based upon available markets
-    menuItems = this.getMarketPrice(menuItems, dto)
+    menuItems = this.getMarketPrice(menuItems, dto);
 
     //fetch all menu additions
     const menuAdditionArr = items.map((oi) => oi?.additions).flat();
@@ -177,6 +182,10 @@ export class OrderHelperService {
       const menuItem = menuItems.find((mi) => {
         return mi._id.toString() == items[i].menuItem.menuItemId;
       });
+
+      if (items[i].price) {
+        menuItem.price = items[i].price; // override for marketplace
+      }
 
       // check if valid menu item
       if (!menuItem)

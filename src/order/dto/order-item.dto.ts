@@ -57,6 +57,11 @@ export class OrderItemDto {
   quantity: number;
 
   @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  price?: number;
+
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   notes?: string;
