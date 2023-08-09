@@ -38,7 +38,7 @@ export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}
 
   @Post()
-  // @PermissionGuard(PermissionSubject.Supplier, Permission.Common.CREATE)
+  @PermissionGuard(PermissionSubject.Supplier, Permission.Common.CREATE)
   addSupplier(
     @Req() req,
     @Body() supplierDetails: AddSupplierDto,
@@ -103,7 +103,7 @@ export class SupplierController {
   }
 
   @Put(':supplierId/market-places')
-  // @PermissionGuard(PermissionSubject.Admin, Permission.Common.UPDATE) 
+  @PermissionGuard(PermissionSubject.Admin, Permission.Common.UPDATE)
   updateSupplierMarketPlaces(
     @Param('supplierId') supplierId: string,
     @Body() supplierDetails: UpdateSupplierMarketPlacesDto,
