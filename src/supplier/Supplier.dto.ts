@@ -23,6 +23,17 @@ import { SupplierType } from './enum/en';
 import { i18nValidationMessage } from 'nestjs-i18n';
 import { ToBoolean } from 'src/core/Helpers/custom.validators';
 
+
+export class MarketPlacesDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: string;
+  
+  @ApiProperty()
+  @IsNotEmpty()
+  value: boolean;
+}
+
 export class AddSupplierDto {
   @ApiProperty()
   @IsString()
@@ -277,6 +288,14 @@ export class AddSupplierDto {
   @IsBoolean()
   @IsOptional()
   createTestData?: boolean;
+
+  @ApiProperty({ required: false, type: [MarketPlacesDto] })
+  @ValidateNested({ each: true })
+  @Type(() => MarketPlacesDto)
+  @IsNotEmpty()
+  marketPlaces?: MarketPlacesDto[];
+
+
 }
 
 export class UpdateSupplierDto extends PartialType(AddSupplierDto) {
@@ -295,6 +314,31 @@ export class UpdateSupplierDto extends PartialType(AddSupplierDto) {
   @IsOptional()
   isRestaurant: boolean;
 }
+
+
+export class UpdateSupplierMarket {
+  
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ required: true })
+  @IsBoolean()
+  value: boolean;
+
+}
+
+export class UpdateSupplierMarketPlacesDto {
+  
+  @ApiProperty({ required: false, type: [UpdateSupplierMarket] })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateSupplierMarket)
+  @IsNotEmpty()
+  marketPlaces?: UpdateSupplierMarket[];
+
+}
+
+
 
 export class AssignPackageDto {
   @ApiProperty()

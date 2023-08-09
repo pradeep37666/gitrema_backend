@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  NotFoundException,
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,6 +13,7 @@ import {
   AssignPackageDto,
   SupplierQueryDto,
   UpdateSupplierDto,
+  UpdateSupplierMarketPlacesDto,
   VendoryQueryDto,
 } from './Supplier.dto';
 import { Supplier, SupplierDocument } from './schemas/suppliers.schema';
@@ -413,4 +415,21 @@ export class SupplierService {
       active: true,
     });
   }
+
+  async updateMarketPlaces(
+    supplierId: string,
+    market: UpdateSupplierMarketPlacesDto,
+  ): Promise<Supplier> {
+    if (supplierId) {
+      const isExist = await this.supplierModel.findOne({ _id: supplierId });
+      if (!isExist)      
+        throw new NotFoundException(VALIDATION_MESSAGES.RecordNotFound);
+    }
+    const supplier = await this.supplierModel.findByIdAndUpdate(
+      { _id: supplierId },
+      { ...market },
+      { new: true ,upsert:true},
+    );
+    return supplier;
+  } 
 }

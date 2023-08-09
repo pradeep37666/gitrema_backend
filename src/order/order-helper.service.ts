@@ -67,6 +67,7 @@ import {
   MenuCategory,
   MenuCategoryDocument,
 } from 'src/menu/schemas/menu-category.schema';
+import { Source } from 'src/order/enum/en.enum';
 
 @Injectable()
 export class OrderHelperService {
@@ -106,6 +107,31 @@ export class OrderHelperService {
     private readonly cacheService: CacheService,
   ) {}
 
+  getMarketPrice(menuItems, dto) {
+    if (dto.source === Source.App || dto.source === Source.Website) {
+      const updatedMenuItem = menuItems.map((item) => {
+        const price = item?.pricesForMarkets
+          ? item?.pricesForMarkets.find((market) => market.name === dto?.source)
+              .price
+          : item.price;
+        return { ...item, price: price };
+      });
+      return updatedMenuItem;
+    }
+    if (dto.source === Source.MarketPlace && dto.marketPlaceType) {
+      const updatedMenuItem = menuItems.map((item) => {
+        const price = item?.pricesForMarkets
+          ? item?.pricesForMarkets.find(
+              (market) => market.name === dto.marketPlaceType,
+            ).price
+          : item.price;
+        return { ...item, price: price };
+      });
+      return updatedMenuItem;
+    }
+    return menuItems;
+  }
+
   async prepareOrderItems(dto: CreateOrderDto | UpdateOrderDto | any) {
     const preparedItems = [];
     const taxRate = dto.taxRate;
@@ -116,7 +142,8 @@ export class OrderHelperService {
     //fetch all menu items
     const menuItemIds = items.map((oi) => oi.menuItem.menuItemId);
     console.log(`** -- ${new Date()} -- ${new Date().getMilliseconds()}`);
-    const menuItems = await this.menuItemModel
+    let menuItems = await this.menuItemModel
+
       .find({
         _id: { $in: menuItemIds },
         active: true,
@@ -125,6 +152,9 @@ export class OrderHelperService {
       //.populate([{ path: 'categoryId' }])
       .lean();
     console.log(`** -- ${new Date()} -- ${new Date().getMilliseconds()}`);
+
+    // update price based upon available markets
+    menuItems = this.getMarketPrice(menuItems, dto);
 
     //fetch all menu additions
     const menuAdditionArr = items.map((oi) => oi?.additions).flat();
@@ -152,6 +182,10 @@ export class OrderHelperService {
       const menuItem = menuItems.find((mi) => {
         return mi._id.toString() == items[i].menuItem.menuItemId;
       });
+
+      if (items[i].price) {
+        menuItem.price = items[i].price; // override for marketplace
+      }
 
       // check if valid menu item
       if (!menuItem)
