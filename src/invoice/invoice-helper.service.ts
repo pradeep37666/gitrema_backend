@@ -48,6 +48,7 @@ import {
   Supplier,
   SupplierDocument,
 } from 'src/supplier/schemas/suppliers.schema';
+import { CompressService } from 'src/file-uploader/compress.service';
 
 MomentHandler.registerHelpers(Handlebars);
 Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
@@ -82,6 +83,7 @@ export class InvoiceHelperService {
     private readonly socketGateway: SocketIoGateway,
     @InjectModel(Printer.name) private printerModel: Model<PrinterDocument>,
     @InjectModel(Supplier.name) private supplierModel: Model<SupplierDocument>,
+    private readonly compressService: CompressService,
   ) {}
 
   async generateInvoice(
@@ -444,8 +446,9 @@ export class InvoiceHelperService {
       path: imagePath,
       clip: { x, y, width, height },
     });
+    const compressedPath = await this.compressService.compressImage(imagePath);
     const imageUrl: any = await this.s3Service.uploadLocalFile(
-      imagePath,
+      compressedPath,
       directory,
     );
     if (onlyImage) {

@@ -14,6 +14,7 @@ import {
 import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
 import { Type } from 'class-transformer';
 import { CalculationType } from 'src/core/Constants/enum';
+import { MarketType } from 'src/order/enum/en.enum';
 
 class QuantityDto {
   @ApiProperty()
@@ -37,6 +38,36 @@ class DiscountDto {
   @IsNumber()
   @IsNotEmpty()
   value: number;
+}
+
+export class HideFromMarketDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: MarketType;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  value: boolean;
+}
+
+export class SoldOutFromMarketDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: MarketType;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  value: boolean;
+}
+
+export class PricesForMarketsDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  name: MarketType;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  price: number;
 }
 
 export class CreateMenuItemDTO {
@@ -198,6 +229,24 @@ export class CreateMenuItemDTO {
   preparationTime: number;
 
   importId?: string;
+
+  @ApiProperty({ required: false, type: [HideFromMarketDto] })
+  @ValidateNested({ each: true })
+  @Type(() => HideFromMarketDto)
+  @IsOptional()
+  hideFromMarkets?: HideFromMarketDto[];
+
+  @ApiProperty({ required: false, type: [SoldOutFromMarketDto] })
+  @ValidateNested({ each: true })
+  @Type(() => SoldOutFromMarketDto)
+  @IsOptional()
+  soldOutFromMarkets?: SoldOutFromMarketDto[];
+
+  @ApiProperty({ required: false, type: [PricesForMarketsDto] })
+  @ValidateNested({ each: true })
+  @Type(() => PricesForMarketsDto)
+  @IsOptional()
+  pricesForMarkets?: PricesForMarketsDto[];
 }
 
 export class UpdateMenuItemDTO extends PartialType(CreateMenuItemDTO) {

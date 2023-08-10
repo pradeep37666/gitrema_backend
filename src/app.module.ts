@@ -94,6 +94,8 @@ import { DriverModule } from './driver/driver.module';
 import { LogPayloadModule } from './log-payload/log-payload.module';
 import { SmsProviderModule } from './sms-provider/sms-provider.module';
 import { CacheModule } from './cache/cache.module';
+import { MarketPlaceModule } from './market-place/market-place.module';
+
 
 @Module({
   imports: [
@@ -199,6 +201,7 @@ import { CacheModule } from './cache/cache.module';
     LogPayloadModule,
     SmsProviderModule,
     CacheModule,
+    MarketPlaceModule,
   ],
   controllers: [AppController],
   providers: [

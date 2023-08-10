@@ -15,6 +15,11 @@ class OptionDto {
   @IsMongoId()
   @IsNotEmpty()
   optionId: string;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 }
 
 class MenuAdditionDto {
@@ -55,6 +60,11 @@ export class OrderItemDto {
   @IsNumber()
   @IsNotEmpty()
   quantity: number;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 
   @ApiProperty({ required: false })
   @IsString()

@@ -466,3 +466,8 @@ export enum OrderTypes {
   Delivery = 'Delivery',
   Local = 'Local',
 }
+export enum MarketSource {
+  App = 'App',
+  Website = 'Website',
+  Online = 'Online'
+}
