@@ -40,7 +40,10 @@ export class CustomerService {
   ) {}
 
   async create(req: any, dto: CreateCustomerDto): Promise<CustomerDocument> {
-    const exists = await this.findByPhoneNumber(dto.phoneNumber);
+    const exists = await this.findByPhoneNumber(
+      dto.phoneNumber,
+      req.user.supplierId,
+    );
     if (exists) {
       throw new BadRequestException(VALIDATION_MESSAGES.CustomerExist.key);
     }
@@ -176,8 +179,11 @@ export class CustomerService {
 
   async findByPhoneNumber(
     phoneNumber: string,
+    supplierId,
   ): Promise<LeanDocument<CustomerDocument>> {
-    const user = await this.customerModel.findOne({ phoneNumber }).lean();
+    const user = await this.customerModel
+      .findOne({ phoneNumber, supplierId })
+      .lean();
 
     return user;
   }
