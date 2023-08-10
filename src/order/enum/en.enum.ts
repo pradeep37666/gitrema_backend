@@ -2,7 +2,7 @@ export enum Source {
   App = 'App',
   Website = 'Website',
   DineIn = 'Dine In',
-  MarketPlace = 'MarketPlace'
+  MarketPlace = 'MarketPlace',
 }
 
 export enum MarketType {
@@ -10,6 +10,8 @@ export enum MarketType {
   Toyou = 'Toyou',
   Marsool = 'Marsool',
   Jahez = 'Jahez',
+  App = 'App',
+  Website = 'Website',
 }
 
 export enum OrderType {

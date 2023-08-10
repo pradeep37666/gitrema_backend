@@ -3,12 +3,25 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 import { AutoCachePlugin } from 'src/cache/plugin/auto-cache.plugin';
 import { menuItemsPricesDefaultValues } from 'src/core/Constants/market.contants';
+import { MarketPlace } from 'src/market-place/shemas/market-place.schem';
+import { MarketType } from 'src/order/enum/en.enum';
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
 export type MenuAdditionDocument = MenuAddition & Document;
 
 type AdditionOptionDocument = AdditionOption & Document;
+
+@Schema({ _id: false })
+class AdditionMarketPrices {
+  @Prop({ required: true })
+  name: MarketType;
+
+  @Prop({ default: 0 })
+  price: number;
+}
+const AdditionMarketPricesSchema =
+  SchemaFactory.createForClass(AdditionMarketPrices);
 
 @Schema({})
 class AdditionOption {
@@ -20,6 +33,12 @@ class AdditionOption {
 
   @Prop({ default: 0 })
   price: number;
+
+  @Prop({
+    default: menuItemsPricesDefaultValues,
+    type: [AdditionMarketPricesSchema],
+  })
+  marketPrices: AdditionMarketPrices[];
 
   @Prop({})
   order: number;
@@ -34,16 +53,6 @@ class AdditionOption {
   default: boolean;
 }
 const AdditionOptionSchema = SchemaFactory.createForClass(AdditionOption);
-@Schema({ _id: false })
-class AdditionMarketPrices {
-  @Prop({ required: true })
-  name: string;
-
-  @Prop({ default: 0 })
-  price: number;
-
-}
-const AdditionMarketPricesSchema = SchemaFactory.createForClass(AdditionMarketPrices);
 
 @Schema({ timestamps: true })
 export class MenuAddition {
@@ -66,9 +75,6 @@ export class MenuAddition {
 
   @Prop({ type: [AdditionOptionSchema] })
   options: AdditionOptionDocument[];
-
-  @Prop({ default: menuItemsPricesDefaultValues , type: [AdditionMarketPricesSchema] })
-  marketPrices: AdditionMarketPrices[];
 
   @Prop({ default: null })
   maxOptions: number;

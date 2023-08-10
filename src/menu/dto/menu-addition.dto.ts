@@ -12,6 +12,18 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+export class AdditionMarketPriceDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  price: number;
+}
+
 class AdditionOptionDto {
   @ApiProperty()
   @IsNotEmpty()
@@ -28,6 +40,12 @@ class AdditionOptionDto {
   @IsNumber()
   price: number;
 
+  @ApiProperty({ type: [AdditionMarketPriceDto] })
+  @ValidateNested({ each: true })
+  @Type(() => AdditionMarketPriceDto)
+  @IsNotEmpty()
+  marketPrices?: AdditionMarketPriceDto[];
+
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
@@ -42,17 +60,6 @@ class AdditionOptionDto {
   @IsOptional()
   @IsBoolean()
   default: boolean;
-}
-
-
-export class AdditionMarketPriceDto {
-  @ApiProperty()
-  @IsNotEmpty()
-  name: string;
-  
-  @ApiProperty()
-  @IsNotEmpty()
-  price: number;
 }
 
 export class CreateMenuAdditionDTO {
@@ -92,12 +99,6 @@ export class CreateMenuAdditionDTO {
   @Type(() => AdditionOptionDto)
   @IsNotEmpty()
   options: AdditionOptionDto[];
-
-  @ApiProperty({ type: [AdditionMarketPriceDto] })
-  @ValidateNested({ each: true })
-  @Type(() => AdditionMarketPriceDto)
-  @IsNotEmpty()
-  marketPrices?: AdditionMarketPriceDto[];
 
   @ApiProperty({ required: false })
   @IsOptional()
