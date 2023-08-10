@@ -446,9 +446,9 @@ export class InvoiceHelperService {
       path: imagePath,
       clip: { x, y, width, height },
     });
-    const compressedPath = await this.compressService.compressImage(imagePath);
+    //const compressedPath = await this.compressService.compressImage(imagePath);
     const imageUrl: any = await this.s3Service.uploadLocalFile(
-      compressedPath,
+      imagePath,
       directory,
     );
     if (onlyImage) {

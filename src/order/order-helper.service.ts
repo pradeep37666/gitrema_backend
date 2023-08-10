@@ -607,6 +607,7 @@ export class OrderHelperService {
   async setCustomer(order: OrderDocument) {
     const customer = await this.customerService.findByPhoneNumber(
       order.contactNumber,
+      order.supplierId,
     );
     if (customer) {
       order.customerId = customer._id;
@@ -752,11 +753,11 @@ export class OrderHelperService {
       if (order.tableId) {
         this.tableHelperService.handleReadyFlag(order);
       }
-      // notify customer
-      this.orderNotificationService.triggerOrderNotification(
-        OrderEvents.DonePreparing,
-        order,
-      );
+      // // notify customer
+      // this.orderNotificationService.triggerOrderNotification(
+      //   OrderEvents.DonePreparing,
+      //   order,
+      // );
       //console.log(`Socket Event ${}`);
       this.socketGateway.emit(
         order.supplierId.toString(),
