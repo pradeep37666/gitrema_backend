@@ -486,4 +486,5 @@ export enum MarketPlaceType {
   Jahez = 'Jahez',
   App = 'App',
   Website = 'Website',
+  DineIn = 'Dine In',
 }

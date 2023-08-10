@@ -26,9 +26,20 @@ export class OrderSourceService {
 
         
         if (!role) return false;
-        if(role.name === this.ROLE_NAME && source === Source.MarketPlace &&  Object.values(allowedMarketPlaces).includes(marketPlaceType) ){
-            return false
+        if( source == Source.MarketPlace && !marketPlaceType) return false;
+  
+
+        if(role.name == this.ROLE_NAME){
+            if( source == Source.MarketPlace && marketPlaceType && Object.values(allowedMarketPlaces).includes(marketPlaceType)){
+                return true
+            }else if(source == Source.MarketPlace && marketPlaceType && !Object.values(allowedMarketPlaces).includes(marketPlaceType)){
+                return false
+            }
+            else{
+                return false
+            }
         }
+      
         return true
     
       }

@@ -42,6 +42,10 @@ export const hideFromMarketDefaultValues = [
     name: 'Jahez',
     value: true,
   },
+  {
+    name: 'Dine In',
+    value: false,
+  }
   
 ]
 
@@ -69,6 +73,11 @@ export const menuItemsPricesDefaultValues = [
   {
     name: 'Jahez',
     price: 0,
+  },
+  {
+    name: 'Dine In',
+    price: 0,
   }
+  
   
 ]
