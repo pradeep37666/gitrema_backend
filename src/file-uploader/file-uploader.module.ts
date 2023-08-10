@@ -9,5 +9,6 @@ import { CompressService } from './compress.service';
   imports: [StorageModule],
   controllers: [FileUploaderController],
   providers: [FileUploaderService, CompressService],
+  exports: [CompressService],
 })
 export class FileUploaderModule {}

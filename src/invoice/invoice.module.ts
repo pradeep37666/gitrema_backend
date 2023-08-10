@@ -18,6 +18,7 @@ import {
   Supplier,
   SupplierSchema,
 } from 'src/supplier/schemas/suppliers.schema';
+import { FileUploaderModule } from 'src/file-uploader/file-uploader.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import {
     PrinterModule,
     HttpModule,
     SocketIoModule,
+    FileUploaderModule,
   ],
   controllers: [InvoiceController],
   providers: [InvoiceService, FatooraService, InvoiceHelperService],

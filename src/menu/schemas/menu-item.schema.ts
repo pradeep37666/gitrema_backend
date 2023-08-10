@@ -10,44 +10,43 @@ import { MenuAdditionDocument } from './menu-addition.schema';
 import { CalculationType } from 'src/core/Constants/enum';
 import { ImportDocument } from 'src/import/schemas/import.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
-import { hideFromMarketDefaultValues ,menuItemsPricesDefaultValues } from 'src/core/Constants/market.contants';
+import {
+  hideFromMarketDefaultValues,
+  menuItemsPricesDefaultValues,
+} from 'src/core/Constants/market.contants';
+import { MarketType } from 'src/order/enum/en.enum';
 
 export type MenuItemDocument = MenuItem & Document;
 
 @Schema({ _id: false })
 export class HideFromMarket {
-
   @Prop({ required: true })
-  name: string;
+  name: MarketType;
 
   @Prop({ required: true })
   value: boolean;
 }
-export const HideFromMarketSchema = SchemaFactory.createForClass(
-  HideFromMarket,
-);
+export const HideFromMarketSchema =
+  SchemaFactory.createForClass(HideFromMarket);
 @Schema({ _id: false })
 export class SoldOutFromMarket {
-
   @Prop({ required: true })
-  name: string;
+  name: MarketType;
 
   @Prop({ required: true })
   value: boolean;
 }
-export const SoldOutFromMarketSchema = SchemaFactory.createForClass(
-  SoldOutFromMarket,
-);
+export const SoldOutFromMarketSchema =
+  SchemaFactory.createForClass(SoldOutFromMarket);
 @Schema({ _id: false })
 export class MenuItemsPricesForMarkets {
-
   @Prop({ required: true })
-  name: string;
+  name: MarketType;
 
   @Prop({ required: true })
   price: number;
 }
-export const  MenuItemsPricesForMarketsSchema = SchemaFactory.createForClass(
+export const MenuItemsPricesForMarketsSchema = SchemaFactory.createForClass(
   MenuItemsPricesForMarkets,
 );
 
@@ -161,13 +160,22 @@ export class MenuItem {
   })
   hideFromMenu: RestaurantDocument[];
 
-  @Prop({ default: hideFromMarketDefaultValues, type: [{type:HideFromMarketSchema}] })
+  @Prop({
+    default: hideFromMarketDefaultValues,
+    type: [{ type: HideFromMarketSchema }],
+  })
   hideFromMarkets: HideFromMarket[];
 
-  @Prop({ default: hideFromMarketDefaultValues, type: [{type:SoldOutFromMarketSchema}] })
+  @Prop({
+    default: hideFromMarketDefaultValues,
+    type: [{ type: SoldOutFromMarketSchema }],
+  })
   soldOutFromMarkets: SoldOutFromMarket[];
 
-  @Prop({ default: menuItemsPricesDefaultValues, type: [{type:MenuItemsPricesForMarketsSchema}] })
+  @Prop({
+    default: menuItemsPricesDefaultValues,
+    type: [{ type: MenuItemsPricesForMarketsSchema }],
+  })
   pricesForMarkets: MenuItemsPricesForMarkets[];
 
   @Prop({ default: false })

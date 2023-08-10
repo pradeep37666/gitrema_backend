@@ -15,6 +15,11 @@ class OptionDto {
   @IsMongoId()
   @IsNotEmpty()
   optionId: string;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 }
 
 class MenuAdditionDto {

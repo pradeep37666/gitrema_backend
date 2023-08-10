@@ -68,6 +68,8 @@ import {
   MenuCategoryDocument,
 } from 'src/menu/schemas/menu-category.schema';
 import { Source } from 'src/order/enum/en.enum';
+import { optionId } from '../../test/constants/test.constant';
+import { AdhocDiscountDto } from './dto/discount-order.dto';
 
 @Injectable()
 export class OrderHelperService {
@@ -114,11 +116,11 @@ export class OrderHelperService {
           ? item?.pricesForMarkets.find((market) => market.name === dto?.source)
               .price
           : item.price;
+
         return { ...item, price: price };
       });
       return updatedMenuItem;
-    }
-    if (dto.source === Source.MarketPlace && dto.marketPlaceType) {
+    } else if (dto.source === Source.MarketPlace && dto.marketPlaceType) {
       const updatedMenuItem = menuItems.map((item) => {
         const price = item?.pricesForMarkets
           ? item?.pricesForMarkets.find(
@@ -340,7 +342,25 @@ export class OrderHelperService {
 
           // storing tax,price details for each option and calculating net price
           preparedAdditions[j].options.forEach((o) => {
+            if (dto.source === Source.App || dto.source === Source.Website) {
+              o.price = o?.marketPrices
+                ? o?.marketPrices.find((market) => market.name === dto?.source)
+                    .price
+                : o.price;
+            } else if (
+              dto.source === Source.MarketPlace &&
+              dto.marketPlaceType
+            ) {
+              o.price = o?.marketPrices
+                ? o?.marketPrices.find(
+                    (market) => market.name === dto?.marketPlaceType,
+                  ).price
+                : o.price;
+            }
             o.optionId = o._id;
+            const reqOptionObj = additions[j].options.find(
+              (rao) => rao.optionId == o._id.toString(),
+            );
             const option = {
               discount: 0,
               unitPriceDiscount: 0,
@@ -350,7 +370,7 @@ export class OrderHelperService {
             };
 
             // calculate for each option
-            option.unitPriceBeforeDiscount = o.price;
+            option.unitPriceBeforeDiscount = reqOptionObj?.price ?? o.price;
             option.itemTaxableAmount =
               option.unitPriceBeforeDiscount * items[i].quantity;
             if (menuAddition.taxEnabled) {
