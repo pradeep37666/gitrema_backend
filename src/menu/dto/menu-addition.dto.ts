@@ -40,10 +40,10 @@ class AdditionOptionDto {
   @IsNumber()
   price: number;
 
-  @ApiProperty({ type: [AdditionMarketPriceDto] })
+  @ApiProperty({ type: [AdditionMarketPriceDto], required: false })
   @ValidateNested({ each: true })
   @Type(() => AdditionMarketPriceDto)
-  @IsNotEmpty()
+  @IsOptional()
   marketPrices?: AdditionMarketPriceDto[];
 
   @ApiProperty()
