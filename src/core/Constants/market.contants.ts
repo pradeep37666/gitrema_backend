@@ -69,10 +69,6 @@ export const menuItemsPricesDefaultValues = [
   {
     name: 'Jahez',
     price: 0,
-  },
-  {
-    name : 'Dine In',
-    price : 0
   }
   
 ]

@@ -16,7 +16,6 @@ import {
   OrderPaymentStatus,
   Source,
   DeliveryStatus,
-  MarketType
 } from '../enum/en.enum';
 import { KitchenQueueDocument } from 'src/kitchen-queue/schemas/kitchen-queue.schema';
 import { CashierDocument } from 'src/cashier/schemas/cashier.schema';

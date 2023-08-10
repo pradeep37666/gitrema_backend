@@ -2,9 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as paginate from 'mongoose-paginate-v2';
 import { AutoCachePlugin } from 'src/cache/plugin/auto-cache.plugin';
+import { MarketPlaceType } from 'src/core/Constants/enum';
 import { menuItemsPricesDefaultValues } from 'src/core/Constants/market.contants';
-import { MarketPlace } from 'src/market-place/shemas/market-place.schem';
-import { MarketType } from 'src/order/enum/en.enum';
+
 import { SupplierDocument } from 'src/supplier/schemas/suppliers.schema';
 import { UserDocument } from 'src/users/schemas/users.schema';
 
@@ -14,8 +14,8 @@ type AdditionOptionDocument = AdditionOption & Document;
 
 @Schema({ _id: false })
 class AdditionMarketPrices {
-  @Prop({ required: true })
-  name: MarketType;
+  @Prop({ required: true ,type : String ,enum :MarketPlaceType })
+  name: MarketPlaceType;
 
   @Prop({ default: 0 })
   price: number;

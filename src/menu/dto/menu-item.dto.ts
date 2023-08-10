@@ -13,8 +13,8 @@ import {
 } from 'class-validator';
 import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
 import { Type } from 'class-transformer';
-import { CalculationType } from 'src/core/Constants/enum';
-import { MarketType } from 'src/order/enum/en.enum';
+import { CalculationType, MarketPlaceType } from 'src/core/Constants/enum';
+
 
 class QuantityDto {
   @ApiProperty()
@@ -41,9 +41,10 @@ class DiscountDto {
 }
 
 export class HideFromMarketDto {
-  @ApiProperty()
+  @ApiProperty({ type: String, enum: MarketPlaceType, enumName: 'MarketPlaceType' })
+  @IsEnum(MarketPlaceType)
   @IsNotEmpty()
-  name: MarketType;
+  name: MarketPlaceType;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -51,9 +52,10 @@ export class HideFromMarketDto {
 }
 
 export class SoldOutFromMarketDto {
-  @ApiProperty()
+  @ApiProperty({ type: String, enum: MarketPlaceType, enumName: 'MarketPlaceType' })
+  @IsEnum(MarketPlaceType)
   @IsNotEmpty()
-  name: MarketType;
+  name: MarketPlaceType;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -61,9 +63,10 @@ export class SoldOutFromMarketDto {
 }
 
 export class PricesForMarketsDto {
-  @ApiProperty()
+  @ApiProperty({ type: String, enum: MarketPlaceType, enumName: 'MarketPlaceType' })
+  @IsEnum(MarketPlaceType)
   @IsNotEmpty()
-  name: MarketType;
+  name: MarketPlaceType;
 
   @ApiProperty()
   @IsNotEmpty()

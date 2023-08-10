@@ -25,9 +25,13 @@ export class PermissionGuard implements CanActivate {
       subject: PermissionSubject;
       permission: PermissionActions;
     }>(PERMISSION, [context.getHandler(), context.getClass()]);
+    console.log("---permissionDecorator-----",permissionDecorator);
+    
 
     if (permissionDecorator) {
       const request = context.switchToHttp().getRequest();
+      console.log("------request-- *************-",request.body);
+      
 
       const user = request.user;
 

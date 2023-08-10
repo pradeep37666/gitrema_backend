@@ -7,21 +7,21 @@ import { RestaurantDocument } from 'src/restaurant/schemas/restaurant.schema';
 import { Alergies, MenuSticker, MenuStickerStyle } from '../enum/en.enum';
 import { UserDocument } from 'src/users/schemas/users.schema';
 import { MenuAdditionDocument } from './menu-addition.schema';
-import { CalculationType } from 'src/core/Constants/enum';
+import { CalculationType, MarketPlaceType } from 'src/core/Constants/enum';
 import { ImportDocument } from 'src/import/schemas/import.schema';
 import { UnitOfMeasureDocument } from 'src/unit-of-measure/schemas/unit-of-measure.schema';
 import {
   hideFromMarketDefaultValues,
   menuItemsPricesDefaultValues,
 } from 'src/core/Constants/market.contants';
-import { MarketType } from 'src/order/enum/en.enum';
+
 
 export type MenuItemDocument = MenuItem & Document;
 
 @Schema({ _id: false })
 export class HideFromMarket {
-  @Prop({ required: true })
-  name: MarketType;
+  @Prop({ required: true ,type : String ,enum :MarketPlaceType })
+  name: MarketPlaceType;
 
   @Prop({ required: true })
   value: boolean;
@@ -30,8 +30,8 @@ export const HideFromMarketSchema =
   SchemaFactory.createForClass(HideFromMarket);
 @Schema({ _id: false })
 export class SoldOutFromMarket {
-  @Prop({ required: true })
-  name: MarketType;
+  @Prop({ required: true ,type : String ,enum :MarketPlaceType })
+  name: MarketPlaceType;
 
   @Prop({ required: true })
   value: boolean;
@@ -40,8 +40,8 @@ export const SoldOutFromMarketSchema =
   SchemaFactory.createForClass(SoldOutFromMarket);
 @Schema({ _id: false })
 export class MenuItemsPricesForMarkets {
-  @Prop({ required: true })
-  name: MarketType;
+  @Prop({ required: true ,type : String ,enum :MarketPlaceType })
+  name: MarketPlaceType;
 
   @Prop({ required: true })
   price: number;

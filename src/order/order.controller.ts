@@ -9,6 +9,7 @@ import {
   Req,
   Query,
   Header,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -44,6 +45,7 @@ import { Driver } from '../driver/schema/driver.schema';
 import { ChangeDeliveryStatusDto } from './dto/change-delivery-status.dto';
 import { DriverReportDto } from './dto/driver-report.dto';
 import { SkipInterceptor } from 'src/core/decorators/skip-interceptor.decorator';
+import { OrderSourceValidationGuard } from './order-source/order-source.guard';
 
 @Controller('order')
 @ApiTags('Orders')
@@ -57,6 +59,7 @@ export class OrderController {
 
   @Post()
   @PermissionGuard(PermissionSubject.Order, Permission.Common.CREATE)
+  @UseGuards(OrderSourceValidationGuard)
   async create(@Req() req, @Body() dto: CreateOrderDto) {
     return await this.orderService.create(req, dto);
   }

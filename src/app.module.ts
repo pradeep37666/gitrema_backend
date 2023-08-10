@@ -95,6 +95,7 @@ import { LogPayloadModule } from './log-payload/log-payload.module';
 import { SmsProviderModule } from './sms-provider/sms-provider.module';
 import { CacheModule } from './cache/cache.module';
 import { MarketPlaceModule } from './market-place/market-place.module';
+import { OrderSourceModule } from './order/order-source/order-source.module';
 
 
 @Module({
@@ -202,6 +203,7 @@ import { MarketPlaceModule } from './market-place/market-place.module';
     SmsProviderModule,
     CacheModule,
     MarketPlaceModule,
+    OrderSourceModule
   ],
   controllers: [AppController],
   providers: [

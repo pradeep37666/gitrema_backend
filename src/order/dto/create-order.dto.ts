@@ -12,7 +12,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { OrderType, Source ,MarketType } from '../enum/en.enum';
+import { OrderType, Source  } from '../enum/en.enum';
 import { Transform, Type } from 'class-transformer';
 import * as moment from 'moment';
 import { OrderItemDto } from './order-item.dto';

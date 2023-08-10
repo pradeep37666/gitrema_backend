@@ -64,6 +64,8 @@ import {
   MenuCategory,
   MenuCategorySchema,
 } from 'src/menu/schemas/menu-category.schema';
+import { OrderSourceService } from './order-source/order-source.service';
+import { OrderSourceModule } from './order-source/order-source.module';
 
 @Module({
   imports: [
@@ -104,6 +106,7 @@ import {
     CashierModule,
     PermissionModule,
     CacheModule,
+    OrderSourceModule,
   ],
   controllers: [OrderController],
   providers: [
@@ -111,6 +114,7 @@ import {
     OrderHelperService,
     CalculationService,
     OrderNotificationService,
+    OrderSourceService,
   ],
   exports: [
     OrderService,

@@ -10,10 +10,13 @@ import {
   IsString,
   IsUrl,
   ValidateNested,
+  IsEnum
 } from 'class-validator';
+import { MarketPlaceType } from 'src/core/Constants/enum';
 
 export class AdditionMarketPriceDto {
-  @ApiProperty()
+  @ApiProperty({ type: String, enum: MarketPlaceType, enumName: 'MarketPlaceType' })
+  @IsEnum(MarketPlaceType)
   @IsNotEmpty()
   @IsString()
   name: string;
